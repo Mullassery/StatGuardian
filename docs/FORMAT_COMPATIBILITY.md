@@ -298,5 +298,81 @@ Works on: local mode, YARN, Kubernetes, Databricks, AWS EMR, Google Dataproc, Az
 | SQL databases (OSS drivers) | 3 Rust + 10 Python | via SQLAlchemy | ✓ (12 connectors) | ✗ |
 | SQL warehouses | 5 via Python | via extras | ✓ | ✗ |
 | Spark DataFrames | ✓ Arrow bridge | ✓ | ✓ native | ✗ |
+| **Kafka (🗺️ roadmap)** | **planned** | ✗ | ✗ | ✗ |
+| **Apache Flink (🗺️ roadmap)** | **planned** | ✗ | ✗ | ✗ |
+| **Airflow operator (🗺️ roadmap)** | **planned** | partial | partial | ✗ |
 | OSS-only connectors | **✓ enforced** | ✗ (no policy) | ✗ (no policy) | n/a |
 | Glob / partitioned reads | ✓ | ✗ | ✓ | ✗ |
+
+🗺️ = roadmap item (not yet implemented, architecture planned)
+
+---
+
+## Roadmap — streaming & orchestration
+
+### Kafka
+
+```python
+# (Planned) Validate a Kafka topic as a micro-batch stream
+topic_config = {
+    "bootstrap_servers": ["localhost:9092"],
+    "topic": "orders",
+    "group_id": "statguard-validation",
+}
+reports = statguard.execute_kafka(contract, topic_config, batch_size=1000)
+```
+
+Open-source drivers: `confluent-kafka-python` (Apache-2.0) or `kafka-python` (MIT).
+
+### Apache Flink
+
+```python
+# (Planned) Validate Flink DataStream in Python
+env = StreamExecutionEnvironment.get_execution_environment()
+ds = env.add_source(...)  # Kafka, S3, etc.
+
+# Convert to Arrow table batch, validate
+report = statguard.execute_flink(contract, ds)
+```
+
+Integration via Flink Python API + Arrow IPC serialisation (zero-copy).
+
+### Apache Airflow operator
+
+```python
+# (Planned) Orchestrate validation as an Airflow DAG task
+from statguard.airflow import StatGuardOperator
+
+validation_task = StatGuardOperator(
+    task_id="validate_orders",
+    contract_path="orders.sg",
+    data_path="s3://bucket/orders/{{ ds }}/",
+    reference_path="s3://bucket/orders/{{ yesterday_ds }}/",
+    fail_on_error=True,
+)
+```
+
+Uses the standard Airflow task API. No Airflow-specific code in StatGuard itself—
+the operator is a thin wrapper around `execute_cloud()` / `execute_sql()` / `execute_spark()`.
+
+Available as: `pip install statguard[airflow]` (installs `apache-airflow` + orchestration adapter).
+
+---
+
+## Implementation notes — open-source policy
+
+All connectors use **MIT / Apache-2.0 / BSD licensed** drivers only:
+
+**Included:**
+- `confluent-kafka-python` (Apache-2.0) — Kafka
+- `flink` Python API (Apache-2.0) — Flink
+- `apache-airflow` (Apache-2.0) — Airflow
+- `connectorx` (MIT) — SQL
+- `polars` (MIT) — cloud storage, Arrow
+- `pyspark` (Apache-2.0) — Spark
+
+**Intentionally excluded:**
+- Oracle Instant Client (proprietary)
+- Microsoft ODBC Driver (proprietary on Linux/macOS)
+- Salesforce Analytics Cloud (proprietary SDK)
+- Proprietary data warehouse native connectors (export to Parquet instead)

@@ -269,11 +269,13 @@ StatGuard reads every major format natively — no external loaders, no Spark cl
 | **Apache Iceberg** (no Spark) | ✓ | ✗ | ✗ | ✗ |
 | **Cloud** (S3, GCS, Azure) | ✓ | via extras | ✓ native | ✗ |
 | **Spark DataFrames** | ✓ Arrow bridge | ✓ | ✓ native | ✗ |
-| **Kafka** (streaming) | ✓ micro-batch | ✗ | ✗ | ✗ |
-| **Flink** (streaming) | ✓ via Flink Python | ✗ | ✗ | ✗ |
-| **Airflow** (orchestrator) | ✓ operator | ✗ | partial | ✗ |
 | **SQL / warehouses** | 13 OSS connectors | via SQLAlchemy | 12 connectors | ✗ |
-| OSS-only connectors | ✓ enforced | ✗ | ✗ | n/a |
+| **Kafka** (🗺️ roadmap) | planned | ✗ | ✗ | ✗ |
+| **Flink** (🗺️ roadmap) | planned | ✗ | ✗ | ✗ |
+| **Airflow** (🗺️ roadmap) | planned | ✗ | partial | ✗ |
+| **OSS-only connectors** | ✓ enforced | ✗ | ✗ | n/a |
+
+🗺️ = roadmap (planned, not yet released)
 
 → Full matrix: [docs/FORMAT_COMPATIBILITY.md](docs/FORMAT_COMPATIBILITY.md)
 
