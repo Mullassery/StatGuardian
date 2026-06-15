@@ -1,33 +1,50 @@
 # StatGuard Benchmarks
 
-**Environment:** Apple M-series · macOS · 100 000-row dataset × 4 columns  
-**Checks applied:** null · type · range(0–120) · regex (email) · uniqueness  
-**StatGuard version:** 0.1.0 · pandera version: 0.31
+**Environment:** Apple M-series · macOS · Python 3.13  
+**Dataset:** 100 000 rows × 4 columns (int, string, int, string)  
+**Checks:** `not_null` · type · `range(0–120)` · regex email · `uniqueness`  
+**Versions:** StatGuard 0.1 · pandera 0.31 · Great Expectations 1.18  
+**Method:** best-of-7 runs, warm process (no cold-start overhead)
 
-## vs Python ecosystem (100 000 rows)
+## Results — 100 000 rows
 
-| Tool | Time (ms) | Speedup vs pandera |
-|---|---|---|
-| **StatGuard** (Rust/Polars core) | **~1–3 ms** | **~10–20×** |
-| Polars manual expressions (equivalent logic) | 1.4 ms | 19× faster |
-| Pure Python loops | 10.4 ms | 2.6× faster |
-| **pandera 0.31** (pandas backend) | **26.9 ms** | 1× (baseline) |
+| Tool | Best (ms) | Median (ms) | vs pandera | vs Great Expectations |
+|---|---|---|---|---|
+| **StatGuard 0.1** (Rust/Polars) | **~2** | **~2** | **~13× faster** | **~25× faster** |
+| Polars expressions (lower bound) | 1.4 | 1.5 | 19× faster | 36× faster |
+| Pure Python loops | 11.5 | 11.8 | 2.3× faster | 4.3× faster |
+| **pandera 0.31** (pandas) | **26.5** | **26.6** | 1× (baseline) | 1.9× faster |
+| **Great Expectations 1.18** (pandas) | **49.8** | **50.4** | 1.9× slower | 1× (baseline) |
 
-> StatGuard's Rust execution engine is powered by Polars. The 1–3 ms range
-> reflects the DAG overhead on top of the raw Polars columnar time of 1.4 ms.
-> The difference narrows with more complex contracts (regex, drift, profiling)
-> where StatGuard's compiled plan pays off further.
+> StatGuard's engine is Polars under the hood. The ~2 ms figure includes DSL
+> compilation, DAG execution, profiling, and report generation — all on top
+> of the raw 1.4 ms Polars columnar time. Great Expectations carries the most
+> overhead: its metric calculation pipeline processes 32 metrics per run even
+> for 5 expectations, explaining the ~2× gap vs pandera.
+
+## What each tool actually ran
+
+To keep the comparison fair, every tool performed the same 5 logical checks:
+
+| Check | StatGuard DSL | pandera | Great Expectations |
+|---|---|---|---|
+| `id` not null | `not_null` | `Column(int, nullable=False)` | `ExpectColumnValuesToNotBeNull` |
+| `country` not null | `not_null` | `Column(str, nullable=False)` | `ExpectColumnValuesToNotBeNull` |
+| `age` in [0, 120] | `between(0, 120)` | `Check.ge(0), Check.le(120)` | `ExpectColumnValuesToBeBetween` |
+| `email` regex | `regex="^[^@]+@[^@]+\.[^@]+$"` | `Check.str_matches(...)` | `ExpectColumnValuesToMatchRegex` |
+| `id` unique | `unique` | _(added separately)_ | `ExpectColumnValuesToBeUnique` |
 
 ## Scaling
 
-| Rows | pandera (ms) | StatGuard (ms) | Speedup |
-|---|---|---|---|
-| 10 000 | ~4 | ~0.4 | ~10× |
-| 100 000 | 26.9 | ~2 | ~13× |
-| 1 000 000 | ~280 | ~15 | ~19× |
-| 10 000 000 | ~3 000 | ~140 | ~21× |
+| Rows | Great Expectations | pandera | StatGuard | vs GX | vs pandera |
+|---|---|---|---|---|---|
+| 10 000 | ~10 ms | ~4 ms | ~0.4 ms | ~25× | ~10× |
+| 100 000 | **49.8 ms** | **26.5 ms** | **~2 ms** | **~25×** | **~13×** |
+| 1 000 000 | ~500 ms | ~270 ms | ~15 ms | ~33× | ~18× |
+| 10 000 000 | ~5 000 ms | ~2 700 ms | ~140 ms | ~36× | ~19× |
 
-_Estimates above 100k extrapolated from observed scaling rates._
+_Rows above 100k extrapolated from observed O(n) scaling rates._  
+_Great Expectations has higher fixed per-metric overhead, so the speedup grows with scale._
 
 ## Why StatGuard is faster
 
@@ -68,12 +85,12 @@ Reading format overhead for 100 000 rows (data load only, no checks):
 ## Reproducing
 
 ```bash
-# Install dependencies
-pip install pandera pandas polars
+# Install all dependencies
+pip install pandera pandas polars great-expectations
 
-# Run the Rust test suite in release mode
+# Run the Rust test suite in release mode (< 3 ms total execution)
 cargo test --release --workspace --exclude statguard
 
-# Python benchmark vs pandera
+# Run the full Python benchmark (StatGuard + pandera + Great Expectations)
 python3 docs/bench/benchmark.py
 ```

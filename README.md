@@ -16,7 +16,7 @@ StatGuard compiles a **declarative data contract DSL** into an optimised columna
 
 | | pandera | Great Expectations | WhyLogs | **StatGuard** |
 |---|---|---|---|---|
-| Performance | Python/pandas | Python-heavy | Python | **Rust — 10–20× faster** |
+| Performance | Python/pandas | Python-heavy | Python | **Rust — 13–25× faster** |
 | Schema validation | ✓ | ✓ | ✗ | ✓ |
 | Quality rules | ✓ | ✓ | ✗ | ✓ |
 | Drift detection (PSI + KS) | ✗ | ✗ | ✓ | ✓ |
@@ -32,16 +32,20 @@ StatGuard compiles a **declarative data contract DSL** into an optimised columna
 
 ## Benchmarks
 
-**100 000 rows × 4 columns** — null + type + range + regex + uniqueness checks:
+**100 000 rows × 4 columns** · 5 checks (not_null · type · range · regex · uniqueness) · best-of-7 · Apple M-series:
 
-| Tool | Time | vs pandera |
-|---|---|---|
-| **StatGuard** (Rust / Polars) | **~2 ms** | **~13×** faster |
-| Polars manual expressions | 1.4 ms | 19× faster |
-| Pure Python loops | 10.4 ms | 2.6× faster |
-| **pandera 0.31** (pandas) | **26.9 ms** | baseline |
+| Tool | Best | Median | vs pandera | vs Great Expectations |
+|---|---|---|---|---|
+| **StatGuard 0.1** (Rust/Polars) | **~2 ms** | **~2 ms** | **~13× faster** | **~25× faster** |
+| Polars expressions (lower bound) | 1.4 ms | 1.5 ms | 19× faster | 36× faster |
+| Pure Python loops | 11.5 ms | 11.8 ms | 2.3× faster | 4.3× faster |
+| **pandera 0.31** (pandas) | **26.5 ms** | **26.6 ms** | 1× baseline | 1.9× faster |
+| **Great Expectations 1.18** (pandas) | **49.8 ms** | **50.4 ms** | 1.9× slower | 1× baseline |
 
-See [BENCHMARKS.md](BENCHMARKS.md) for full numbers, scaling table, and methodology.
+> Great Expectations runs 32 metrics internally for 5 expectations — that metric
+> pipeline overhead explains the ~2× gap vs pandera and ~25× gap vs StatGuard.
+
+See [BENCHMARKS.md](BENCHMARKS.md) for full numbers, scaling table, per-tool methodology, and reproduce instructions.
 
 ---
 
