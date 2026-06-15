@@ -521,12 +521,28 @@ DSL text  →  pest parser  →  DataContract AST
 
 ---
 
+## Dependencies & Licensing
+
+StatGuard is **MIT licensed**. All core dependencies use MIT, Apache-2.0, or BSD licenses.
+
+**⚠️ Note on PostgreSQL support**: Using `execute_sql()` with PostgreSQL requires
+`psycopg2` (LGPL-2.1 with exceptions). This adds an LGPL component to your
+application. See [LICENSES.md](LICENSES.md) for full compliance details and
+impact on binary distributions.
+
+All optional features use OSI-approved open-source licenses only. Proprietary
+drivers (Oracle, SQL Server ODBC) are intentionally excluded.
+
+→ Full license matrix: [LICENSES.md](LICENSES.md)
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md).
 
 ```bash
-cargo test --workspace --exclude statguard   # 30 tests
+cargo test --workspace --exclude statguard
 cargo clippy --workspace
 cargo fmt --all
 ```

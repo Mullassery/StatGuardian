@@ -1,24 +1,41 @@
 """
 StatGuard connector helpers — SQL databases, cloud warehouses, and Spark.
 
-All connectors use open-source drivers only (MIT / Apache-2.0 / BSD).
-Proprietary ODBC/JDBC components (Oracle, SQL Server native drivers) are
-intentionally excluded. See LICENSES section below for details.
+All connectors use OSI-approved open-source licenses only (MIT, Apache-2.0,
+BSD, LGPL-2.1 with exceptions). No proprietary ODBC/JDBC drivers included.
 
-LICENSES
---------
-connectorx  — MIT
-polars      — MIT
-pyarrow     — Apache-2.0
-pyspark     — Apache-2.0
-psycopg2    — LGPL-2.1 (or psycopg2-binary for convenience)
-PyMySQL     — MIT
-sqlalchemy  — MIT
+OPEN-SOURCE DRIVER LICENSES
+----------------------------
+Core (statguard):
+  polars                   — MIT
+  pyarrow                  — Apache-2.0
+  pyspark                  — Apache-2.0
 
-CONNECTORS NOT INCLUDED (proprietary drivers required)
-------------------------------------------------------
-Oracle      — requires Oracle Instant Client (proprietary)
+SQL Connectors (optional dependencies):
+  connectorx               — MIT
+  sqlalchemy               — MIT
+  psycopg2 / psycopg2-binary  — LGPL-2.1 with exceptions (PostgreSQL only)
+  PyMySQL                  — MIT
+
+Warehouse Drivers (optional, installed separately):
+  snowflake-connector-python  — Apache-2.0
+  google-cloud-bigquery       — Apache-2.0
+  databricks-sql-connector    — Apache-2.0
+  amazon-redshift-python-driver — Apache-2.0
+  clickhouse-driver           — MIT
+  duckdb                      — MIT
+  trino-python-client         — Apache-2.0
+  PyAthena                    — MIT
+
+PROPRIETARY DRIVERS INTENTIONALLY EXCLUDED
+-------------------------------------------
+Oracle      — requires Oracle Instant Client (proprietary, non-OSS)
 SQL Server  — requires Microsoft ODBC Driver (proprietary on Linux/macOS)
+
+IMPORTANT: Using psycopg2/psycopg2-binary (PostgreSQL driver) adds an LGPL
+dependency to your application. LGPL is copyleft but more permissive than
+GPL — your project doesn't need to be GPL, but binary distributions must
+include source or download instructions. See: https://www.postgresql.org/about/licence/
 """
 
 from __future__ import annotations
