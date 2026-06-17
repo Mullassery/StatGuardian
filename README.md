@@ -311,6 +311,163 @@ The report includes: status badge, health score and grade, violations table (col
 
 ---
 
+## Cross-column conditional assertions
+
+Write conditional rules directly in the contract DSL — no Python required. A cross-column rule checks an assertion only on rows where a condition holds.
+
+```
+dataset orders {
+    quality {
+        completeness(order_id) > 0.999
+
+        @blocking: assert amount > 0.0 when status == "paid"
+        @warning:  assert discount >= 0.0 when status == "paid"
+        assert amount > 0.0 when status == "refunded"
+    }
+}
+```
+
+**Syntax:** `[@severity:] assert <column> <op> <value> when <column> <op> <value>`
+
+Rows where the `when` condition is false are skipped — only matching rows are checked. Violations include the row indices that failed.
+
+| Value type | Example |
+|---|---|
+| Number | `assert amount > 0.0 when status == "paid"` |
+| String | `assert status != "cancelled" when amount > 0.0` |
+| Boolean | `assert is_verified == true when is_premium == true` |
+
+String comparisons support `==` and `!=`. Numeric comparisons support all six operators (`>` `<` `>=` `<=` `==` `!=`).
+
+---
+
+## Custom Python validators
+
+Register arbitrary Python functions as validators that run alongside the Rust engine — for checks that can't be expressed in the DSL.
+
+```python
+import statguard
+
+@statguard.validator("email", severity="warning")
+def no_example_domains(values):
+    failing = [i for i, v in enumerate(values) if v and "example.com" in v]
+    return (failing, f"{len(failing)} example.com address(es)") if failing else None
+
+# Use "*" to run against every string column
+@statguard.validator("*", severity="error")
+def no_empty_strings(values):
+    failing = [i for i, v in enumerate(values) if v == ""]
+    return (failing, f"{len(failing)} empty string(s)") if failing else None
+
+# Run all registered validators
+extra = statguard.run_custom_validators(df)
+
+# Manage the registry
+print(statguard.list_validators())  # → {"email": ["no_example_domains"], ...}
+statguard.clear_validators("email") # remove validators for one column
+statguard.clear_validators()        # remove all
+```
+
+The function receives a plain Python list of column values and must return `(failing_row_indices, message)` or `None` (check passed).
+
+---
+
+## Parallel multi-file validation
+
+Validate a glob of files concurrently against one contract. The GIL is released during the Rust validation call, so CPU-bound checks run in true parallel.
+
+```python
+contract = statguard.DataContract.from_file("orders.sg")
+
+results = statguard.execute_files(contract, "data/orders_*.parquet", workers=8)
+
+passed = [r for r in results if r.passed]
+failed = [r for r in results if r.failed]
+print(f"{len(passed)}/{len(results)} files passed")
+```
+
+**Stream results as they arrive** — useful for fail-fast pipelines:
+
+```python
+for result in statguard.execute_files_stream(contract, "data/**/*.parquet"):
+    if not result.passed:
+        print(f"FAIL {result.path}: {result.report.summary()}")
+        break
+```
+
+`FileResult` fields: `.path` · `.report` · `.error` · `.passed` · `.failed`
+
+---
+
+## GPU acceleration (cuDF)
+
+Validate RAPIDS cuDF DataFrames directly. StatGuard converts to Polars via the Arrow C Stream interface (zero-copy where CUDA unified memory is available) before passing to the Rust engine.
+
+```python
+import cudf, statguard
+
+contract = statguard.DataContract.from_file("events.sg")
+gdf = cudf.read_parquet("s3://bucket/events.parquet")
+
+report = statguard.execute_cudf(contract, gdf)
+print(report.summary())
+
+# Drift detection with GPU DataFrames
+report = statguard.execute_cudf(contract, gdf, reference_cudf_df=yesterday_gdf)
+
+# Guard for environments without RAPIDS
+if statguard.is_cudf_available():
+    report = statguard.execute_cudf(contract, gdf)
+else:
+    report = statguard.execute(contract, polars_df)
+```
+
+Requires RAPIDS cuDF ≥ 23.08. Falls back to pandas host-memory conversion on older versions.
+
+---
+
+## Referential integrity
+
+Check that foreign-key values in one DataFrame exist in the primary-key column of another — catching orphaned records before they break downstream joins.
+
+```python
+import polars as pl, statguard
+
+orders    = pl.read_parquet("orders.parquet")
+customers = pl.read_parquet("customers.parquet")
+
+violations = statguard.check_referential_integrity(
+    orders, customers,
+    foreign_key="customer_id",
+    primary_key="id",
+    foreign_table="orders",
+    primary_table="customers",
+)
+
+print(statguard.integrity_report(violations))
+# Referential integrity — 1 violation(s):
+#   [ERROR] orders.customer_id → customers.id: 142 orphaned value(s): ['C_99999', ...]
+```
+
+**Check multiple keys at once:**
+
+```python
+violations = statguard.check_all_foreign_keys(
+    orders, dims,
+    key_pairs=[("customer_id", "id"), ("product_id", "sku")],
+)
+```
+
+**Gate a pipeline:**
+
+```python
+violations = statguard.check_referential_integrity(orders, customers, "customer_id", "id")
+if violations:
+    raise ValueError(statguard.integrity_report(violations))
+```
+
+---
+
 ## Why not just use pandera or Great Expectations?
 
 You can — until the dataset is large, or you need drift detection, or you want one tool that covers files, Delta Lake, Iceberg, cloud storage, and SQL without gluing libraries together.
@@ -345,6 +502,11 @@ See [BENCHMARKS.md](BENCHMARKS.md) for full methodology, scaling table, and repr
 | Streaming support | ✗ | ✗ | ✗ | partial | ✓ |
 | PII detection | ✗ | ✗ | ✗ | ✗ | ✓ |
 | Schema evolution detection | ✗ | ✗ | partial | ✗ | ✓ |
+| Cross-column assertions in DSL | ✗ | partial | ✗ | ✗ | ✓ |
+| Custom Python validators | ✗ | ✓ | ✓ | ✗ | ✓ |
+| Parallel multi-file validation | ✗ | ✗ | ✗ | ✗ | ✓ |
+| GPU / cuDF support | ✗ | ✗ | ✗ | ✗ | ✓ |
+| Referential integrity checks | ✗ | ✗ | ✗ | ✗ | ✓ |
 | HTML report | ✗ | ✗ | ✓ | ✗ | ✓ |
 | Single contract DSL | ✗ | ✗ | ✗ | ✗ | ✓ |
 | pip / uv install | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -613,6 +775,11 @@ violations = statguard.check_all_foreign_keys(
 | **PII audit** | `scan_pii(df)` before writing to a data warehouse or sharing a dataset |
 | **Schema change gate** | `assert_no_breaking_changes(today, yesterday)` in pipeline DAG |
 | **Stakeholder report** | `to_html(report)` → email or attach to CI build artefacts |
+| **Business logic validation** | `@blocking: assert amount > 0 when status == "paid"` in DSL |
+| **Custom domain checks** | `@statguard.validator()` for business-specific rules or ML-based scoring |
+| **Orphaned data detection** | `check_referential_integrity(orders, customers, "cust_id", "id")` |
+| **GPU-accelerated QA** | `execute_cudf(contract, gdf)` for 100M+ row validation |
+| **Batch validation at scale** | `execute_files(contract, "data/**/*.parquet", workers=16)` for parallel processing |
 
 ---
 
@@ -636,12 +803,16 @@ statguard/
 │   └── statguard-py/         PyO3 bindings — Rust layer public API
 └── python/
     ├── statguard/
-    │   ├── __init__.py        Re-exports from Rust + Python layers
-    │   ├── _connectors.py     Cloud (S3/GCS/Azure), SQL (13 connectors), Spark
-    │   ├── _cli.py            CLI: validate, check commands
-    │   ├── _pii.py            PII detection (name heuristics + regex patterns)
-    │   ├── _evolution.py      Schema evolution detection and gating
-    │   └── _html.py           Self-contained HTML report generation
+    │   ├── __init__.py           Re-exports from Rust + Python layers
+    │   ├── _connectors.py        Cloud (S3/GCS/Azure), SQL (13 connectors), Spark
+    │   ├── _cli.py               CLI: validate, check commands
+    │   ├── _pii.py               PII detection (name heuristics + regex patterns)
+    │   ├── _evolution.py         Schema evolution detection and gating
+    │   ├── _html.py              Self-contained HTML report generation
+    │   ├── _validators.py        Custom Python validator registry + runner
+    │   ├── _parallel.py          Parallel multi-file validation with ThreadPoolExecutor
+    │   ├── _gpu.py               RAPIDS cuDF adapter (Arrow C Stream interface)
+    │   └── _integrity.py         Referential integrity checks (foreign-key validation)
     └── docs/
         └── FORMAT_COMPATIBILITY.md
 ```
@@ -729,3 +900,4 @@ cargo fmt --all
 ## License
 
 MIT © 2026 [Georgi Mammen Mullassery](https://github.com/Mullassery)
+
