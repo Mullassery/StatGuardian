@@ -1,12 +1,12 @@
 # StatGuard
 
-**Data quality, validation, and statistical drift monitoring for production data pipelines — built in Rust.**
+**A Python library for data quality, validation, and statistical drift monitoring in production data pipelines — built in Rust.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/Mullassery/statguard/releases)
 [![Rust](https://img.shields.io/badge/built%20with-Rust-orange.svg)](https://www.rust-lang.org)
 
-You write one contract file. StatGuard compiles it into an optimised columnar execution plan and validates your datasets — schema, quality rules, statistical drift, and anomalies — across every major file format and lakehouse table format.
+StatGuard is a Python library for validating your datasets against a declarative contract — schema, quality rules, statistical drift, and anomaly detection — across every major file format and lakehouse table format. You write one contract file; StatGuard compiles it into an optimised columnar execution plan and runs it at Rust speed.
 
 **Python is the frontend. Rust is the engine.**
 
