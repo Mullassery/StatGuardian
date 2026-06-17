@@ -12,9 +12,21 @@ StatGuard is a Python library for validating your datasets against a declarative
 
 ## Install
 
+Pick one:
+
 ```bash
 pip install statguard
+```
+
+OR
+
+```bash
 uv add statguard
+```
+
+OR
+
+```bash
 curl -sSfL https://raw.githubusercontent.com/Mullassery/statguard/main/install.sh | sh
 ```
 
@@ -903,5 +915,6 @@ cargo fmt --all
 ## License
 
 MIT © 2026 [Georgi Mammen Mullassery](https://github.com/Mullassery)
+
 
 
