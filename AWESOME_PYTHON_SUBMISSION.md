@@ -6,14 +6,14 @@
 ## Entry Format
 
 ```markdown
-- [StatGuard](https://github.com/Mullassery/statguard) - Rust-native data quality, validation, and statistical drift monitoring engine with Python bindings. 13-25× faster than pandera. Supports Delta Lake, Iceberg, cloud storage (S3/GCS/Azure), and 13 SQL databases. Single declarative DSL contract for schema validation, quality rules, drift detection, and anomaly detection. MIT license with optional LGPL (PostgreSQL).
+- [StatGuard](https://github.com/Mullassery/statguardian) - Rust-native data quality, validation, and statistical drift monitoring engine with Python bindings. 13-25× faster than pandera. Supports Delta Lake, Iceberg, cloud storage (S3/GCS/Azure), and 13 SQL databases. Single declarative DSL contract for schema validation, quality rules, drift detection, and anomaly detection. MIT license with optional LGPL (PostgreSQL).
 ```
 
 ## Details for Submission
 
 **Project Name:** StatGuard  
-**Repository:** https://github.com/Mullassery/statguard  
-**PyPI:** https://pypi.org/project/statguard  
+**Repository:** https://github.com/Mullassery/statguardian  
+**PyPI:** https://pypi.org/project/statguardianian  
 **License:** MIT  
 **Keywords:** data-quality, validation, schema-validation, drift-detection, statistics, Rust, Polars
 
@@ -29,7 +29,7 @@ StatGuard is a Python-first library (pip/uv installable) with a powerful Rust ba
 
 ## Verification
 
-- ✅ Listed on PyPI: https://pypi.org/project/statguard
+- ✅ Listed on PyPI: https://pypi.org/project/statguardianian
 - ✅ MIT licensed
 - ✅ Open-source (no proprietary drivers)
 - ✅ Documentation complete (README, guides, API docs, benchmarks)

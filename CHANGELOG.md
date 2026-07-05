@@ -97,8 +97,8 @@ StatGuard uses [Semantic Versioning](https://semver.org/).
 - `execute_file(contract, path, reference_path=None)` → `ValidationReport`
 - `execute_streaming(contract, path, batch_size=10000)` → `List[ValidationReport]`
 - `validate_dsl(str)` — syntax check without execution
-- `statguard validate / check` CLI with JSON, summary, and Prometheus output formats
-- `pip install statguard` / `uv add statguard`
+- `statguardian validate / check` CLI with JSON, summary, and Prometheus output formats
+- `pip install statguardian` / `uv add statguard`
 
 **Tests**
 - 25 unit + integration tests across all crates

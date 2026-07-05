@@ -63,7 +63,7 @@ def detect_schema_changes(
         old_df = pl.read_parquet("yesterday.parquet")
         new_df = pl.read_parquet("today.parquet")
 
-        changes = statguard.detect_schema_changes(new_df, old_df)
+        changes = statguardian.detect_schema_changes(new_df, old_df)
         for c in changes:
             print(c)
     """
@@ -124,7 +124,7 @@ def assert_no_breaking_changes(
 
     Use this as a pipeline gate::
 
-        statguard.assert_no_breaking_changes(today_df, yesterday_df)
+        statguardian.assert_no_breaking_changes(today_df, yesterday_df)
     """
     changes = detect_schema_changes(current, reference)
     breaking = [c for c in changes if c.severity == "error"]

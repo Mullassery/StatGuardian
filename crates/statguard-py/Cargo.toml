@@ -1,13 +1,13 @@
 [package]
-name        = "statguard"           # this is the Python module name
+name        = "statguardian"           # this is the Python module name
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-description = "Python bindings for StatGuard — Rust-native data quality and drift engine"
+description = "Python bindings for statguardian — Rust-native data quality and drift engine"
 
 [lib]
-name    = "_statguard"
+name    = "_statguardian"
 crate-type = ["cdylib"]
 
 [dependencies]

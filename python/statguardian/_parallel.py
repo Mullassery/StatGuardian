@@ -48,7 +48,7 @@ def execute_files(
     achieved for CPU-bound checks on multi-core machines.
 
     Args:
-        contract:       DataContract compiled with ``statguard.DataContract.from_file()``.
+        contract:       DataContract compiled with ``statguardian.DataContract.from_file()``.
         paths:          Glob pattern (e.g. ``"data/2026/**/*.parquet"``) or list of paths.
         workers:        Thread pool size. Defaults to ``min(32, cpu_count + 4)``.
         reference_path: Optional reference file for drift detection (applied to all files).
@@ -59,8 +59,8 @@ def execute_files(
 
     Example::
 
-        contract = statguard.DataContract.from_file("orders.sg")
-        results = statguard.execute_files(contract, "data/orders_*.parquet")
+        contract = statguardian.DataContract.from_file("orders.sg")
+        results = statguardian.execute_files(contract, "data/orders_*.parquet")
 
         failed = [r for r in results if r.failed]
         print(f"{len(failed)}/{len(results)} files failed")
@@ -111,7 +111,7 @@ def execute_files_stream(
 
     Example::
 
-        for result in statguard.execute_files_stream(contract, "data/**/*.parquet"):
+        for result in statguardian.execute_files_stream(contract, "data/**/*.parquet"):
             if result.failed:
                 print(f"FAIL {result.path}: {result.error or result.report.summary()}")
                 break  # stop early

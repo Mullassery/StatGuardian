@@ -126,7 +126,7 @@ vs. not at all.
 ## Reproducing
 
 ```bash
-pip install statguard pandera polars pandas great-expectations pydantic
+pip install statguardian pandera polars pandas great-expectations pydantic
 
 # Rust test suite (release mode)
 cargo test --release --workspace --exclude statguard

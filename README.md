@@ -3,7 +3,7 @@
 **A Python library for data quality, validation, and statistical drift monitoring in production data pipelines — built in Rust.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![PyPI: statguardian](https://img.shields.io/badge/PyPI-statguardian-blue)](https://pypi.org/project/statguardian/)
+[![PyPI: statguardian](https://img.shields.io/badge/PyPI-statguardian-blue)](https://pypi.org/project/statguardianian/)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/Mullassery/statguardian/releases)
 [![Rust](https://img.shields.io/badge/built%20with-Rust-orange.svg)](https://www.rust-lang.org)
 
@@ -71,22 +71,22 @@ dataset orders {
 
 ```python
 import polars as pl
-import statguard
+import statguardian
 
-contract = statguard.DataContract.from_file("orders.sg")
+contract = statguardian.DataContract.from_file("orders.sg")
 
 # Auto-detected from extension: Parquet, CSV, JSON, Avro, Arrow IPC, Delta, Iceberg
-report = statguard.execute_file(contract, "orders.parquet")
-report = statguard.execute_file(contract, "orders.csv")
-report = statguard.execute_file(contract, "orders.avro")
+report = statguardian.execute_file(contract, "orders.parquet")
+report = statguardian.execute_file(contract, "orders.csv")
+report = statguardian.execute_file(contract, "orders.avro")
 
 # Delta Lake
-report = statguard.execute_delta(contract, "/data/orders_delta/")
-report = statguard.execute_delta(contract, "/data/orders_delta/", version=5)  # time travel
+report = statguardian.execute_delta(contract, "/data/orders_delta/")
+report = statguardian.execute_delta(contract, "/data/orders_delta/", version=5)  # time travel
 
 # Apache Iceberg
-report = statguard.execute_iceberg(contract, "/data/orders_iceberg/")
-report = statguard.execute_iceberg(contract, "/data/orders_iceberg/", snapshot_id=9876543)
+report = statguardian.execute_iceberg(contract, "/data/orders_iceberg/")
+report = statguardian.execute_iceberg(contract, "/data/orders_iceberg/", snapshot_id=9876543)
 
 # Polars DataFrame (in-memory).
 # NOTE: passing a Polars DataFrame across the Rust boundary requires a Polars
@@ -94,7 +94,7 @@ report = statguard.execute_iceberg(contract, "/data/orders_iceberg/", snapshot_i
 # newer Polars you may hit a `compat_level` error — prefer execute_file(), which
 # reads the data on the Rust side and has no such coupling.
 df = pl.read_parquet("orders.parquet")
-report = statguard.execute(contract, df)
+report = statguardian.execute(contract, df)
 
 print(report.summary())
 # [StatGuard] PASS ✓ | dataset=orders | score=0.97 (A) | rows=500000 | violations=2 | 3ms
@@ -104,7 +104,7 @@ print(report.summary())
 
 ```python
 # Compare today vs yesterday
-report = statguard.execute_delta(
+report = statguardian.execute_delta(
     contract, "/data/orders_delta/",
     version=10,
     reference_path="/data/orders_delta/",
@@ -112,8 +112,8 @@ report = statguard.execute_delta(
 )
 
 # Iceberg snapshot comparison
-snapshots = statguard.list_iceberg_snapshots("/data/orders_iceberg/")
-report = statguard.execute_iceberg(
+snapshots = statguardian.list_iceberg_snapshots("/data/orders_iceberg/")
+report = statguardian.execute_iceberg(
     contract, "/data/orders_iceberg/",
     snapshot_id=snapshots[-1]["snapshot_id"],
     reference_snapshot=snapshots[-2]["snapshot_id"],
@@ -127,22 +127,22 @@ for d in report.drift_results():
 
 ```bash
 # Validate any format — auto-detected
-statguard validate --contract orders.sg --file orders.parquet
-statguard validate --contract orders.sg --file /data/orders_delta/
-statguard validate --contract orders.sg --file /data/orders_iceberg/
+statguardian validate --contract orders.sg --file orders.parquet
+statguardian validate --contract orders.sg --file /data/orders_delta/
+statguardian validate --contract orders.sg --file /data/orders_iceberg/
 
 # Drift: compare two datasets
-statguard validate --contract orders.sg --file today.parquet --reference yesterday.parquet
+statguardian validate --contract orders.sg --file today.parquet --reference yesterday.parquet
 
 # Output formats
-statguard validate --contract orders.sg --file data.parquet --format json
-statguard validate --contract orders.sg --file data.parquet --format prometheus
+statguardian validate --contract orders.sg --file data.parquet --format json
+statguardian validate --contract orders.sg --file data.parquet --format prometheus
 
 # Fail CI on any violation
-statguard validate --contract orders.sg --file data.parquet --fail-on-warning
+statguardian validate --contract orders.sg --file data.parquet --fail-on-warning
 
 # DSL syntax check
-statguard check --contract orders.sg
+statguardian check --contract orders.sg
 ```
 
 → Full CLI reference: [docs/CLI.md](docs/CLI.md)
@@ -150,7 +150,7 @@ statguard check --contract orders.sg
 ### 5. Streaming
 
 ```python
-reports = statguard.execute_streaming(contract, "huge.parquet", batch_size=50_000)
+reports = statguardian.execute_streaming(contract, "huge.parquet", batch_size=50_000)
 for i, r in enumerate(reports):
     if not r.passed:
         print(f"Batch {i} FAILED: {r.summary()}")
@@ -160,12 +160,12 @@ for i, r in enumerate(reports):
 ### 6. Cloud storage (S3, GCS, Azure)
 
 ```python
-report = statguard.execute_cloud(contract, "s3://bucket/events/2026/06/*.parquet")
-report = statguard.execute_cloud(contract, "gs://bucket/events.csv")
-report = statguard.execute_cloud(contract, "az://container/data/")
+report = statguardian.execute_cloud(contract, "s3://bucket/events/2026/06/*.parquet")
+report = statguardian.execute_cloud(contract, "gs://bucket/events.csv")
+report = statguardian.execute_cloud(contract, "az://container/data/")
 
 # Drift across two cloud datasets
-report = statguard.execute_cloud(
+report = statguardian.execute_cloud(
     contract,
     uri="s3://bucket/events/today/",
     reference_uri="s3://bucket/events/yesterday/",
@@ -176,21 +176,21 @@ report = statguard.execute_cloud(
 
 ```python
 # PostgreSQL, MySQL, SQLite (pure Rust)
-report = statguard.execute_sql(
+report = statguardian.execute_sql(
     contract,
     connection_string="postgresql://user:pass@localhost:5432/mydb",
     query="SELECT * FROM orders WHERE created_date >= '2026-01-01'",
 )
 
 # BigQuery, Snowflake, Redshift, Databricks, ClickHouse, DuckDB (Python layer)
-report = statguard.execute_sql(
+report = statguardian.execute_sql(
     contract,
     connection_string="bigquery://project/dataset",
     query="SELECT * FROM events LIMIT 1000000",
 )
 
 # Drift between two SQL queries
-report = statguard.execute_sql(
+report = statguardian.execute_sql(
     contract,
     connection_string="postgresql://localhost/db",
     query="SELECT * FROM events WHERE date = CURRENT_DATE",
@@ -202,21 +202,21 @@ report = statguard.execute_sql(
 
 ```python
 from pyspark.sql import SparkSession
-import statguard
+import statguardian
 
 spark = SparkSession.builder \
     .config("spark.sql.execution.arrow.pyspark.enabled", "true") \
     .getOrCreate()
 
-contract = statguard.DataContract.from_file("events.sg")
+contract = statguardian.DataContract.from_file("events.sg")
 spark_df = spark.read.parquet("s3a://bucket/events/")
 
-report = statguard.execute_spark(contract, spark_df)
+report = statguardian.execute_spark(contract, spark_df)
 
 # Drift between Spark DataFrames
 today = spark.read.parquet("s3a://bucket/today/")
 yesterday = spark.read.parquet("s3a://bucket/yesterday/")
-report = statguard.execute_spark(contract, today, reference_spark_df=yesterday)
+report = statguardian.execute_spark(contract, today, reference_spark_df=yesterday)
 ```
 
 Works on: local, YARN, Kubernetes, Databricks, AWS EMR, Google Dataproc, Azure HDInsight.
@@ -229,12 +229,12 @@ Scan any Polars DataFrame for columns that appear to contain personally identifi
 
 ```python
 import polars as pl
-import statguard
+import statguardian
 
 df = pl.read_parquet("customers.parquet")
-findings = statguard.scan_pii(df)
+findings = statguardian.scan_pii(df)
 
-print(statguard.pii_report(findings))
+print(statguardian.pii_report(findings))
 # PII scan — 3 finding(s):
 #
 #   [HIGH]   'email_address' — email (pattern: 1823/2000 values matched)
@@ -257,7 +257,7 @@ if high_risk:
 
 ```python
 # Control sensitivity
-findings = statguard.scan_pii(
+findings = statguardian.scan_pii(
     df,
     sample_rows=5_000,       # rows to scan for pattern matching (default: 2000)
     pattern_threshold=0.10,  # fraction that must match to flag (default: 0.05)
@@ -271,13 +271,13 @@ findings = statguard.scan_pii(
 Compare two DataFrames and surface structural changes — added columns, removed columns, type changes — before they silently break a downstream pipeline.
 
 ```python
-import statguard
+import statguardian
 
 yesterday = pl.read_parquet("events_yesterday.parquet")
 today     = pl.read_parquet("events_today.parquet")
 
-changes = statguard.detect_schema_changes(today, yesterday)
-print(statguard.schema_evolution_report(changes))
+changes = statguardian.detect_schema_changes(today, yesterday)
+print(statguardian.schema_evolution_report(changes))
 # Schema evolution — 2 change(s):
 #
 #   [ERROR]   Column removed: 'legacy_id' (was Int64)
@@ -288,13 +288,13 @@ print(statguard.schema_evolution_report(changes))
 
 ```python
 # Raises ValueError listing all removed or retyped columns
-statguard.assert_no_breaking_changes(today_df, yesterday_df)
+statguardian.assert_no_breaking_changes(today_df, yesterday_df)
 ```
 
 **Customise severity:**
 
 ```python
-changes = statguard.detect_schema_changes(
+changes = statguardian.detect_schema_changes(
     today, yesterday,
     added_severity="warning",   # new columns are warnings (default: info)
     removed_severity="error",   # removed columns are errors (default)
@@ -305,7 +305,7 @@ changes = statguard.detect_schema_changes(
 **Pass raw schema dicts instead of DataFrames:**
 
 ```python
-changes = statguard.detect_schema_changes(
+changes = statguardian.detect_schema_changes(
     {"id": "Int64", "amount": "Float64"},
     {"id": "Int64", "amount": "Float32", "legacy_id": "String"},
 )
@@ -318,10 +318,10 @@ changes = statguard.detect_schema_changes(
 Generate a self-contained, dependency-free HTML report from any `ValidationReport`. Safe to email, commit as a CI artefact, or open offline.
 
 ```python
-report = statguard.execute(contract, df)
+report = statguardian.execute(contract, df)
 
 with open("report.html", "w") as f:
-    f.write(statguard.to_html(report))
+    f.write(statguardian.to_html(report))
 ```
 
 The report includes: status badge, health score and grade, violations table (column · check · severity · message), drift results table (reference vs current values, PSI, KS), and column profiles (mean, std, p95, null rate, distinct count).
@@ -363,26 +363,26 @@ String comparisons support `==` and `!=`. Numeric comparisons support all six op
 Register arbitrary Python functions as validators that run alongside the Rust engine — for checks that can't be expressed in the DSL.
 
 ```python
-import statguard
+import statguardian
 
-@statguard.validator("email", severity="warning")
+@statguardian.validator("email", severity="warning")
 def no_example_domains(values):
     failing = [i for i, v in enumerate(values) if v and "example.com" in v]
     return (failing, f"{len(failing)} example.com address(es)") if failing else None
 
 # Use "*" to run against every string column
-@statguard.validator("*", severity="error")
+@statguardian.validator("*", severity="error")
 def no_empty_strings(values):
     failing = [i for i, v in enumerate(values) if v == ""]
     return (failing, f"{len(failing)} empty string(s)") if failing else None
 
 # Run all registered validators
-extra = statguard.run_custom_validators(df)
+extra = statguardian.run_custom_validators(df)
 
 # Manage the registry
-print(statguard.list_validators())  # → {"email": ["no_example_domains"], ...}
-statguard.clear_validators("email") # remove validators for one column
-statguard.clear_validators()        # remove all
+print(statguardian.list_validators())  # → {"email": ["no_example_domains"], ...}
+statguardian.clear_validators("email") # remove validators for one column
+statguardian.clear_validators()        # remove all
 ```
 
 The function receives a plain Python list of column values and must return `(failing_row_indices, message)` or `None` (check passed).
@@ -394,9 +394,9 @@ The function receives a plain Python list of column values and must return `(fai
 Validate a glob of files concurrently against one contract. The GIL is released during the Rust validation call, so CPU-bound checks run in true parallel.
 
 ```python
-contract = statguard.DataContract.from_file("orders.sg")
+contract = statguardian.DataContract.from_file("orders.sg")
 
-results = statguard.execute_files(contract, "data/orders_*.parquet", workers=8)
+results = statguardian.execute_files(contract, "data/orders_*.parquet", workers=8)
 
 passed = [r for r in results if r.passed]
 failed = [r for r in results if r.failed]
@@ -406,7 +406,7 @@ print(f"{len(passed)}/{len(results)} files passed")
 **Stream results as they arrive** — useful for fail-fast pipelines:
 
 ```python
-for result in statguard.execute_files_stream(contract, "data/**/*.parquet"):
+for result in statguardian.execute_files_stream(contract, "data/**/*.parquet"):
     if not result.passed:
         print(f"FAIL {result.path}: {result.report.summary()}")
         break
@@ -423,20 +423,20 @@ Validate RAPIDS cuDF DataFrames directly. StatGuard converts to Polars via the A
 ```python
 import cudf, statguard
 
-contract = statguard.DataContract.from_file("events.sg")
+contract = statguardian.DataContract.from_file("events.sg")
 gdf = cudf.read_parquet("s3://bucket/events.parquet")
 
-report = statguard.execute_cudf(contract, gdf)
+report = statguardian.execute_cudf(contract, gdf)
 print(report.summary())
 
 # Drift detection with GPU DataFrames
-report = statguard.execute_cudf(contract, gdf, reference_cudf_df=yesterday_gdf)
+report = statguardian.execute_cudf(contract, gdf, reference_cudf_df=yesterday_gdf)
 
 # Guard for environments without RAPIDS
-if statguard.is_cudf_available():
-    report = statguard.execute_cudf(contract, gdf)
+if statguardian.is_cudf_available():
+    report = statguardian.execute_cudf(contract, gdf)
 else:
-    report = statguard.execute(contract, polars_df)
+    report = statguardian.execute(contract, polars_df)
 ```
 
 Requires RAPIDS cuDF ≥ 23.08. Falls back to pandas host-memory conversion on older versions.
@@ -453,7 +453,7 @@ import polars as pl, statguard
 orders    = pl.read_parquet("orders.parquet")
 customers = pl.read_parquet("customers.parquet")
 
-violations = statguard.check_referential_integrity(
+violations = statguardian.check_referential_integrity(
     orders, customers,
     foreign_key="customer_id",
     primary_key="id",
@@ -461,7 +461,7 @@ violations = statguard.check_referential_integrity(
     primary_table="customers",
 )
 
-print(statguard.integrity_report(violations))
+print(statguardian.integrity_report(violations))
 # Referential integrity — 1 violation(s):
 #   [ERROR] orders.customer_id → customers.id: 142 orphaned value(s): ['C_99999', ...]
 ```
@@ -469,7 +469,7 @@ print(statguard.integrity_report(violations))
 **Check multiple keys at once:**
 
 ```python
-violations = statguard.check_all_foreign_keys(
+violations = statguardian.check_all_foreign_keys(
     orders, dims,
     key_pairs=[("customer_id", "id"), ("product_id", "sku")],
 )
@@ -478,9 +478,9 @@ violations = statguard.check_all_foreign_keys(
 **Gate a pipeline:**
 
 ```python
-violations = statguard.check_referential_integrity(orders, customers, "customer_id", "id")
+violations = statguardian.check_referential_integrity(orders, customers, "customer_id", "id")
 if violations:
-    raise ValueError(statguard.integrity_report(violations))
+    raise ValueError(statguardian.integrity_report(violations))
 ```
 
 ---
@@ -633,41 +633,41 @@ PSI and KS statistic are always computed alongside every drift rule — no extra
 ## Python API
 
 ```python
-import statguard
+import statguardian
 
 # ── Contract ─────────────────────────────────────────────────────────────────
-contract = statguard.DataContract.from_dsl("...")
-contract = statguard.DataContract.from_file("orders.sg")
-statguard.validate_dsl(dsl_string)   # syntax check only
+contract = statguardian.DataContract.from_dsl("...")
+contract = statguardian.DataContract.from_file("orders.sg")
+statguardian.validate_dsl(dsl_string)   # syntax check only
 
 # ── Core execution ────────────────────────────────────────────────────────────
-statguard.execute(contract, polars_df, reference=None)
-statguard.execute_file(contract, path, reference_path=None)
-statguard.execute_streaming(contract, path, batch_size=10_000)
+statguardian.execute(contract, polars_df, reference=None)
+statguardian.execute_file(contract, path, reference_path=None)
+statguardian.execute_streaming(contract, path, batch_size=10_000)
 
 # ── Lakehouse ─────────────────────────────────────────────────────────────────
-statguard.execute_delta(contract, table_path, version=None,
+statguardian.execute_delta(contract, table_path, version=None,
                         reference_path=None, reference_version=None)
-statguard.compare_delta_versions(contract, table_path, ref_v, cur_v=None)
-statguard.execute_iceberg(contract, table_path, snapshot_id=None,
+statguardian.compare_delta_versions(contract, table_path, ref_v, cur_v=None)
+statguardian.execute_iceberg(contract, table_path, snapshot_id=None,
                           reference_snapshot=None)
-statguard.list_iceberg_snapshots(table_path)
+statguardian.list_iceberg_snapshots(table_path)
 
 # ── Cloud, SQL, Spark ─────────────────────────────────────────────────────────
-statguard.execute_cloud(contract, uri, reference_uri=None)
-statguard.execute_sql(contract, connection_string, query, reference_query=None)
-statguard.execute_spark(contract, spark_df, reference_spark_df=None)
+statguardian.execute_cloud(contract, uri, reference_uri=None)
+statguardian.execute_sql(contract, connection_string, query, reference_query=None)
+statguardian.execute_spark(contract, spark_df, reference_spark_df=None)
 
 # ── PII detection ─────────────────────────────────────────────────────────────
-findings = statguard.scan_pii(df, sample_rows=2_000, pattern_threshold=0.05)
-print(statguard.pii_report(findings))   # human-readable summary
+findings = statguardian.scan_pii(df, sample_rows=2_000, pattern_threshold=0.05)
+print(statguardian.pii_report(findings))   # human-readable summary
 
 # ── Schema evolution ──────────────────────────────────────────────────────────
-changes = statguard.detect_schema_changes(current_df, reference_df,
+changes = statguardian.detect_schema_changes(current_df, reference_df,
               added_severity="info", removed_severity="error",
               retyped_severity="warning")
-print(statguard.schema_evolution_report(changes))
-statguard.assert_no_breaking_changes(current_df, reference_df)  # raises on errors
+print(statguardian.schema_evolution_report(changes))
+statguardian.assert_no_breaking_changes(current_df, reference_df)  # raises on errors
 
 # ── Report output ─────────────────────────────────────────────────────────────
 report.passed            # bool
@@ -684,41 +684,41 @@ report.to_json_pretty()
 report.to_prometheus()
 report.summary()         # one-line string
 
-statguard.to_html(report)   # → self-contained HTML string
+statguardian.to_html(report)   # → self-contained HTML string
 
 # ── Custom Python validators ──────────────────────────────────────────────────
-@statguard.validator("amount", severity="warning")
+@statguardian.validator("amount", severity="warning")
 def no_suspiciously_round_numbers(values):
     failing = [i for i, v in enumerate(values) if v and v == int(v) and v > 10_000]
     return (failing, f"{len(failing)} suspiciously round value(s)") if failing else None
 
-violations = statguard.run_custom_validators(df)
-print(statguard.list_validators())  # → {"amount": ["no_suspiciously_round_numbers"]}
-statguard.clear_validators()        # remove all registered validators
+violations = statguardian.run_custom_validators(df)
+print(statguardian.list_validators())  # → {"amount": ["no_suspiciously_round_numbers"]}
+statguardian.clear_validators()        # remove all registered validators
 
 # ── Parallel multi-file validation ────────────────────────────────────────────
-results = statguard.execute_files(contract, "data/orders_*.parquet", workers=8)
+results = statguardian.execute_files(contract, "data/orders_*.parquet", workers=8)
 failed  = [r for r in results if r.failed]
 
 # streaming — react to each result as it completes
-for result in statguard.execute_files_stream(contract, "data/**/*.parquet"):
+for result in statguardian.execute_files_stream(contract, "data/**/*.parquet"):
     if not result.passed:
         print(f"FAIL {result.path}: {result.report.summary()}")
 
 # ── GPU / cuDF ────────────────────────────────────────────────────────────────
 import cudf
 gdf    = cudf.read_parquet("s3://bucket/events.parquet")
-report = statguard.execute_cudf(contract, gdf)
+report = statguardian.execute_cudf(contract, gdf)
 
 # ── Referential integrity ─────────────────────────────────────────────────────
-violations = statguard.check_referential_integrity(
+violations = statguardian.check_referential_integrity(
     orders, customers,
     foreign_key="customer_id", primary_key="id",
 )
-print(statguard.integrity_report(violations))
+print(statguardian.integrity_report(violations))
 
 # check multiple FK pairs at once
-violations = statguard.check_all_foreign_keys(
+violations = statguardian.check_all_foreign_keys(
     orders, dims,
     key_pairs=[("customer_id", "id"), ("product_id", "sku")],
 )
@@ -783,17 +783,17 @@ violations = statguard.check_all_foreign_keys(
 
 | Use case | How |
 |---|---|
-| **dbt / Airflow pipeline gate** | `statguard validate --fail-on-warning` in task |
+| **dbt / Airflow pipeline gate** | `statguardian validate --fail-on-warning` in task |
 | **ML feature drift monitor** | `stats { feature.mean drift < 0.05 }` + reference dataset |
 | **Lakehouse quality layer** | `execute_delta()` / `execute_iceberg()` on every write |
 | **Kafka / streaming quality** | `execute_streaming()` with micro-batch window |
 | **Prometheus scraping** | `--format prometheus` or `report.to_prometheus()` |
-| **CI data contract tests** | `statguard check` for DSL lint, `validate` for data |
+| **CI data contract tests** | `statguardian check` for DSL lint, `validate` for data |
 | **PII audit** | `scan_pii(df)` before writing to a data warehouse or sharing a dataset |
 | **Schema change gate** | `assert_no_breaking_changes(today, yesterday)` in pipeline DAG |
 | **Stakeholder report** | `to_html(report)` → email or attach to CI build artefacts |
 | **Business logic validation** | `@blocking: assert amount > 0 when status == "paid"` in DSL |
-| **Custom domain checks** | `@statguard.validator()` for business-specific rules or ML-based scoring |
+| **Custom domain checks** | `@statguardian.validator()` for business-specific rules or ML-based scoring |
 | **Orphaned data detection** | `check_referential_integrity(orders, customers, "cust_id", "id")` |
 | **GPU-accelerated QA** | `execute_cudf(contract, gdf)` for 100M+ row validation |
 | **Batch validation at scale** | `execute_files(contract, "data/**/*.parquet", workers=16)` for parallel processing |

@@ -6,7 +6,7 @@ Tests 5 checks on 100 000 rows: not_null, type, range(0-120),
 regex (email), uniqueness.
 
 Usage:
-    pip install statguard pandera polars pandas great-expectations pydantic
+    pip install statguardian pandera polars pandas great-expectations pydantic
     python3 docs/bench/benchmark.py
 """
 
@@ -43,9 +43,9 @@ print(f"\nBenchmark: {N:,} rows × 4 cols, best-of-{RUNS}, Apple M-series\n")
 # ── StatGuard ─────────────────────────────────────────────────────────────────
 try:
     import polars as pl
-    import statguard
+    import statguardian
 
-    contract = statguard.DataContract.from_dsl("""
+    contract = statguardian.DataContract.from_dsl("""
 dataset bench {
     schema {
         id:      int,    not_null, unique
@@ -57,7 +57,7 @@ dataset bench {
 }
 """)
     df = pl.DataFrame({"id": ids, "email": emails, "age": ages, "country": countries})
-    bench(lambda: statguard.execute(contract, df), "StatGuard 0.1 (Rust/Polars)")
+    bench(lambda: statguardian.execute(contract, df), "StatGuard 0.1 (Rust/Polars)")
 except ImportError:
     print("  StatGuard: NOT INSTALLED — run: maturin develop --release", file=sys.stderr)
 

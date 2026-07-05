@@ -100,18 +100,18 @@ up automatically when running on EC2/GKE/Azure VMs.
 ### Cloud API
 
 ```python
-import statguard
+import statguardian
 
 # Read directly from cloud — format auto-detected from extension
-report = statguard.execute_cloud(contract, "s3://bucket/events/2026/06/*.parquet")
-report = statguard.execute_cloud(contract, "gs://bucket/data.csv")
-report = statguard.execute_cloud(contract, "az://container/data.parquet")
+report = statguardian.execute_cloud(contract, "s3://bucket/events/2026/06/*.parquet")
+report = statguardian.execute_cloud(contract, "gs://bucket/data.csv")
+report = statguardian.execute_cloud(contract, "az://container/data.parquet")
 
 # Or use execute_file — same thing, auto-detects cloud URIs
-report = statguard.execute_file(contract, "s3://bucket/data.parquet")
+report = statguardian.execute_file(contract, "s3://bucket/data.parquet")
 
 # With drift reference (yesterday's data)
-report = statguard.execute_cloud(
+report = statguardian.execute_cloud(
     contract,
     uri="s3://bucket/events/today/*.parquet",
     reference_uri="s3://bucket/events/yesterday/*.parquet",
@@ -165,17 +165,17 @@ maturin build --release --cargo-extra-args="--features full"
 | **SQL Server** | Microsoft ODBC Driver is proprietary on Linux/macOS |
 
 > If you need Oracle or SQL Server, export your data to Parquet and use
-> `statguard.execute_file()`. This keeps all validation open-source.
+> `statguardian.execute_file()`. This keeps all validation open-source.
 
 ### SQL API
 
 ```python
-import statguard
+import statguardian
 
-contract = statguard.DataContract.from_file("orders.sg")
+contract = statguardian.DataContract.from_file("orders.sg")
 
 # PostgreSQL (Rust layer — fastest)
-report = statguard.execute_sql(
+report = statguardian.execute_sql(
     contract,
     connection_string="postgresql://user:pass@localhost:5432/mydb",
     query="SELECT * FROM orders WHERE date >= '2026-01-01'",
@@ -183,7 +183,7 @@ report = statguard.execute_sql(
 
 # BigQuery (Python layer via google-cloud-bigquery)
 # pip install google-cloud-bigquery
-report = statguard.execute_sql(
+report = statguardian.execute_sql(
     contract,
     connection_string="bigquery://my-project/my-dataset",
     query="SELECT * FROM events LIMIT 1000000",
@@ -191,7 +191,7 @@ report = statguard.execute_sql(
 
 # Snowflake (Python layer via snowflake-connector-python)
 # pip install snowflake-connector-python connectorx
-report = statguard.execute_sql(
+report = statguardian.execute_sql(
     contract,
     connection_string="snowflake://user:pass@account/db/schema?warehouse=wh",
     query="SELECT * FROM ORDERS",
@@ -199,14 +199,14 @@ report = statguard.execute_sql(
 
 # Redshift (Python layer)
 # pip install amazon-redshift-python-driver connectorx
-report = statguard.execute_sql(
+report = statguardian.execute_sql(
     contract,
     connection_string="redshift+psycopg2://user:pass@host.redshift.amazonaws.com:5439/db",
     query="SELECT * FROM events",
 )
 
 # With drift reference (compare two queries)
-report = statguard.execute_sql(
+report = statguardian.execute_sql(
     contract,
     connection_string="postgresql://localhost/db",
     query="SELECT * FROM events WHERE date = CURRENT_DATE",
@@ -241,25 +241,25 @@ no data serialisation to Python dicts.
 
 ```python
 from pyspark.sql import SparkSession
-import statguard
+import statguardian
 
 # Enable Arrow for efficient transfer (required)
 spark = SparkSession.builder \
     .config("spark.sql.execution.arrow.pyspark.enabled", "true") \
     .getOrCreate()
 
-contract = statguard.DataContract.from_file("events.sg")
+contract = statguardian.DataContract.from_file("events.sg")
 spark_df  = spark.read.parquet("s3a://bucket/events/")
 
 # Validate
-report = statguard.execute_spark(contract, spark_df)
+report = statguardian.execute_spark(contract, spark_df)
 print(report.summary())
 
 # Drift detection — compare two Spark DataFrames
 today_df     = spark.read.parquet("s3a://bucket/events/today/")
 yesterday_df = spark.read.parquet("s3a://bucket/events/yesterday/")
 
-report = statguard.execute_spark(contract, today_df, reference_spark_df=yesterday_df)
+report = statguardian.execute_spark(contract, today_df, reference_spark_df=yesterday_df)
 for d in report.drift_results():
     print(f"{d['column']}.{d['stat']}: PSI={d['psi']:.4f}")
 ```
@@ -319,7 +319,7 @@ topic_config = {
     "topic": "orders",
     "group_id": "statguard-validation",
 }
-reports = statguard.execute_kafka(contract, topic_config, batch_size=1000)
+reports = statguardian.execute_kafka(contract, topic_config, batch_size=1000)
 ```
 
 Open-source drivers: `confluent-kafka-python` (Apache-2.0) or `kafka-python` (MIT).
@@ -332,7 +332,7 @@ env = StreamExecutionEnvironment.get_execution_environment()
 ds = env.add_source(...)  # Kafka, S3, etc.
 
 # Convert to Arrow table batch, validate
-report = statguard.execute_flink(contract, ds)
+report = statguardian.execute_flink(contract, ds)
 ```
 
 Integration via Flink Python API + Arrow IPC serialisation (zero-copy).
@@ -341,7 +341,7 @@ Integration via Flink Python API + Arrow IPC serialisation (zero-copy).
 
 ```python
 # (Planned) Orchestrate validation as an Airflow DAG task
-from statguard.airflow import StatGuardOperator
+from statguardian.airflow import StatGuardOperator
 
 validation_task = StatGuardOperator(
     task_id="validate_orders",
@@ -355,7 +355,7 @@ validation_task = StatGuardOperator(
 Uses the standard Airflow task API. No Airflow-specific code in StatGuard itself—
 the operator is a thin wrapper around `execute_cloud()` / `execute_sql()` / `execute_spark()`.
 
-Available as: `pip install statguard[airflow]` (installs `apache-airflow` + orchestration adapter).
+Available as: `pip install statguardian[airflow]` (installs `apache-airflow` + orchestration adapter).
 
 ---
 

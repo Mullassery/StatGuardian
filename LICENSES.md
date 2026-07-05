@@ -51,7 +51,7 @@ When using `execute_sql()` for PostgreSQL:
 ### PostgreSQL Driver — ⚠️ LGPL-2.1 with exceptions
 
 - **psycopg2** / **psycopg2-binary** — LGPL-2.1 with exceptions
-  - Installed via: `pip install statguard[sql-postgres]`
+  - Installed via: `pip install statguardian[sql-postgres]`
   - **License Impact**: Using this driver means your application adds an
     LGPL-licensed component. LGPL is a copyleft license, but more permissive
     than GPL:
@@ -82,7 +82,7 @@ All cloud storage drivers are OSS with permissive licenses:
 
 - **Polars cloud features** (s3, gcp, azure) — MIT
   - Uses Arrow's object_store crate (Apache-2.0)
-  - Installed via: `pip install statguard[cloud]`
+  - Installed via: `pip install statguardian[cloud]`
   - Includes AWS SDK, Google Cloud client, Azure SDK (all Apache-2.0)
 
 ---
@@ -90,7 +90,7 @@ All cloud storage drivers are OSS with permissive licenses:
 ## Optional Spark Dependency — Apache-2.0
 
 - **pyspark** — Apache-2.0 (Spark integration)
-  - Installed via: `pip install statguard[spark]`
+  - Installed via: `pip install statguardian[spark]`
 
 ---
 

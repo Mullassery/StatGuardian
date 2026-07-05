@@ -7,12 +7,12 @@ comparing snapshots / versions for drift detection, and
 validating data quality across the full lakehouse pipeline.
 
 Prerequisites:
-    pip install statguard polars deltalake pyiceberg
+    pip install statguardian polars deltalake pyiceberg
     # Build StatGuard from source:
     maturin develop --release
 """
 
-import statguard
+import statguardian
 
 CONTRACT_DSL = """
 dataset events {
@@ -40,22 +40,22 @@ dataset events {
 }
 """
 
-contract = statguard.DataContract.from_dsl(CONTRACT_DSL)
+contract = statguardian.DataContract.from_dsl(CONTRACT_DSL)
 
 # ── Delta Lake ────────────────────────────────────────────────────────────────
 
 print("=== Delta Lake ===")
 
 # Validate the latest Delta snapshot
-report = statguard.execute_delta(contract, "/data/events_delta/")
+report = statguardian.execute_delta(contract, "/data/events_delta/")
 print(report.summary())
 
 # Time-travel: validate a specific version
-report_v5 = statguard.execute_delta(contract, "/data/events_delta/", version=5)
+report_v5 = statguardian.execute_delta(contract, "/data/events_delta/", version=5)
 print(f"Version 5 health: {report_v5.health_score:.3f}")
 
 # Compare version 4 (reference) → version 10 (current) for drift
-drift_report = statguard.compare_delta_versions(
+drift_report = statguardian.compare_delta_versions(
     contract,
     table_path="/data/events_delta/",
     reference_version=4,
@@ -72,7 +72,7 @@ for d in drift_report.drift_results():
 print("\n=== Apache Iceberg ===")
 
 # List snapshots
-snapshots = statguard.list_iceberg_snapshots("/data/events_iceberg/")
+snapshots = statguardian.list_iceberg_snapshots("/data/events_iceberg/")
 print(f"Found {len(snapshots)} snapshots:")
 for s in snapshots[:3]:
     from datetime import datetime, timezone
@@ -80,7 +80,7 @@ for s in snapshots[:3]:
     print(f"  snapshot_id={s['snapshot_id']}  ts={ts.isoformat()}  op={s['operation']}")
 
 # Validate the current Iceberg snapshot
-report_ice = statguard.execute_iceberg(contract, "/data/events_iceberg/")
+report_ice = statguardian.execute_iceberg(contract, "/data/events_iceberg/")
 print(f"\nCurrent snapshot: {report_ice.summary()}")
 
 # Time-travel: compare two snapshots for drift
@@ -88,7 +88,7 @@ if len(snapshots) >= 2:
     ref_id = snapshots[-2]["snapshot_id"]  # second-to-latest
     cur_id = snapshots[-1]["snapshot_id"]  # latest
 
-    drift_ice = statguard.execute_iceberg(
+    drift_ice = statguardian.execute_iceberg(
         contract,
         "/data/events_iceberg/",
         snapshot_id=cur_id,
@@ -104,11 +104,11 @@ if len(snapshots) >= 2:
 print("\n=== Avro / ORC ===")
 
 # These use the same API — format is auto-detected from the extension
-avro_report = statguard.execute_file(contract, "/data/events.avro")
+avro_report = statguardian.execute_file(contract, "/data/events.avro")
 print(f"Avro: {avro_report.summary()}")
 
 # ORC requires `--features orc` when building StatGuard
-orc_report = statguard.execute_file(contract, "/data/events.orc")
+orc_report = statguardian.execute_file(contract, "/data/events.orc")
 print(f"ORC:  {orc_report.summary()}")
 
 # ── CI/CD integration ─────────────────────────────────────────────────────────

@@ -28,17 +28,17 @@ def execute_cudf(contract, cudf_df, reference_cudf_df=None):
                             detection.
 
     Returns:
-        ValidationReport — identical to what ``statguard.execute()`` returns.
+        ValidationReport — identical to what ``statguardian.execute()`` returns.
 
     Example::
 
         import cudf
-        import statguard
+        import statguardian
 
-        contract = statguard.DataContract.from_file("events.sg")
+        contract = statguardian.DataContract.from_file("events.sg")
         gdf = cudf.read_parquet("s3://bucket/events.parquet")
 
-        report = statguard.execute_cudf(contract, gdf)
+        report = statguardian.execute_cudf(contract, gdf)
         print(report.summary())
     """
     from . import execute

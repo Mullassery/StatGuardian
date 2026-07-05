@@ -3,18 +3,18 @@ StatGuard — Python quickstart example
 ======================================
 
 Prerequisites:
-    pip install statguard polars
+    pip install statguardian polars
 
 Usage:
     python examples/python_quickstart.py
 """
 
 import polars as pl
-import statguard
+import statguardian
 
 # ── 1. Define a data contract in DSL ─────────────────────────────────────────
 
-contract = statguard.DataContract.from_dsl("""
+contract = statguardian.DataContract.from_dsl("""
 dataset users {
     schema {
         id:      int,    not_null, unique, primary_key
@@ -63,7 +63,7 @@ dirty_df = pl.DataFrame({
 # ── 3. Validate clean data ────────────────────────────────────────────────────
 
 print("\n--- Validating clean data ---")
-report = statguard.execute(contract, clean_df)
+report = statguardian.execute(contract, clean_df)
 print(report.summary())
 print(f"  Health score : {report.health_score:.3f}")
 print(f"  Grade        : {report.grade}")
@@ -73,7 +73,7 @@ print(f"  Passed       : {report.passed}")
 # ── 4. Validate dirty data ────────────────────────────────────────────────────
 
 print("\n--- Validating dirty data ---")
-dirty_report = statguard.execute(contract, dirty_df)
+dirty_report = statguardian.execute(contract, dirty_df)
 print(dirty_report.summary())
 print(f"  Passed: {dirty_report.passed}")
 print("\n  Violations found:")
@@ -101,13 +101,13 @@ shifted_df = pl.DataFrame({
 })
 
 print("\n--- Drift detection: no shift ---")
-r_no_drift = statguard.execute(contract, reference_df, reference=reference_df)
+r_no_drift = statguardian.execute(contract, reference_df, reference=reference_df)
 for d in r_no_drift.drift_results():
     status = "✓" if d["passed"] else "✗"
     print(f"  {status} {d['column']}.{d['stat']}: drift={d['drift']:.4f} (PSI={d.get('psi', 0):.4f})")
 
 print("\n--- Drift detection: age distribution shift ---")
-r_drift = statguard.execute(contract, shifted_df, reference=reference_df)
+r_drift = statguardian.execute(contract, shifted_df, reference=reference_df)
 for d in r_drift.drift_results():
     status = "✓" if d["passed"] else "✗ DRIFT DETECTED"
     print(f"  {status} {d['column']}.{d['stat']}: drift={d['drift']:.4f} (PSI={d.get('psi', 0):.4f})")

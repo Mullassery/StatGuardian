@@ -6,15 +6,15 @@
 ## Entry Format
 
 ```markdown
-- [StatGuard](https://github.com/Mullassery/statguard) — High-performance data quality and statistical drift detection engine. Rust 2021 + Polars + PyO3. 13-25× faster than Python libraries. Native support for Delta Lake, Iceberg, cloud storage, and SQL databases. Declarative DSL contract system with schema validation, quality rules, drift detection, and anomaly detection. [MIT](https://github.com/Mullassery/statguard/blob/main/LICENSE).
+- [StatGuard](https://github.com/Mullassery/statguardian) — High-performance data quality and statistical drift detection engine. Rust 2021 + Polars + PyO3. 13-25× faster than Python libraries. Native support for Delta Lake, Iceberg, cloud storage, and SQL databases. Declarative DSL contract system with schema validation, quality rules, drift detection, and anomaly detection. [MIT](https://github.com/Mullassery/statguardian/blob/main/LICENSE).
 ```
 
 ## Details for Submission
 
 **Project Name:** StatGuard  
-**Repository:** https://github.com/Mullassery/statguard  
+**Repository:** https://github.com/Mullassery/statguardian  
 **Language:** Rust 2021 (core), Python 3.8+ (bindings)  
-**PyPI:** https://pypi.org/project/statguard  
+**PyPI:** https://pypi.org/project/statguardianian  
 **License:** MIT  
 **Keywords:** Rust, Python, PyO3, Polars, data-quality, validation, drift-detection
 
@@ -41,7 +41,7 @@ StatGuard is a premier example of **Rust-powered Python libraries** that solve p
 
 - ✅ Production-ready (v0.1.0 stable)
 - ✅ MIT licensed
-- ✅ PyPI published: https://pypi.org/project/statguard
+- ✅ PyPI published: https://pypi.org/project/statguardianian
 - ✅ 33 tests, all passing
 - ✅ Comprehensive documentation (README, CLI guide, benchmarks)
 - ✅ Real performance benchmarks (vs pandera, GX, Pydantic)

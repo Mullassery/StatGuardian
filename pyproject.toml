@@ -89,18 +89,18 @@ all = [
 dev = ["pytest>=7", "maturin>=1.7", "polars>=0.20", "pandas>=1.5", "pyarrow>=10"]
 
 [project.urls]
-Homepage      = "https://github.com/Mullassery/StatGuard"
-Repository    = "https://github.com/Mullassery/StatGuard"
-Documentation = "https://github.com/Mullassery/StatGuard#readme"
-"Bug Tracker" = "https://github.com/Mullassery/StatGuard/issues"
+Homepage      = "https://github.com/Mullassery/statguardian"
+Repository    = "https://github.com/Mullassery/statguardian"
+Documentation = "https://github.com/Mullassery/statguardian#readme"
+"Bug Tracker" = "https://github.com/Mullassery/statguardian/issues"
 
 [project.scripts]
-statguard = "statguard._cli:main"
+statguardian = "statguardian._cli:main"
 
 [tool.maturin]
 manifest-path    = "crates/statguard-py/Cargo.toml"
 python-source    = "python"
-module-name      = "statguard._statguard"
+module-name      = "statguardian._statguardian"
 features         = ["pyo3/extension-module"]
 profile          = "release"
 strip            = true

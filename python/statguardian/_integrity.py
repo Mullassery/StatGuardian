@@ -67,19 +67,19 @@ def check_referential_integrity(
     Example::
 
         import polars as pl
-        import statguard
+        import statguardian
 
         orders    = pl.read_parquet("orders.parquet")
         customers = pl.read_parquet("customers.parquet")
 
-        violations = statguard.check_referential_integrity(
+        violations = statguardian.check_referential_integrity(
             orders, customers,
             foreign_key="customer_id",
             primary_key="id",
             foreign_table="orders",
             primary_table="customers",
         )
-        print(statguard.integrity_report(violations))
+        print(statguardian.integrity_report(violations))
     """
     if foreign_key not in df.columns:
         raise ValueError(f"Foreign key column '{foreign_key}' not found in DataFrame")
@@ -135,7 +135,7 @@ def check_all_foreign_keys(
 
     Example::
 
-        violations = statguard.check_all_foreign_keys(
+        violations = statguardian.check_all_foreign_keys(
             orders, dimension_table,
             key_pairs=[
                 ("customer_id", "id"),

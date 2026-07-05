@@ -36,14 +36,14 @@ def validator(
 
     Example::
 
-        @statguard.validator("amount")
+        @statguardian.validator("amount")
         def no_round_numbers(values):
             failing = [i for i, v in enumerate(values)
                        if v is not None and v == int(v) and v > 1000]
             if failing:
                 return failing, f"{len(failing)} suspiciously round large amount(s)"
 
-        @statguard.validator("email")
+        @statguardian.validator("email")
         def no_example_domains(values):
             bad = [i for i, v in enumerate(values)
                    if v and "example.com" in v]
@@ -65,7 +65,7 @@ def run_custom_validators(df, *, raise_on_error: bool = False) -> List[dict]:
     Run all registered custom validators against a Polars DataFrame.
 
     Returns a list of violation dicts compatible with StatGuard's report
-    format.  Pass the result to ``statguard.merge_violations(report, extra)``
+    format.  Pass the result to ``statguardian.merge_violations(report, extra)``
     to include them in an existing ValidationReport.
 
     Args:

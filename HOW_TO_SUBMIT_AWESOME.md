@@ -24,7 +24,7 @@ This guide helps you submit StatGuard to awesome-python and awesome-rust.
 
 3. **Entry Format**
    ```markdown
-   - [StatGuard](https://github.com/Mullassery/statguard) - Rust-native data quality, validation, and statistical drift monitoring engine with Python bindings. 13-25× faster than pandera. Supports Delta Lake, Iceberg, cloud storage (S3/GCS/Azure), and 13 SQL databases. Single declarative DSL contract for schema validation, quality rules, drift detection, and anomaly detection. MIT license.
+   - [StatGuard](https://github.com/Mullassery/statguardian) - Rust-native data quality, validation, and statistical drift monitoring engine with Python bindings. 13-25× faster than pandera. Supports Delta Lake, Iceberg, cloud storage (S3/GCS/Azure), and 13 SQL databases. Single declarative DSL contract for schema validation, quality rules, drift detection, and anomaly detection. MIT license.
    ```
 
 4. **Commit and Push**
@@ -70,7 +70,7 @@ This guide helps you submit StatGuard to awesome-python and awesome-rust.
 
 3. **Entry Format**
    ```markdown
-   - [StatGuard](https://github.com/Mullassery/statguard) — High-performance data quality and drift detection. Rust + PyO3 + Polars. 13-25× faster than Python libraries. Native support for Delta Lake, Iceberg, cloud storage, SQL databases. [MIT](https://github.com/Mullassery/statguard/blob/main/LICENSE).
+   - [StatGuard](https://github.com/Mullassery/statguardian) — High-performance data quality and drift detection. Rust + PyO3 + Polars. 13-25× faster than Python libraries. Native support for Delta Lake, Iceberg, cloud storage, SQL databases. [MIT](https://github.com/Mullassery/statguardian/blob/main/LICENSE).
    ```
 
 4. **Commit and Push**
@@ -104,7 +104,7 @@ Look for:
 
 **Library:** StatGuard (Rust data quality engine with Python bindings)
 
-**Link:** https://github.com/Mullassery/statguard
+**Link:** https://github.com/Mullassery/statguardian
 
 **Description:**
 High-performance data quality, validation, and statistical drift monitoring engine with a Python-first API. Built in Rust 2021 with PyO3 bindings. 13-25× faster than pandera and Great Expectations for equivalent checks.
@@ -158,7 +158,7 @@ High-performance data quality, validation, and statistical drift monitoring engi
 **Response:** Data quality is critical for any data pipeline (dbt, Airflow, ML). StatGuard fills a gap in the Python ecosystem with a production-grade solution.
 
 ### "Performance claims need verification"
-**Response:** Benchmarks are in [BENCHMARKS.md](https://github.com/Mullassery/statguard/blob/main/BENCHMARKS.md) with reproducible methodology. Results measured on Apple M-series, 100k rows, 5 checks (null, type, range, regex, uniqueness). Runs are best-of-7.
+**Response:** Benchmarks are in [BENCHMARKS.md](https://github.com/Mullassery/statguardian/blob/main/BENCHMARKS.md) with reproducible methodology. Results measured on Apple M-series, 100k rows, 5 checks (null, type, range, regex, uniqueness). Runs are best-of-7.
 
 ### "Too many features / too complex"
 **Response:** Single DSL covers all use cases (schema, quality, drift, anomalies). Users install only what they need (core, cloud, SQL, Spark are optional features).

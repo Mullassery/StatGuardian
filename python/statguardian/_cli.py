@@ -5,14 +5,14 @@ Supports local files, Delta Lake, and Apache Iceberg tables.
 For cloud storage (S3/GCS/Azure), SQL databases, and Spark, use the Python API.
 
 Usage:
-    statguard validate --contract contract.sg --file data.parquet [OPTIONS]
-    statguard check   --contract contract.sg
+    statguardian validate --contract contract.sg --file data.parquet [OPTIONS]
+    statguardian check   --contract contract.sg
 
 Supported file formats:
     Parquet, CSV, JSON, Avro, ORC, Arrow IPC, Delta Lake (_delta_log/), Iceberg (metadata/)
 
 For more information: statguard --help
-Full documentation: https://github.com/Mullassery/statguard/blob/main/docs/CLI.md
+Full documentation: https://github.com/Mullassery/statguardian/blob/main/docs/CLI.md
 """
 
 import argparse
@@ -26,7 +26,7 @@ def main() -> None:
     )
     sub = parser.add_subparsers(dest="command")
 
-    # statguard validate
+    # statguardian validate
     validate = sub.add_parser(
         "validate",
         help="Validate a data file against a contract",
@@ -62,7 +62,7 @@ def main() -> None:
         help="Exit with code 1 if any violation found (default: only errors cause failure)"
     )
 
-    # statguard check
+    # statguardian check
     check = sub.add_parser(
         "check",
         help="Syntax-check a DSL contract file",
@@ -87,7 +87,7 @@ def main() -> None:
 
 
 def _cmd_check(args) -> None:
-    from statguard import validate_dsl
+    from statguardian import validate_dsl
     try:
         dsl = open(args.contract).read()
         name = validate_dsl(dsl)
@@ -98,7 +98,7 @@ def _cmd_check(args) -> None:
 
 
 def _cmd_validate(args) -> None:
-    from statguard import DataContract, execute_file
+    from statguardian import DataContract, execute_file
     try:
         contract = DataContract.from_file(args.contract)
         report   = execute_file(contract, args.file, args.reference)

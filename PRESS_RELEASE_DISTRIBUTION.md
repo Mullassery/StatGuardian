@@ -68,8 +68,8 @@ StatGuard v0.1.0: Production-Grade Rust Data Quality Engine Now Available — 13
 2. Select "Free Press Release"
 3. Fill form with:
    - Title, content, author info
-   - GitHub link: https://github.com/Mullassery/statguard
-   - PyPI link: https://pypi.org/project/statguard
+   - GitHub link: https://github.com/Mullassery/statguardian
+   - PyPI link: https://pypi.org/project/statguardian
 4. Submit
 
 ---
@@ -107,7 +107,7 @@ StatGuard v0.1.0: Production-Grade Rust Data Quality Engine Now Available — 13
 2. Post project to "Show HN" or "Developer Tools"
 3. Title: "StatGuard — Rust Data Quality Engine (13-25× faster than Python)"
 4. Include GitHub link, benchmarks, demo
-5. Link: https://github.com/Mullassery/statguard
+5. Link: https://github.com/Mullassery/statguardian
 
 **SEO Value:** ⭐⭐⭐⭐⭐ (Huge tech community + backlinks)
 
@@ -151,9 +151,9 @@ drift monitoring engine with Python bindings.
 - Apache Spark integration
 - Single declarative DSL contract
 
-GitHub: https://github.com/Mullassery/statguard
-PyPI: https://pypi.org/project/statguard/
-Benchmarks: https://github.com/Mullassery/statguard/blob/main/BENCHMARKS.md
+GitHub: https://github.com/Mullassery/statguardian
+PyPI: https://pypi.org/project/statguardian/
+Benchmarks: https://github.com/Mullassery/statguardian/blob/main/BENCHMARKS.md
 
 MIT licensed. Happy to answer questions!
 ```
@@ -214,8 +214,8 @@ Apache Spark integration
 
 MIT licensed | Open source
 
-GitHub: https://github.com/Mullassery/statguard
-PyPI: https://pypi.org/project/statguard/
+GitHub: https://github.com/Mullassery/statguardian
+PyPI: https://pypi.org/project/statguardian/
 
 #Rust #Python #DataQuality #OpenSource
 ```
@@ -237,8 +237,8 @@ A production-grade Rust-native data quality engine with Python bindings.
 ✨ Apache Spark integration
 ✨ MIT licensed
 
-📦 pip install statguard
-🔗 https://github.com/Mullassery/statguard
+📦 pip install statguardian
+🔗 https://github.com/Mullassery/statguardian
 
 By @Mullassery #Rust #Python #DataEngineering
 ```
@@ -254,7 +254,7 @@ Pydantic: 43.5ms (22× slower)
 
 Columnar execution + cost-ordered checks = blazing fast
 
-Details: https://github.com/Mullassery/statguard/blob/main/BENCHMARKS.md
+Details: https://github.com/Mullassery/statguardian/blob/main/BENCHMARKS.md
 ```
 
 **Tweet 3 (Features):**
@@ -270,7 +270,7 @@ StatGuard features at a glance:
 
 Single declarative DSL. Production-ready.
 
-Docs: https://github.com/Mullassery/statguard#readme
+Docs: https://github.com/Mullassery/statguardian#readme
 ```
 
 ---
@@ -285,7 +285,7 @@ To: [email from outlet]
 Subject: [Your name] releases StatGuard: Open-source Rust data quality engine
 Body: [Use RELEASE_ANNOUNCEMENT.md content]
 Signature: Georgi Mammen Mullassery, Creator of StatGuard
-         MIT License | https://github.com/Mullassery/statguard
+         MIT License | https://github.com/Mullassery/statguardian
 ```
 
 **Target outlets:**
@@ -394,10 +394,10 @@ cloud storage, and 13 SQL databases.
 [Performance table]
 
 [Links section]
-GitHub: https://github.com/Mullassery/statguard
-PyPI: https://pypi.org/project/statguard/
-Documentation: https://github.com/Mullassery/statguard#readme
-Benchmarks: https://github.com/Mullassery/statguard/blob/main/BENCHMARKS.md
+GitHub: https://github.com/Mullassery/statguardian
+PyPI: https://pypi.org/project/statguardian/
+Documentation: https://github.com/Mullassery/statguardian#readme
+Benchmarks: https://github.com/Mullassery/statguardian/blob/main/BENCHMARKS.md
 
 About the Author:
 Georgi Mammen Mullassery is a software engineer specializing in Rust and Python.

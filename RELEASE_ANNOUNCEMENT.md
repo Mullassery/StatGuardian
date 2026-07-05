@@ -51,19 +51,19 @@ StatGuard is a high-performance data quality platform that compiles a declarativ
 ### Install
 
 ```bash
-pip install statguard        # Basic
-pip install statguard[cloud] # Cloud storage
-pip install statguard[sql]   # All SQL databases
-pip install statguard[spark] # Apache Spark
+pip install statguardian        # Basic
+pip install statguardian[cloud] # Cloud storage
+pip install statguardian[sql]   # All SQL databases
+pip install statguardian[spark] # Apache Spark
 ```
 
 ### Validate in 3 lines
 
 ```python
-import statguard, polars as pl
+import statguardian, polars as pl
 
-contract = statguard.DataContract.from_file("orders.sg")
-report = statguard.execute(contract, pl.read_parquet("orders.parquet"))
+contract = statguardian.DataContract.from_file("orders.sg")
+report = statguardian.execute(contract, pl.read_parquet("orders.parquet"))
 print(report.summary())
 # [StatGuard] PASS ✓ | dataset=orders | score=0.97 (A) | rows=500000 | violations=2 | 3ms
 ```
@@ -107,7 +107,7 @@ Great Expectations 1.18    50.4 ms  25× slower
 Pydantic v2                43.5 ms  22× slower
 ```
 
-See [BENCHMARKS.md](https://github.com/Mullassery/statguard/blob/main/BENCHMARKS.md) for full methodology and scaling tables.
+See [BENCHMARKS.md](https://github.com/Mullassery/statguardian/blob/main/BENCHMARKS.md) for full methodology and scaling tables.
 
 ---
 
@@ -122,7 +122,7 @@ See [BENCHMARKS.md](https://github.com/Mullassery/statguard/blob/main/BENCHMARKS
 | **SQL** (13 connectors) | ✓ | 8-12 connectors |
 | **Spark** | ✓ Arrow bridge | ✓ |
 
-Full compatibility matrix: [docs/FORMAT_COMPATIBILITY.md](https://github.com/Mullassery/statguard/blob/main/docs/FORMAT_COMPATIBILITY.md)
+Full compatibility matrix: [docs/FORMAT_COMPATIBILITY.md](https://github.com/Mullassery/statguardian/blob/main/docs/FORMAT_COMPATIBILITY.md)
 
 ---
 
@@ -167,7 +167,7 @@ DSL text  →  pest parser  →  AST  →  Compiler  →  Optimized DAG
 ⚠️ **PostgreSQL driver:** LGPL-2.1 (disclosed, requires source with binary distribution)  
 ❌ **Proprietary drivers:** Intentionally excluded (Oracle, SQL Server ODBC)
 
-Full license audit: [LICENSES.md](https://github.com/Mullassery/statguard/blob/main/LICENSES.md)
+Full license audit: [LICENSES.md](https://github.com/Mullassery/statguardian/blob/main/LICENSES.md)
 
 ---
 
@@ -175,12 +175,12 @@ Full license audit: [LICENSES.md](https://github.com/Mullassery/statguard/blob/m
 
 | Resource | Link |
 |----------|------|
-| **Full Guide** | [README.md](https://github.com/Mullassery/statguard#readme) |
-| **Installation** | [INSTALL.md](https://github.com/Mullassery/statguard/blob/main/INSTALL.md) |
-| **CLI Reference** | [docs/CLI.md](https://github.com/Mullassery/statguard/blob/main/docs/CLI.md) |
-| **Format Matrix** | [docs/FORMAT_COMPATIBILITY.md](https://github.com/Mullassery/statguard/blob/main/docs/FORMAT_COMPATIBILITY.md) |
-| **Benchmarks** | [BENCHMARKS.md](https://github.com/Mullassery/statguard/blob/main/BENCHMARKS.md) |
-| **Contributing** | [CONTRIBUTING.md](https://github.com/Mullassery/statguard/blob/main/CONTRIBUTING.md) |
+| **Full Guide** | [README.md](https://github.com/Mullassery/statguardian#readme) |
+| **Installation** | [INSTALL.md](https://github.com/Mullassery/statguardian/blob/main/INSTALL.md) |
+| **CLI Reference** | [docs/CLI.md](https://github.com/Mullassery/statguardian/blob/main/docs/CLI.md) |
+| **Format Matrix** | [docs/FORMAT_COMPATIBILITY.md](https://github.com/Mullassery/statguardian/blob/main/docs/FORMAT_COMPATIBILITY.md) |
+| **Benchmarks** | [BENCHMARKS.md](https://github.com/Mullassery/statguardian/blob/main/BENCHMARKS.md) |
+| **Contributing** | [CONTRIBUTING.md](https://github.com/Mullassery/statguardian/blob/main/CONTRIBUTING.md) |
 
 ---
 
@@ -188,31 +188,31 @@ Full license audit: [LICENSES.md](https://github.com/Mullassery/statguard/blob/m
 
 ```bash
 # Install
-pip install statguard
+pip install statguardian
 
 # Validate a file
-statguard validate --contract orders.sg --file data.parquet
+statguardian validate --contract orders.sg --file data.parquet
 
 # Check DSL syntax
-statguard check --contract orders.sg
+statguardian check --contract orders.sg
 
 # Python API
-python -c "import statguard; print(statguard.__version__)"
+python -c "import statguard; print(statguardian.__version__)"
 ```
 
 For cloud/SQL/Spark validation:
 
 ```python
-import statguard
+import statguardian
 
 # Cloud storage
-report = statguard.execute_cloud(contract, "s3://bucket/data/")
+report = statguardian.execute_cloud(contract, "s3://bucket/data/")
 
 # SQL database
-report = statguard.execute_sql(contract, "postgresql://host/db", "SELECT * FROM orders")
+report = statguardian.execute_sql(contract, "postgresql://host/db", "SELECT * FROM orders")
 
 # Apache Spark
-report = statguard.execute_spark(contract, spark_df)
+report = statguardian.execute_spark(contract, spark_df)
 ```
 
 ---
@@ -229,7 +229,7 @@ report = statguard.execute_spark(contract, spark_df)
 
 ## Community & Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](https://github.com/Mullassery/statguard/blob/main/CONTRIBUTING.md).
+We welcome contributions! See [CONTRIBUTING.md](https://github.com/Mullassery/statguardian/blob/main/CONTRIBUTING.md).
 
 **Test suite:** 33 tests (all passing)  
 **Code quality:** `cargo clippy` + `cargo fmt`  
@@ -247,15 +247,15 @@ MIT License © 2026
 
 ## Links
 
-- **GitHub:** https://github.com/Mullassery/statguard
-- **PyPI:** https://pypi.org/project/statguard
-- **Documentation:** https://github.com/Mullassery/statguard#readme
-- **Issues:** https://github.com/Mullassery/statguard/issues
+- **GitHub:** https://github.com/Mullassery/statguardian
+- **PyPI:** https://pypi.org/project/statguardian
+- **Documentation:** https://github.com/Mullassery/statguardian#readme
+- **Issues:** https://github.com/Mullassery/statguardian/issues
 
 ---
 
 **Try StatGuard today and experience data quality validation that's fast, comprehensive, and easy to use.**
 
 ```bash
-pip install statguard
+pip install statguardian
 ```

@@ -77,7 +77,7 @@ _ORACLE_MSG = (
 _MSSQL_MSG = (
     "SQL Server's official ODBC driver (msodbcsql) is proprietary on Linux/macOS. "
     "StatGuard only includes open-source connectors. "
-    "Workaround: export your data to Parquet and use statguard.execute_file()."
+    "Workaround: export your data to Parquet and use statguardian.execute_file()."
 )
 _PROPRIETARY_SCHEMES = {
     "oracle": _ORACLE_MSG,
@@ -174,7 +174,7 @@ def execute_sql(contract, connection_string: str, query: str,
     ref_df = _read_sql_to_polars(connection_string, reference_query) \
              if reference_query else None
 
-    from statguard._statguard import execute as _execute
+    from statguardian._statguard import execute as _execute
     return _execute(contract, df, ref_df)
 
 
@@ -226,7 +226,7 @@ def execute_spark(contract, spark_df, reference_spark_df=None):
     df = _spark_to_polars(spark_df)
     ref_df = _spark_to_polars(reference_spark_df) if reference_spark_df is not None else None
 
-    from statguard._statguard import execute as _execute
+    from statguardian._statguard import execute as _execute
     return _execute(contract, df, ref_df)
 
 
@@ -261,5 +261,5 @@ def execute_cloud(contract, uri: str, reference_uri: str | None = None):
     Returns:
         ValidationReport
     """
-    from statguard._statguard import execute_file as _execute_file
+    from statguardian._statguard import execute_file as _execute_file
     return _execute_file(contract, uri, reference_uri)

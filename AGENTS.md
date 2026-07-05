@@ -7,8 +7,8 @@ contribution conventions, and common tasks.
 ## Install
 
 ```bash
-pip install statguard
-uv add statguard
+pip install statguardian
+uv add statguardian
 curl -sSfL https://raw.githubusercontent.com/Mullassery/statguard/main/install.sh | sh
 ```
 
@@ -92,7 +92,7 @@ statguard/
 ├── python/
 │   └── statguard/
 │       ├── __init__.py           re-exports from the compiled _statguard extension
-│       └── _cli.py               `statguard validate / check` CLI
+│       └── _cli.py               `statguardian validate / check` CLI
 │
 └── tests/
     └── integration_test.rs       30 end-to-end + unit tests
@@ -209,14 +209,14 @@ pip install -e ".[dev]"
 
 Built with **maturin** + **pyo3**. Main modules:
 
-- `statguard._statguard` — compiled Rust extension (Polars/Delta/Iceberg/core functions)
-- `statguard._connectors` — pure Python layer for cloud/SQL/Spark (all OSS licensed)
+- `statguardian._statguard` — compiled Rust extension (Polars/Delta/Iceberg/core functions)
+- `statguardian._connectors` — pure Python layer for cloud/SQL/Spark (all OSS licensed)
 - Both re-exported from `python/statguard/__init__.py`
 
 When the Python API accepts or returns a DataFrame it uses `pyo3-polars`'s
 `PyDataFrame` to bridge between Python Polars and the Rust polars crate.
 
-The CLI entry point is `statguard._cli:main`, registered in `pyproject.toml`.
+The CLI entry point is `statguardian._cli:main`, registered in `pyproject.toml`.
 
 All cloud/SQL/Spark connectors use open-source drivers only (MIT/Apache-2.0/BSD).
 Proprietary ODBC/JDBC (Oracle, SQL Server native) are intentionally excluded.

@@ -9,36 +9,36 @@ The `statguard` command-line tool validates data files and DSL contracts from th
 The CLI is included with the base `statguard` package:
 
 ```bash
-pip install statguard
+pip install statguardian
 statguard --version
 ```
 
 For cloud storage support (S3, GCS, Azure):
 
 ```bash
-pip install statguard[cloud]
+pip install statguardian[cloud]
 ```
 
 For SQL databases:
 
 ```bash
-pip install statguard[sql]           # All SQL databases
-pip install statguard[sql-postgres]  # PostgreSQL only
-pip install statguard[sql-snowflake] # Snowflake only
+pip install statguardian[sql]           # All SQL databases
+pip install statguardian[sql-postgres]  # PostgreSQL only
+pip install statguardian[sql-snowflake] # Snowflake only
 ```
 
 ---
 
 ## Commands
 
-### `statguard validate` — Validate data
+### `statguardian validate` — Validate data
 
 Validate a data file against a contract and output results.
 
 **Syntax:**
 
 ```bash
-statguard validate --contract <path.sg> --file <path> [--reference <path>] [--format {summary,json,prometheus}] [--fail-on-warning]
+statguardian validate --contract <path.sg> --file <path> [--reference <path>] [--format {summary,json,prometheus}] [--fail-on-warning]
 ```
 
 **Arguments:**
@@ -63,14 +63,14 @@ The CLI auto-detects format from file extension or directory structure:
 
 | Extension | Format | Example |
 |-----------|--------|---------|
-| `.parquet` | Apache Parquet | `statguard validate --contract orders.sg --file data.parquet` |
-| `.csv`, `.tsv` | CSV/TSV | `statguard validate --contract orders.sg --file data.csv` |
-| `.json`, `.ndjson` | JSON / NDJSON | `statguard validate --contract orders.sg --file events.json` |
-| `.avro` | Apache Avro | `statguard validate --contract orders.sg --file data.avro` |
-| `.orc` | Apache ORC | `statguard validate --contract orders.sg --file data.orc` |
-| `.ipc`, `.arrow` | Apache Arrow IPC | `statguard validate --contract orders.sg --file data.ipc` |
-| `_delta_log/` dir | Delta Lake | `statguard validate --contract orders.sg --file /path/to/delta_table/` |
-| `metadata/` dir | Apache Iceberg | `statguard validate --contract orders.sg --file /path/to/iceberg_table/` |
+| `.parquet` | Apache Parquet | `statguardian validate --contract orders.sg --file data.parquet` |
+| `.csv`, `.tsv` | CSV/TSV | `statguardian validate --contract orders.sg --file data.csv` |
+| `.json`, `.ndjson` | JSON / NDJSON | `statguardian validate --contract orders.sg --file events.json` |
+| `.avro` | Apache Avro | `statguardian validate --contract orders.sg --file data.avro` |
+| `.orc` | Apache ORC | `statguardian validate --contract orders.sg --file data.orc` |
+| `.ipc`, `.arrow` | Apache Arrow IPC | `statguardian validate --contract orders.sg --file data.ipc` |
+| `_delta_log/` dir | Delta Lake | `statguardian validate --contract orders.sg --file /path/to/delta_table/` |
+| `metadata/` dir | Apache Iceberg | `statguardian validate --contract orders.sg --file /path/to/iceberg_table/` |
 
 ### Output formats
 
@@ -79,7 +79,7 @@ The CLI auto-detects format from file extension or directory structure:
 Human-readable one-liner:
 
 ```bash
-$ statguard validate --contract orders.sg --file data.parquet
+$ statguardian validate --contract orders.sg --file data.parquet
 [StatGuard] PASS ✓ | dataset=orders | score=0.97 (A) | rows=500000 | violations=2 | 3ms
 ```
 
@@ -88,7 +88,7 @@ $ statguard validate --contract orders.sg --file data.parquet
 Structured JSON (suitable for parsing):
 
 ```bash
-$ statguard validate --contract orders.sg --file data.parquet --format json
+$ statguardian validate --contract orders.sg --file data.parquet --format json
 {
   "id": "a1b2c3d4-...",
   "dataset": "orders",
@@ -105,7 +105,7 @@ $ statguard validate --contract orders.sg --file data.parquet --format json
 Prometheus text format (for scraping):
 
 ```bash
-$ statguard validate --contract orders.sg --file data.parquet --format prometheus
+$ statguardian validate --contract orders.sg --file data.parquet --format prometheus
 # HELP statguard_validation_passed Dataset validation passed (0=fail, 1=pass)
 # TYPE statguard_validation_passed gauge
 statguard_validation_passed{dataset="orders"} 1.0
@@ -118,13 +118,13 @@ statguard_validation_score{dataset="orders"} 0.97
 #### Basic validation
 
 ```bash
-statguard validate --contract orders.sg --file orders.parquet
+statguardian validate --contract orders.sg --file orders.parquet
 ```
 
 #### With drift detection
 
 ```bash
-statguard validate --contract orders.sg \
+statguardian validate --contract orders.sg \
   --file today.parquet \
   --reference yesterday.parquet
 ```
@@ -132,46 +132,46 @@ statguard validate --contract orders.sg \
 #### Validate Delta Lake
 
 ```bash
-statguard validate --contract orders.sg \
+statguardian validate --contract orders.sg \
   --file /data/orders_delta/
 ```
 
 #### Validate Iceberg table
 
 ```bash
-statguard validate --contract orders.sg \
+statguardian validate --contract orders.sg \
   --file /data/orders_iceberg/
 ```
 
 #### Parse as JSON for downstream tools
 
 ```bash
-statguard validate --contract orders.sg --file data.parquet --format json | jq '.violations'
+statguardian validate --contract orders.sg --file data.parquet --format json | jq '.violations'
 ```
 
 #### Prometheus scraping (Datadog, Grafana, etc.)
 
 ```bash
-statguard validate --contract orders.sg --file data.parquet --format prometheus | curl --data-binary @- http://localhost:9091/metrics/job/statguard
+statguardian validate --contract orders.sg --file data.parquet --format prometheus | curl --data-binary @- http://localhost:9091/metrics/job/statguard
 ```
 
 #### CI/CD pipeline gate (fail on any warning)
 
 ```bash
 # In GitHub Actions / GitLab CI / Jenkins:
-statguard validate --contract orders.sg --file data.parquet --fail-on-warning
+statguardian validate --contract orders.sg --file data.parquet --fail-on-warning
 ```
 
 ---
 
-### `statguard check` — Syntax-check DSL
+### `statguardian check` — Syntax-check DSL
 
 Validate DSL syntax without validating data. Useful for CI pipeline linting.
 
 **Syntax:**
 
 ```bash
-statguard check --contract <path.sg>
+statguardian check --contract <path.sg>
 ```
 
 **Arguments:**
@@ -189,10 +189,10 @@ statguard check --contract <path.sg>
 
 ```bash
 # Check syntax only (no data needed)
-statguard check --contract orders.sg
+statguardian check --contract orders.sg
 
 # Use in CI pipeline
-if statguard check --contract orders.sg; then
+if statguardian check --contract orders.sg; then
   echo "Contract valid, proceeding..."
 else
   echo "Contract syntax error!"
@@ -220,9 +220,9 @@ jobs:
         with:
           python-version: "3.10"
       
-      - run: pip install statguard[cloud]
-      - run: statguard check --contract contracts/orders.sg
-      - run: statguard validate --contract contracts/orders.sg \
+      - run: pip install statguardian[cloud]
+      - run: statguardian check --contract contracts/orders.sg
+      - run: statguardian validate --contract contracts/orders.sg \
               --file s3://my-bucket/data/orders.parquet \
               --fail-on-warning
 ```
@@ -231,7 +231,7 @@ jobs:
 
 ```sql
 {{ config(
-  post_hook="statguard validate --contract contracts/{{ this.name }}.sg --file {{ this.identifier }}.parquet --fail-on-warning"
+  post_hook="statguardian validate --contract contracts/{{ this.name }}.sg --file {{ this.identifier }}.parquet --fail-on-warning"
 ) }}
 
 SELECT * FROM raw_orders
@@ -245,7 +245,7 @@ from airflow.operators.bash import BashOperator
 validate_orders = BashOperator(
     task_id="validate_orders",
     bash_command="""
-        statguard validate \
+        statguardian validate \
           --contract /contracts/orders.sg \
           --file s3://my-bucket/orders/{{ ds }}/ \
           --reference s3://my-bucket/orders/{{ yesterday_ds }}/ \
@@ -263,7 +263,7 @@ validate_orders = BashOperator(
 DATE=$(date +%Y-%m-%d)
 LOG_FILE="/var/log/statguard/${DATE}.log"
 
-statguard validate \
+statguardian validate \
   --contract /etc/statguard/orders.sg \
   --file /data/orders/${DATE}.parquet \
   --reference /data/orders/$(date -d yesterday +%Y-%m-%d).parquet \
@@ -294,18 +294,18 @@ fi
 For cloud/SQL/Spark validation, use the Python API:
 
 ```python
-import statguard
+import statguardian
 
-contract = statguard.DataContract.from_file("orders.sg")
+contract = statguardian.DataContract.from_file("orders.sg")
 
 # Cloud
-report = statguard.execute_cloud(contract, "s3://bucket/data/")
+report = statguardian.execute_cloud(contract, "s3://bucket/data/")
 
 # SQL
-report = statguard.execute_sql(contract, "postgresql://localhost/db", "SELECT * FROM orders")
+report = statguardian.execute_sql(contract, "postgresql://localhost/db", "SELECT * FROM orders")
 
 # Spark
-report = statguard.execute_spark(contract, spark_df)
+report = statguardian.execute_spark(contract, spark_df)
 ```
 
 ---
@@ -317,7 +317,7 @@ report = statguard.execute_spark(contract, spark_df)
 StatGuard is not installed or not in PATH. Install it:
 
 ```bash
-pip install statguard
+pip install statguardian
 # Verify:
 which statguard
 ```
@@ -328,7 +328,7 @@ The path to the `.sg` file is incorrect. Check that it exists:
 
 ```bash
 ls -la /path/to/contract.sg
-statguard check --contract /path/to/contract.sg
+statguardian check --contract /path/to/contract.sg
 ```
 
 ### `Error: data file not found`
@@ -346,7 +346,7 @@ For S3, GCS, or Azure URIs, see "Limitations" above — use Python API instead.
 The contract file has a syntax error. Check the DSL syntax:
 
 ```bash
-statguard check --contract contract.sg
+statguardian check --contract contract.sg
 ```
 
 See [DSL Reference](../README.md#dsl-reference) for grammar.
@@ -356,10 +356,10 @@ See [DSL Reference](../README.md#dsl-reference) for grammar.
 An unexpected error occurred during validation. Run with Python for more details:
 
 ```python
-import statguard
+import statguardian
 
-contract = statguard.DataContract.from_file("contract.sg")
-report = statguard.execute_file(contract, "data.parquet")
+contract = statguardian.DataContract.from_file("contract.sg")
+report = statguardian.execute_file(contract, "data.parquet")
 print(report.summary())
 ```
 

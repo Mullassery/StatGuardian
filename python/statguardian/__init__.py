@@ -14,9 +14,9 @@ A Rust-native engine with a Python-first API for:
 Quick start::
 
     import polars as pl
-    import statguard
+    import statguardian
 
-    contract = statguard.DataContract.from_dsl(\"\"\"
+    contract = statguardian.DataContract.from_dsl(\"\"\"
     dataset orders {
         schema {
             order_id: string, not_null, unique
@@ -34,7 +34,7 @@ Quick start::
     \"\"\")
 
     df = pl.read_parquet("orders.parquet")
-    report = statguard.execute(contract, df)
+    report = statguardian.execute(contract, df)
     print(report.summary())
 """
 

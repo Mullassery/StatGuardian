@@ -5,13 +5,13 @@
 ### pip
 
 ```bash
-pip install statguard
+pip install statguardian
 ```
 
 ### uv (recommended)
 
 ```bash
-uv add statguard
+uv add statguardian
 ```
 
 ### curl (one-liner, any Unix/macOS)
@@ -30,47 +30,47 @@ Additional features require optional dependencies:
 ### Cloud storage (S3, GCS, Azure)
 
 ```bash
-pip install statguard[cloud]
+pip install statguardian[cloud]
 # Includes: AWS S3, Google Cloud Storage, Azure Blob Storage
 ```
 
-Use with: `statguard.execute_cloud(contract, "s3://bucket/data/")`
+Use with: `statguardian.execute_cloud(contract, "s3://bucket/data/")`
 
 ### SQL databases
 
 ```bash
-pip install statguard[sql]  # All SQL (Postgres, MySQL, SQLite, BigQuery, Snowflake, Redshift, Databricks, ClickHouse, DuckDB, Trino)
+pip install statguardian[sql]  # All SQL (Postgres, MySQL, SQLite, BigQuery, Snowflake, Redshift, Databricks, ClickHouse, DuckDB, Trino)
 ```
 
 Or install per-database:
 
 ```bash
-pip install statguard[sql-postgres]      # PostgreSQL (⚠️ adds LGPL-2.1 dependency)
-pip install statguard[sql-mysql]         # MySQL / MariaDB
-pip install statguard[sql-sqlite]        # SQLite
-pip install statguard[sql-bigquery]      # Google BigQuery
-pip install statguard[sql-snowflake]     # Snowflake
-pip install statguard[sql-redshift]      # Amazon Redshift
-pip install statguard[sql-databricks]    # Databricks
-pip install statguard[sql-clickhouse]    # ClickHouse
-pip install statguard[sql-duckdb]        # DuckDB
+pip install statguardian[sql-postgres]      # PostgreSQL (⚠️ adds LGPL-2.1 dependency)
+pip install statguardian[sql-mysql]         # MySQL / MariaDB
+pip install statguardian[sql-sqlite]        # SQLite
+pip install statguardian[sql-bigquery]      # Google BigQuery
+pip install statguardian[sql-snowflake]     # Snowflake
+pip install statguardian[sql-redshift]      # Amazon Redshift
+pip install statguardian[sql-databricks]    # Databricks
+pip install statguardian[sql-clickhouse]    # ClickHouse
+pip install statguardian[sql-duckdb]        # DuckDB
 ```
 
-Use with: `statguard.execute_sql(contract, "postgresql://host/db", "SELECT * FROM table")`
+Use with: `statguardian.execute_sql(contract, "postgresql://host/db", "SELECT * FROM table")`
 
 ### Apache Spark
 
 ```bash
-pip install statguard[spark]
+pip install statguardian[spark]
 # Requires: PySpark 3.0+, PyArrow
 ```
 
-Use with: `statguard.execute_spark(contract, spark_df)`
+Use with: `statguardian.execute_spark(contract, spark_df)`
 
 ### Everything (all features)
 
 ```bash
-pip install statguard[all]
+pip install statguardian[all]
 ```
 
 ---
@@ -110,7 +110,7 @@ curl -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
 
 # 2. Clone and install dependencies
-git clone https://github.com/Mullassery/statguard.git
+git clone https://github.com/Mullassery/statguardian.git
 cd statguard
 pip install maturin
 
@@ -128,7 +128,7 @@ maturin develop --release --cargo-extra-args="--features sql"
 maturin develop --release --cargo-extra-args="--features full"
 
 # 4. Verify
-python -c "import statguard; print(statguard.__version__)"
+python -c "import statguard; print(statguardian.__version__)"
 ```
 
 ### Rust requirements
@@ -143,13 +143,13 @@ python -c "import statguard; print(statguard.__version__)"
 ### Python API
 
 ```python
-import statguard
+import statguardian
 
 # Check version
-print(statguard.__version__)
+print(statguardian.__version__)
 
 # Basic validation
-contract = statguard.DataContract.from_dsl("""
+contract = statguardian.DataContract.from_dsl("""
 dataset test {
     schema { x: int, not_null }
     quality { completeness(x) > 0.9 }
@@ -158,7 +158,7 @@ dataset test {
 
 import polars as pl
 df = pl.DataFrame({"x": [1, 2, None, 4]})
-report = statguard.execute(contract, df)
+report = statguardian.execute(contract, df)
 print(report.summary())
 # Output: [StatGuard] PASS ✓ | dataset=test | score=0.95 (A) | rows=4 | violations=0 | 1ms
 ```
@@ -178,22 +178,22 @@ pl.DataFrame({'x': [1, 2, 3]}).write_parquet('test.parquet')
 "
 
 # Validate
-statguard validate --contract test.sg --file test.parquet
+statguardian validate --contract test.sg --file test.parquet
 # Output: [StatGuard] PASS ✓ | dataset=test | score=1.0 (A) | rows=3 | violations=0 | 1ms
 ```
 
 ### Test cloud (requires AWS credentials)
 
 ```bash
-pip install statguard[cloud]
+pip install statguardian[cloud]
 
 python3 << 'EOF'
-import statguard
-contract = statguard.DataContract.from_dsl("dataset test { schema { x: int } }")
+import statguardian
+contract = statguardian.DataContract.from_dsl("dataset test { schema { x: int } }")
 
 # This requires AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY in env
 try:
-    report = statguard.execute_cloud(contract, "s3://my-bucket/test.parquet")
+    report = statguardian.execute_cloud(contract, "s3://my-bucket/test.parquet")
     print(report.summary())
 except Exception as e:
     print(f"Cloud test (expected if S3 access not configured): {e}")
@@ -209,7 +209,7 @@ EOF
 StatGuard is not installed. Install it:
 
 ```bash
-pip install statguard
+pip install statguardian
 ```
 
 ### `ImportError: cannot import name 'execute_cloud'` (cloud not installed)
@@ -217,7 +217,7 @@ pip install statguard
 Cloud storage feature not installed. Install it:
 
 ```bash
-pip install statguard[cloud]
+pip install statguardian[cloud]
 ```
 
 ### `ImportError: cannot import name 'execute_sql'` (SQL not installed)
@@ -225,7 +225,7 @@ pip install statguard[cloud]
 SQL feature not installed. Install it:
 
 ```bash
-pip install statguard[sql]
+pip install statguardian[sql]
 ```
 
 ### `psycopg2 ImportError` (PostgreSQL not installed)
@@ -233,7 +233,7 @@ pip install statguard[sql]
 PostgreSQL driver not installed. Install it:
 
 ```bash
-pip install statguard[sql-postgres]
+pip install statguardian[sql-postgres]
 ```
 
 Note: This adds `psycopg2-binary` (LGPL-2.1 license). See [LICENSES.md](../LICENSES.md) for compliance details.

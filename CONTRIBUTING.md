@@ -17,7 +17,7 @@ the conventions we follow, and the review process.
 ## Quick setup
 
 ```bash
-git clone https://github.com/Mullassery/statguard.git
+git clone https://github.com/Mullassery/statguardian.git
 cd statguard
 
 # Build and test the Rust crates
@@ -79,7 +79,7 @@ After editing:
 
 ## Reporting bugs
 
-Open an issue at <https://github.com/Mullassery/statguard/issues> with:
+Open an issue at <https://github.com/Mullassery/statguardian/issues> with:
 
 - StatGuard version
 - Minimal reproducing DSL and DataFrame

@@ -10,10 +10,10 @@ use statguard_metrics::report::ValidationReport;
 
 // ── PyDataContract ─────────────────────────────────────────────────────────────
 
-/// A compiled StatGuard data contract ready for execution.
+/// A compiled statguardian data contract ready for execution.
 ///
 /// Create with `DataContract.from_dsl(dsl_string)` or `DataContract.from_file(path)`.
-#[pyclass(name = "DataContract", module = "statguard")]
+#[pyclass(name = "DataContract", module = "statguardian")]
 pub struct PyDataContract {
     inner: DataContract,
     dag: ExecutionDag,
@@ -79,7 +79,7 @@ impl PyDataContract {
 // ── PyValidationReport ─────────────────────────────────────────────────────────
 
 /// Structured result of executing a contract against a dataset.
-#[pyclass(name = "ValidationReport", module = "statguard")]
+#[pyclass(name = "ValidationReport", module = "statguardian")]
 pub struct PyValidationReport {
     inner: ValidationReport,
 }
@@ -430,7 +430,7 @@ fn validate_dsl(dsl: &str) -> PyResult<String> {
 // ── Module definition ─────────────────────────────────────────────────────────
 
 #[pymodule]
-fn _statguard(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn _statguardian(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyDataContract>()?;
     m.add_class::<PyValidationReport>()?;
 
