@@ -1516,9 +1516,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.32"
+version = "0.4.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "953f07c43838f8e6f9758cab68bf5bed85465e7587ebe0b823f1bcd81978ad3a"
+checksum = "0ceec5bc11778974d1bcb055b18002eba7f4b3518b6a0081b3af5f21666da9ad"
 
 [[package]]
 name = "lru-slab"
@@ -3589,20 +3589,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "statguard"
-version = "0.1.0"
-dependencies = [
- "polars",
- "pyo3",
- "pyo3-polars",
- "serde_json",
- "statguard-core",
- "statguard-engine",
- "statguard-io",
- "statguard-metrics",
-]
-
-[[package]]
 name = "statguard-core"
 version = "0.1.0"
 dependencies = [
@@ -3698,6 +3684,20 @@ dependencies = [
  "serde_json",
  "statguard-core",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "statguardian"
+version = "0.1.0"
+dependencies = [
+ "polars",
+ "pyo3",
+ "pyo3-polars",
+ "serde_json",
+ "statguard-core",
+ "statguard-engine",
+ "statguard-io",
+ "statguard-metrics",
 ]
 
 [[package]]
