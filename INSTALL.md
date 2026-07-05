@@ -160,7 +160,7 @@ import polars as pl
 df = pl.DataFrame({"x": [1, 2, None, 4]})
 report = statguardian.execute(contract, df)
 print(report.summary())
-# Output: [StatGuard] PASS ✓ | dataset=test | score=0.95 (A) | rows=4 | violations=0 | 1ms
+# Output: [statguardian] PASS ✓ | dataset=test | score=0.95 (A) | rows=4 | violations=0 | 1ms
 ```
 
 ### CLI
@@ -179,7 +179,7 @@ pl.DataFrame({'x': [1, 2, 3]}).write_parquet('test.parquet')
 
 # Validate
 statguardian validate --contract test.sg --file test.parquet
-# Output: [StatGuard] PASS ✓ | dataset=test | score=1.0 (A) | rows=3 | violations=0 | 1ms
+# Output: [statguardian] PASS ✓ | dataset=test | score=1.0 (A) | rows=3 | violations=0 | 1ms
 ```
 
 ### Test cloud (requires AWS credentials)

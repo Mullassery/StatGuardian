@@ -3,7 +3,7 @@
 **A Python library for data quality, validation, and statistical drift monitoring in production data pipelines — built in Rust.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![PyPI: statguardian](https://img.shields.io/badge/PyPI-statguardian-blue)](https://pypi.org/project/statguardianian/)
+[![PyPI: statguardian](https://img.shields.io/badge/PyPI-statguardian-blue)](https://pypi.org/project/statguardian/)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/Mullassery/statguardian/releases)
 [![Rust](https://img.shields.io/badge/built%20with-Rust-orange.svg)](https://www.rust-lang.org)
 
@@ -90,14 +90,14 @@ report = statguardian.execute_iceberg(contract, "/data/orders_iceberg/", snapsho
 
 # Polars DataFrame (in-memory).
 # NOTE: passing a Polars DataFrame across the Rust boundary requires a Polars
-# build compatible with StatGuard's (pyo3-polars 0.18 / Polars 0.44). With a
+# build compatible with statguardian's (pyo3-polars 0.18 / Polars 0.44). With a
 # newer Polars you may hit a `compat_level` error — prefer execute_file(), which
 # reads the data on the Rust side and has no such coupling.
 df = pl.read_parquet("orders.parquet")
 report = statguardian.execute(contract, df)
 
 print(report.summary())
-# [StatGuard] PASS ✓ | dataset=orders | score=0.97 (A) | rows=500000 | violations=2 | 3ms
+# [statguardian] PASS ✓ | dataset=orders | score=0.97 (A) | rows=500000 | violations=2 | 3ms
 ```
 
 ### 3. Drift detection

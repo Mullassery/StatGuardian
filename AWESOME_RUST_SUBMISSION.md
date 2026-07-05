@@ -6,7 +6,7 @@
 ## Entry Format
 
 ```markdown
-- [StatGuard](https://github.com/Mullassery/statguardian) — High-performance data quality and statistical drift detection engine. Rust 2021 + Polars + PyO3. 13-25× faster than Python libraries. Native support for Delta Lake, Iceberg, cloud storage, and SQL databases. Declarative DSL contract system with schema validation, quality rules, drift detection, and anomaly detection. [MIT](https://github.com/Mullassery/statguardian/blob/main/LICENSE).
+- [statguardian](https://github.com/Mullassery/statguardian) — High-performance data quality and statistical drift detection engine. Rust 2021 + Polars + PyO3. 13-25× faster than Python libraries. Native support for Delta Lake, Iceberg, cloud storage, and SQL databases. Declarative DSL contract system with schema validation, quality rules, drift detection, and anomaly detection. [MIT](https://github.com/Mullassery/statguardian/blob/main/LICENSE).
 ```
 
 ## Details for Submission

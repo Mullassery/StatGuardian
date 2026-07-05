@@ -24,7 +24,7 @@ This guide helps you submit StatGuard to awesome-python and awesome-rust.
 
 3. **Entry Format**
    ```markdown
-   - [StatGuard](https://github.com/Mullassery/statguardian) - Rust-native data quality, validation, and statistical drift monitoring engine with Python bindings. 13-25× faster than pandera. Supports Delta Lake, Iceberg, cloud storage (S3/GCS/Azure), and 13 SQL databases. Single declarative DSL contract for schema validation, quality rules, drift detection, and anomaly detection. MIT license.
+   - [statguardian](https://github.com/Mullassery/statguardian) - Rust-native data quality, validation, and statistical drift monitoring engine with Python bindings. 13-25× faster than pandera. Supports Delta Lake, Iceberg, cloud storage (S3/GCS/Azure), and 13 SQL databases. Single declarative DSL contract for schema validation, quality rules, drift detection, and anomaly detection. MIT license.
    ```
 
 4. **Commit and Push**
@@ -70,7 +70,7 @@ This guide helps you submit StatGuard to awesome-python and awesome-rust.
 
 3. **Entry Format**
    ```markdown
-   - [StatGuard](https://github.com/Mullassery/statguardian) — High-performance data quality and drift detection. Rust + PyO3 + Polars. 13-25× faster than Python libraries. Native support for Delta Lake, Iceberg, cloud storage, SQL databases. [MIT](https://github.com/Mullassery/statguardian/blob/main/LICENSE).
+   - [statguardian](https://github.com/Mullassery/statguardian) — High-performance data quality and drift detection. Rust + PyO3 + Polars. 13-25× faster than Python libraries. Native support for Delta Lake, Iceberg, cloud storage, SQL databases. [MIT](https://github.com/Mullassery/statguardian/blob/main/LICENSE).
    ```
 
 4. **Commit and Push**

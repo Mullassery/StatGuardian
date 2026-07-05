@@ -80,7 +80,7 @@ Human-readable one-liner:
 
 ```bash
 $ statguardian validate --contract orders.sg --file data.parquet
-[StatGuard] PASS ✓ | dataset=orders | score=0.97 (A) | rows=500000 | violations=2 | 3ms
+[statguardian] PASS ✓ | dataset=orders | score=0.97 (A) | rows=500000 | violations=2 | 3ms
 ```
 
 #### `json`

@@ -65,7 +65,7 @@ import statguardian, polars as pl
 contract = statguardian.DataContract.from_file("orders.sg")
 report = statguardian.execute(contract, pl.read_parquet("orders.parquet"))
 print(report.summary())
-# [StatGuard] PASS ✓ | dataset=orders | score=0.97 (A) | rows=500000 | violations=2 | 3ms
+# [statguardian] PASS ✓ | dataset=orders | score=0.97 (A) | rows=500000 | violations=2 | 3ms
 ```
 
 ### DSL Contract Example
