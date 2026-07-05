@@ -1,8 +1,8 @@
 # Changelog
 
-All notable changes to StatGuard are documented here.
+All notable changes to statguardian are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-StatGuard uses [Semantic Versioning](https://semver.org/).
+statguardian uses [Semantic Versioning](https://semver.org/).
 
 ---
 
@@ -104,5 +104,5 @@ StatGuard uses [Semantic Versioning](https://semver.org/).
 - 25 unit + integration tests across all crates
 - All tests pass on the first release
 
-[Unreleased]: https://github.com/Mullassery/StatGuard/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/Mullassery/StatGuard/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Mullassery/statguardian/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Mullassery/statguardian/releases/tag/v0.1.0

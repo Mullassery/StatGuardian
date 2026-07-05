@@ -11,7 +11,7 @@
 
 ## Details for Submission
 
-**Project Name:** StatGuard  
+**Project Name:** statguardian  
 **Repository:** https://github.com/Mullassery/statguardian  
 **PyPI:** https://pypi.org/project/statguardianian  
 **License:** MIT  
@@ -19,7 +19,7 @@
 
 ## Why awesome-python?
 
-StatGuard is a Python-first library (pip/uv installable) with a powerful Rust backend. It solves a critical gap in the Python data quality ecosystem:
+statguardian is a Python-first library (pip/uv installable) with a powerful Rust backend. It solves a critical gap in the Python data quality ecosystem:
 
 1. **Performance leader** — 13-25× faster than pandera/Great Expectations for equivalent checks
 2. **Comprehensive format support** — Unique native support for Delta Lake and Iceberg without Spark
@@ -51,4 +51,4 @@ StatGuard is a Python-first library (pip/uv installable) with a powerful Rust ba
 
 ## Note
 
-This is a legitimate open-source project submission. StatGuard is fully documented, tested, and available on PyPI with a clear MIT license. No conflicts of interest or duplicative entries.
+This is a legitimate open-source project submission. statguardian is fully documented, tested, and available on PyPI with a clear MIT license. No conflicts of interest or duplicative entries.

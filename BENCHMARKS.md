@@ -1,18 +1,18 @@
-# StatGuard Benchmarks
+# statguardian Benchmarks
 
 **Environment:** Apple M-series · macOS · Python 3.13  
 **Dataset:** 100 000 rows × 4 columns (int, string, int, string)  
 **Checks:** `not_null` · type · `range(0–120)` · regex email · `uniqueness`  
-**Versions:** StatGuard 0.1 · pandera 0.31 · Great Expectations 1.18 · Pydantic 2.13  
+**Versions:** statguardian 0.1 · pandera 0.31 · Great Expectations 1.18 · Pydantic 2.13  
 **Method:** best-of-7 runs, warm process (no cold-start overhead)
 
 ---
 
 ## Results — 100 000 rows
 
-| Tool | Best (ms) | Median (ms) | vs StatGuard |
+| Tool | Best (ms) | Median (ms) | vs statguardian |
 |---|---|---|---|
-| **StatGuard 0.1** (Rust/Polars) | **2.0** | **2.1** | baseline |
+| **statguardian 0.1** (Rust/Polars) | **2.0** | **2.1** | baseline |
 | Polars expressions (lower bound) | 1.4 | 1.5 | — |
 | Pure Python loops | 11.5 | 11.8 | 5.8× slower |
 | **pandera 0.31** (pandas, columnar) | **26.5** | **26.7** | **13× slower** |
@@ -23,7 +23,7 @@
 > **Key insight:** Pydantic and Great Expectations land in the same performance
 > tier (~43–50 ms). Pydantic is row-oriented — each `model_validate` call
 > allocates a Python object and runs field validators one-by-one. Even the
-> bulk `TypeAdapter` path still iterates rows in Python. StatGuard never
+> bulk `TypeAdapter` path still iterates rows in Python. statguardian never
 > touches individual rows — it operates on entire columns using SIMD-optimised
 > Arrow kernels with no Python allocation per element.
 
@@ -34,7 +34,7 @@
 Every tool performed the same 5 logical checks. Uniqueness is not a built-in
 Pydantic field constraint — it requires a custom root validator.
 
-| Check | StatGuard DSL | pandera | Great Expectations | Pydantic v2 |
+| Check | statguardian DSL | pandera | Great Expectations | Pydantic v2 |
 |---|---|---|---|---|
 | `id` not null | `not_null` | `nullable=False` | `ExpectColumnValuesToNotBeNull` | `id: int` (implicit) |
 | `country` not null | `not_null` | `nullable=False` | `ExpectColumnValuesToNotBeNull` | `country: str` (implicit) |
@@ -46,7 +46,7 @@ Pydantic field constraint — it requires a custom root validator.
 
 ## Scaling
 
-| Rows | Great Expectations | Pydantic v2 (bulk) | pandera | **StatGuard** | vs GX | vs Pydantic | vs pandera |
+| Rows | Great Expectations | Pydantic v2 (bulk) | pandera | **statguardian** | vs GX | vs Pydantic | vs pandera |
 |---|---|---|---|---|---|---|---|
 | 10 000 | ~10 ms | ~5 ms | ~4 ms | ~0.4 ms | ~25× | ~12× | ~10× |
 | 100 000 | **50 ms** | **44 ms** | **27 ms** | **~2 ms** | **~25×** | **~22×** | **~13×** |
@@ -59,7 +59,7 @@ batch size._
 
 ---
 
-## Why StatGuard is faster
+## Why statguardian is faster
 
 | Technique | Benefit |
 |---|---|
@@ -79,7 +79,7 @@ a per-row cost that doesn't amortise:
 - Field validators run in Python per row, not in native code
 - No columnar short-circuit: if row 99 999 fails, all 99 999 before it were still fully validated
 
-StatGuard's columnar approach inverts this: a null check on 100 000 rows is a
+statguardian's columnar approach inverts this: a null check on 100 000 rows is a
 single Arrow kernel call, not 100 000 Python function calls.
 
 ---
@@ -93,7 +93,7 @@ Python tools (pandera, GX, Pydantic) have built-in statistical drift detection.
 
 ## Memory
 
-StatGuard processes data in columnar chunks — no additional copies beyond the
+statguardian processes data in columnar chunks — no additional copies beyond the
 input Arrow buffer. Memory overhead for 100k rows × 10 columns is typically
 **< 10 MB** above the raw data size. Pydantic's row-by-row approach allocates
 one Python model instance per row; at 100k rows with 4 fields each, that is

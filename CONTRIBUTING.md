@@ -1,4 +1,4 @@
-# Contributing to StatGuard
+# Contributing to statguardian
 
 Thank you for contributing! This document covers how to set up the project,
 the conventions we follow, and the review process.
@@ -81,7 +81,7 @@ After editing:
 
 Open an issue at <https://github.com/Mullassery/statguardian/issues> with:
 
-- StatGuard version
+- statguardian version
 - Minimal reproducing DSL and DataFrame
 - Expected vs actual behaviour
 

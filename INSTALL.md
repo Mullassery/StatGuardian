@@ -1,4 +1,4 @@
-# Installing StatGuard
+# Installing statguardian
 
 ## Quick start (pip/uv)
 
@@ -24,7 +24,7 @@ curl -sSfL https://raw.githubusercontent.com/Mullassery/statguard/main/install.s
 
 ## Optional features
 
-StatGuard ships with core features (DSL, schema validation, quality rules, drift detection).
+statguardian ships with core features (DSL, schema validation, quality rules, drift detection).
 Additional features require optional dependencies:
 
 ### Cloud storage (S3, GCS, Azure)
@@ -206,7 +206,7 @@ EOF
 
 ### `ImportError: No module named 'statguard'`
 
-StatGuard is not installed. Install it:
+statguardian is not installed. Install it:
 
 ```bash
 pip install statguardian
@@ -256,7 +256,7 @@ maturin develop --release
 
 ### Polars version conflict
 
-StatGuard requires Polars ≥ 0.20. Upgrade it:
+statguardian requires Polars ≥ 0.20. Upgrade it:
 
 ```bash
 pip install --upgrade polars

@@ -1,10 +1,10 @@
-# StatGuard Open Source Licenses
+# statguardian Open Source Licenses
 
-StatGuard is licensed under the **MIT License**. This document details the licenses of all included and optional dependencies.
+statguardian is licensed under the **MIT License**. This document details the licenses of all included and optional dependencies.
 
 ## Core Project License
 
-- **StatGuard** — MIT License (see [LICENSE](LICENSE))
+- **statguardian** — MIT License (see [LICENSE](LICENSE))
 
 ---
 
@@ -118,7 +118,7 @@ The following are **NOT included** and cannot be added due to proprietary licens
 
 ## Compliance Summary
 
-✅ **StatGuard Core**: MIT (permissive, no restrictions)
+✅ **statguardian Core**: MIT (permissive, no restrictions)
 
 ⚠️ **With psycopg2** (PostgreSQL): LGPL-2.1 with exceptions
    - Binary distributions must include source/download instructions
@@ -129,7 +129,7 @@ The following are **NOT included** and cannot be added due to proprietary licens
 
 ---
 
-## Using StatGuard in Your Project
+## Using statguardian in Your Project
 
 ### If your project is MIT/Apache-2.0 licensed:
 

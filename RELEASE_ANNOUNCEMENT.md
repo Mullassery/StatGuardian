@@ -1,14 +1,14 @@
-# StatGuard v0.1.0 Release — Production-Grade Data Quality Engine
+# statguardian v0.1.0 Release — Production-Grade Data Quality Engine
 
-**Announcing StatGuard: A Rust-native data quality, validation, and statistical drift monitoring engine with a Python API that's 13-25× faster than pandera.**
+**Announcing statguardian: A Rust-native data quality, validation, and statistical drift monitoring engine with a Python API that's 13-25× faster than pandera.**
 
 🚀 **Now available via pip, uv, and curl**
 
 ---
 
-## What is StatGuard?
+## What is statguardian?
 
-StatGuard is a high-performance data quality platform that compiles a declarative **DSL contract** into an optimised columnar execution plan. Write once, validate everywhere — across Parquet, CSV, JSON, Delta Lake, Apache Iceberg, S3, GCS, Azure, PostgreSQL, BigQuery, Snowflake, and Apache Spark.
+statguardian is a high-performance data quality platform that compiles a declarative **DSL contract** into an optimised columnar execution plan. Write once, validate everywhere — across Parquet, CSV, JSON, Delta Lake, Apache Iceberg, S3, GCS, Azure, PostgreSQL, BigQuery, Snowflake, and Apache Spark.
 
 **Stack:** Rust 2021 · Polars 0.44 · PyO3 · maturin · pest PEG grammar · Rayon · Apache Arrow
 
@@ -16,9 +16,9 @@ StatGuard is a high-performance data quality platform that compiles a declarativ
 
 ---
 
-## Why StatGuard?
+## Why statguardian?
 
-| Metric | pandera | Great Expectations | Pydantic v2 | **StatGuard** |
+| Metric | pandera | Great Expectations | Pydantic v2 | **statguardian** |
 |--------|---------|--------------------|----|---|
 | **Performance (100k rows)** | 26.5 ms | 50.4 ms | 43.5 ms | **2.0 ms** |
 | **Speedup** | 1× | 25× slower | 22× slower | **13-25× faster** |
@@ -99,7 +99,7 @@ dataset orders {
 **100,000 rows × 4 columns** — 5 checks (null, type, range, regex, uniqueness):
 
 ```
-StatGuard (Rust/Polars)     ~2.0 ms  ← baseline
+statguardian (Rust/Polars)     ~2.0 ms  ← baseline
 Polars manual expressions    1.4 ms  (lower bound, no contract overhead)
 Pure Python loops           11.5 ms  5.8× slower
 pandera 0.31               26.5 ms  13× slower
@@ -113,7 +113,7 @@ See [BENCHMARKS.md](https://github.com/Mullassery/statguardian/blob/main/BENCHMA
 
 ## Support Matrix
 
-| Format | StatGuard | Competitors |
+| Format | statguardian | Competitors |
 |--------|-----------|-------------|
 | **Files** (Parquet, CSV, JSON, Avro, ORC) | ✓ native | via pandas |
 | **Delta Lake** (without Spark) | **✓ unique** | ✗ |
@@ -254,7 +254,7 @@ MIT License © 2026
 
 ---
 
-**Try StatGuard today and experience data quality validation that's fast, comprehensive, and easy to use.**
+**Try statguardian today and experience data quality validation that's fast, comprehensive, and easy to use.**
 
 ```bash
 pip install statguardian

@@ -11,7 +11,7 @@
 
 ## Details for Submission
 
-**Project Name:** StatGuard  
+**Project Name:** statguardian  
 **Repository:** https://github.com/Mullassery/statguardian  
 **Language:** Rust 2021 (core), Python 3.8+ (bindings)  
 **PyPI:** https://pypi.org/project/statguardianian  
@@ -20,7 +20,7 @@
 
 ## Why awesome-rust (Python Bindings)?
 
-StatGuard is a premier example of **Rust-powered Python libraries** that solve performance-critical problems:
+statguardian is a premier example of **Rust-powered Python libraries** that solve performance-critical problems:
 
 1. **PyO3 + maturin** — Modern Python extension architecture
 2. **Rust core for speed** — 13-25× faster than pure Python alternatives
@@ -57,12 +57,12 @@ StatGuard is a premier example of **Rust-powered Python libraries** that solve p
 
 | Project | Focus | Bindings | Status |
 |---------|-------|----------|--------|
-| **StatGuard** | Data quality, validation, drift detection | PyO3 + maturin | ✅ Stable v0.1 |
+| **statguardian** | Data quality, validation, drift detection | PyO3 + maturin | ✅ Stable v0.1 |
 | **Polars** | DataFrame operations | PyO3 + maturin | ✅ Mature |
 | **cryptography** | Cryptographic functions | CFFI + Rust | ✅ Mature |
 | **PyO3 itself** | Python extension framework | Rust | ✅ Mature |
 
-StatGuard fills a specific niche: **columnar data validation** with performance guarantees.
+statguardian fills a specific niche: **columnar data validation** with performance guarantees.
 
 ## Technical Highlights
 
@@ -74,7 +74,7 @@ StatGuard fills a specific niche: **columnar data validation** with performance 
 
 ## Note
 
-This is a legitimate, production-ready Rust project with Python bindings. StatGuard demonstrates excellent software engineering practices:
+This is a legitimate, production-ready Rust project with Python bindings. statguardian demonstrates excellent software engineering practices:
 
 - ✅ Minimal dependencies (MIT/Apache-2.0 only)
 - ✅ Comprehensive test suite

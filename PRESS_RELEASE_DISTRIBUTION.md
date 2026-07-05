@@ -1,7 +1,7 @@
-# StatGuard v0.1.0 — Press Release Distribution Guide
+# statguardian v0.1.0 — Press Release Distribution Guide
 
 **Author:** Georgi Mammen Mullassery  
-**Project:** StatGuard (Rust-native data quality engine)  
+**Project:** statguardian (Rust-native data quality engine)  
 **Release Date:** June 15, 2026  
 **License:** MIT
 
@@ -27,17 +27,17 @@ This guide covers free/open press release distribution channels with:
 **Steps:**
 1. Go to https://www.prlog.org/submit-press-release/
 2. Fill in form:
-   - **Title:** StatGuard v0.1.0 — 13-25× Faster Data Quality Engine Released
+   - **Title:** statguardian v0.1.0 — 13-25× Faster Data Quality Engine Released
    - **Category:** Technology / Software / Open Source
    - **Content:** Use RELEASE_ANNOUNCEMENT.md content
    - **Author:** Georgi Mammen Mullassery
-   - **Company:** StatGuard (Open Source)
+   - **Company:** statguardian (Open Source)
    - **Contact:** mullassery@gmail.com
 3. Submit
 
 **Example Title:**
 ```
-StatGuard v0.1.0: Production-Grade Rust Data Quality Engine Now Available — 13-25× Faster Than pandera, Great Expectations, Pydantic
+statguardian v0.1.0: Production-Grade Rust Data Quality Engine Now Available — 13-25× Faster Than pandera, Great Expectations, Pydantic
 ```
 
 ---
@@ -50,7 +50,7 @@ StatGuard v0.1.0: Production-Grade Rust Data Quality Engine Now Available — 13
 **Steps:**
 1. Go to https://www.einpresswire.com/submit_press_release.php
 2. Submission form:
-   - **Release Title:** StatGuard: Open-Source Rust Data Quality Engine Launches
+   - **Release Title:** statguardian: Open-Source Rust Data Quality Engine Launches
    - **Category:** Technology / Computer Science / Software
    - **Content:** Use RELEASE_ANNOUNCEMENT.md
    - **Author Contact:** Georgi Mammen Mullassery (mullassery@gmail.com)
@@ -82,7 +82,7 @@ StatGuard v0.1.0: Production-Grade Rust Data Quality Engine Now Available — 13
 **Steps:**
 1. Go to https://openpr.com/submit
 2. Submit press release (requires email, creates account)
-3. Content: StatGuard announcement
+3. Content: statguardian announcement
 4. Tags: rust, python, data-quality, open-source
 
 ---
@@ -92,7 +92,7 @@ StatGuard v0.1.0: Production-Grade Rust Data Quality Engine Now Available — 13
 
 **Note:** For top-tier coverage, email: startups@techcrunch.com
 
-**Subject:** New Open Source Project: StatGuard Data Quality Engine  
+**Subject:** New Open Source Project: statguardian Data Quality Engine  
 **Body:** Use RELEASE_ANNOUNCEMENT.md + GitHub link
 
 ---
@@ -105,7 +105,7 @@ StatGuard v0.1.0: Production-Grade Rust Data Quality Engine Now Available — 13
 **Steps:**
 1. Create account (optional login)
 2. Post project to "Show HN" or "Developer Tools"
-3. Title: "StatGuard — Rust Data Quality Engine (13-25× faster than Python)"
+3. Title: "statguardian — Rust Data Quality Engine (13-25× faster than Python)"
 4. Include GitHub link, benchmarks, demo
 5. Link: https://github.com/Mullassery/statguardian
 
@@ -118,7 +118,7 @@ StatGuard v0.1.0: Production-Grade Rust Data Quality Engine Now Available — 13
 
 **Guidelines:**
 - Post to "Show HN" section
-- Title: "Show HN: StatGuard — Rust data quality engine, 13-25× faster than Python"
+- Title: "Show HN: statguardian — Rust data quality engine, 13-25× faster than Python"
 - Include GitHub repo
 - Be prepared for technical questions
 
@@ -129,18 +129,18 @@ StatGuard v0.1.0: Production-Grade Rust Data Quality Engine Now Available — 13
 ### 8. **Reddit Tech Communities** (No login to post)
 
 **Subreddits to post in:**
-- r/rust — "Show & Tell: StatGuard, Rust data validation engine"
-- r/Python — "StatGuard: Production data quality library (13-25× faster than pandera)"
-- r/MachineLearning — "Project: StatGuard for ML data validation"
-- r/dataisbeautiful (maybe) — "StatGuard Benchmarks"
-- r/opensourceSoftware — "Release: StatGuard v0.1"
+- r/rust — "Show & Tell: statguardian, Rust data validation engine"
+- r/Python — "statguardian: Production data quality library (13-25× faster than pandera)"
+- r/MachineLearning — "Project: statguardian for ML data validation"
+- r/dataisbeautiful (maybe) — "statguardian Benchmarks"
+- r/opensourceSoftware — "Release: statguardian v0.1"
 
 **Post Template:**
 ```
-Title: Show & Tell: StatGuard — Rust Data Quality Engine (13-25× Faster)
+Title: Show & Tell: statguardian — Rust Data Quality Engine (13-25× Faster)
 
 Body:
-I've released StatGuard v0.1, an open-source Rust-native data quality and 
+I've released statguardian v0.1, an open-source Rust-native data quality and 
 drift monitoring engine with Python bindings.
 
 **Key features:**
@@ -165,7 +165,7 @@ MIT licensed. Happy to answer questions!
 
 **Steps:**
 1. Create account (free)
-2. Write article: "StatGuard: 13-25× Faster Data Quality Engine"
+2. Write article: "statguardian: 13-25× Faster Data Quality Engine"
 3. Include:
    - Feature overview
    - Quick start code
@@ -180,7 +180,7 @@ MIT licensed. Happy to answer questions!
 
 **Steps:**
 1. Create account
-2. Publish story: "Announcing StatGuard: Production-Grade Data Quality Engine"
+2. Publish story: "Announcing statguardian: Production-Grade Data Quality Engine"
 3. Content: Extended version of RELEASE_ANNOUNCEMENT.md
 4. Include medium.com/@your-username/@Mullassery
 5. Tags: Rust, Python, Data Quality, Open Source
@@ -201,7 +201,7 @@ MIT licensed. Happy to answer questions!
 
 **Post:**
 ```
-Excited to announce StatGuard v0.1! 🚀
+Excited to announce statguardian v0.1! 🚀
 
 A production-grade Rust-native data quality, validation & drift monitoring 
 engine with Python bindings.
@@ -227,7 +227,7 @@ PyPI: https://pypi.org/project/statguardian/
 
 **Tweet 1 (Main announcement):**
 ```
-🚀 StatGuard v0.1 is here!
+🚀 statguardian v0.1 is here!
 
 A production-grade Rust-native data quality engine with Python bindings.
 
@@ -245,9 +245,9 @@ By @Mullassery #Rust #Python #DataEngineering
 
 **Tweet 2 (Benchmarks):**
 ```
-StatGuard benchmarks (100k rows, 5 checks):
+statguardian benchmarks (100k rows, 5 checks):
 
-StatGuard: ~2ms ⚡
+statguardian: ~2ms ⚡
 pandera: 26.5ms (13× slower)
 Great Expectations: 50.4ms (25× slower)
 Pydantic: 43.5ms (22× slower)
@@ -259,7 +259,7 @@ Details: https://github.com/Mullassery/statguardian/blob/main/BENCHMARKS.md
 
 **Tweet 3 (Features):**
 ```
-StatGuard features at a glance:
+statguardian features at a glance:
 
 ✅ Schema validation (types, nulls, ranges, regex, enums)
 ✅ Quality metrics (completeness, uniqueness, validity)
@@ -282,9 +282,9 @@ Docs: https://github.com/Mullassery/statguardian#readme
 **For each:**
 ```
 To: [email from outlet]
-Subject: [Your name] releases StatGuard: Open-source Rust data quality engine
+Subject: [Your name] releases statguardian: Open-source Rust data quality engine
 Body: [Use RELEASE_ANNOUNCEMENT.md content]
-Signature: Georgi Mammen Mullassery, Creator of StatGuard
+Signature: Georgi Mammen Mullassery, Creator of statguardian
          MIT License | https://github.com/Mullassery/statguardian
 ```
 
@@ -300,7 +300,7 @@ Signature: Georgi Mammen Mullassery, Creator of StatGuard
 ## 🔍 SEO Optimization Tips
 
 ### Keywords to use:
-- "StatGuard data quality"
+- "statguardian data quality"
 - "Rust data validation"
 - "Delta Lake without Spark"
 - "Apache Iceberg validation"
@@ -380,7 +380,7 @@ Use this structure for all submissions:
 ```
 PRESS RELEASE
 
-StatGuard v0.1.0 Released: Production-Grade Rust Data Quality Engine Now Available
+statguardian v0.1.0 Released: Production-Grade Rust Data Quality Engine Now Available
 
 [Subheading]
 Fastest data validation library for Python ecosystem — 13-25× faster than pandera, 
@@ -401,7 +401,7 @@ Benchmarks: https://github.com/Mullassery/statguardian/blob/main/BENCHMARKS.md
 
 About the Author:
 Georgi Mammen Mullassery is a software engineer specializing in Rust and Python.
-StatGuard is his open-source contribution to the data engineering community.
+statguardian is his open-source contribution to the data engineering community.
 
 MIT License | GitHub @Mullassery
 ```
@@ -420,4 +420,4 @@ MIT License | GitHub @Mullassery
 
 **Ready to distribute! 🚀**
 
-All 13+ channels + email outreach will give StatGuard excellent visibility and SEO value without needing paid press distribution.
+All 13+ channels + email outreach will give statguardian excellent visibility and SEO value without needing paid press distribution.

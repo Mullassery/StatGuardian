@@ -1,4 +1,4 @@
-# StatGuard Roadmap
+# statguardian Roadmap
 
 ## Current Release: 0.1.0
 

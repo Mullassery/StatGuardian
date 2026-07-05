@@ -1,8 +1,8 @@
-# StatGuard vs Other Data Quality Tools
+# statguardian vs Other Data Quality Tools
 
 ## Benchmark Comparison
 
-| Feature | StatGuard | Pandera | Great Expectations | Soda | Freshness |
+| Feature | statguardian | Pandera | Great Expectations | Soda | Freshness |
 |---------|-----------|---------|-------------------|------|-----------|
 | **Speed** | 13–25× faster | 1× (baseline) | 1–2× | 2–3× | 3–5× |
 | **Schema Validation** | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -14,7 +14,7 @@
 
 ## Performance
 
-StatGuard achieves 13–25× speedup through:
+statguardian achieves 13–25× speedup through:
 - **Rust engine**: Compiled, type-safe execution
 - **Columnar processing**: Leverages Polars + Arrow for SIMD optimization
 - **Parallel execution**: Rayon-backed multithreading

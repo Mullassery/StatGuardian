@@ -1,6 +1,6 @@
-# How to Submit StatGuard to Awesome Lists
+# How to Submit statguardian to Awesome Lists
 
-This guide helps you submit StatGuard to awesome-python and awesome-rust.
+This guide helps you submit statguardian to awesome-python and awesome-rust.
 
 ---
 
@@ -19,7 +19,7 @@ This guide helps you submit StatGuard to awesome-python and awesome-rust.
 
 2. **Edit the README.md**
    - Find the "Data Validation" or "Data Analysis" section
-   - Add StatGuard entry (see format below)
+   - Add statguardian entry (see format below)
    - Keep entries **alphabetically sorted** within sections
 
 3. **Entry Format**
@@ -31,7 +31,7 @@ This guide helps you submit StatGuard to awesome-python and awesome-rust.
    ```bash
    git checkout -b add/statguard
    git add README.md
-   git commit -m "Add StatGuard - data quality validation engine"
+   git commit -m "Add statguardian - data quality validation engine"
    git push origin add/statguard
    ```
 
@@ -40,7 +40,7 @@ This guide helps you submit StatGuard to awesome-python and awesome-rust.
    - Click "New Pull Request"
    - Select your branch
    - Fill in PR template:
-     - **Title:** Add StatGuard
+     - **Title:** Add statguardian
      - **Description:** Data quality validation library with 13-25× speedup over Python alternatives. Supports Delta Lake, Iceberg, cloud storage, and 13 SQL databases.
 
 ### Section Recommendation
@@ -65,7 +65,7 @@ This guide helps you submit StatGuard to awesome-python and awesome-rust.
 
 2. **Edit the README.md**
    - Find **Libraries** → **Python** or **Data processing** section
-   - Add StatGuard entry
+   - Add statguardian entry
    - Keep entries **alphabetically sorted**
 
 3. **Entry Format**
@@ -77,7 +77,7 @@ This guide helps you submit StatGuard to awesome-python and awesome-rust.
    ```bash
    git checkout -b add/statguard
    git add README.md
-   git commit -m "Add StatGuard - data quality engine with Python bindings"
+   git commit -m "Add statguardian - data quality engine with Python bindings"
    git push origin add/statguard
    ```
 
@@ -86,7 +86,7 @@ This guide helps you submit StatGuard to awesome-python and awesome-rust.
    - Click "New Pull Request"
    - Select your branch
    - Fill in PR template:
-     - **Title:** Add StatGuard
+     - **Title:** Add statguardian
      - **Description:** Production-grade data quality validation engine. Rust core with Python bindings via PyO3. 13-25× faster than pandera/Great Expectations. Supports Delta Lake, Iceberg, cloud storage, SQL databases.
 
 ### Section Recommendation
@@ -100,9 +100,9 @@ Look for:
 ## PR Template for Both
 
 ```markdown
-# Add StatGuard
+# Add statguardian
 
-**Library:** StatGuard (Rust data quality engine with Python bindings)
+**Library:** statguardian (Rust data quality engine with Python bindings)
 
 **Link:** https://github.com/Mullassery/statguardian
 
@@ -123,7 +123,7 @@ High-performance data quality, validation, and statistical drift monitoring engi
 **License:** MIT
 
 **Benchmarks:**
-- StatGuard: ~2 ms (100k rows, 5 checks)
+- statguardian: ~2 ms (100k rows, 5 checks)
 - pandera: 26.5 ms (13× slower)
 - Great Expectations: 50.4 ms (25× slower)
 
@@ -155,7 +155,7 @@ High-performance data quality, validation, and statistical drift monitoring engi
 ## Common Issues & Solutions
 
 ### "This is too niche"
-**Response:** Data quality is critical for any data pipeline (dbt, Airflow, ML). StatGuard fills a gap in the Python ecosystem with a production-grade solution.
+**Response:** Data quality is critical for any data pipeline (dbt, Airflow, ML). statguardian fills a gap in the Python ecosystem with a production-grade solution.
 
 ### "Performance claims need verification"
 **Response:** Benchmarks are in [BENCHMARKS.md](https://github.com/Mullassery/statguardian/blob/main/BENCHMARKS.md) with reproducible methodology. Results measured on Apple M-series, 100k rows, 5 checks (null, type, range, regex, uniqueness). Runs are best-of-7.
@@ -167,7 +167,7 @@ High-performance data quality, validation, and statistical drift monitoring engi
 **Response:** Complementary, not duplicative:
 - **pandera** — Slower, Python-only, no Delta/Iceberg/Spark
 - **GX** — Slower, Python-only, no native Delta/Iceberg
-- **StatGuard** — 13-25× faster, Rust core, Delta/Iceberg/Spark/Cloud/SQL
+- **statguardian** — 13-25× faster, Rust core, Delta/Iceberg/Spark/Cloud/SQL
 
 ---
 

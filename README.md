@@ -418,7 +418,7 @@ for result in statguardian.execute_files_stream(contract, "data/**/*.parquet"):
 
 ## GPU acceleration (cuDF)
 
-Validate RAPIDS cuDF DataFrames directly. StatGuard converts to Polars via the Arrow C Stream interface (zero-copy where CUDA unified memory is available) before passing to the Rust engine.
+Validate RAPIDS cuDF DataFrames directly. statguardian converts to Polars via the Arrow C Stream interface (zero-copy where CUDA unified memory is available) before passing to the Rust engine.
 
 ```python
 import cudf, statguard
@@ -491,22 +491,22 @@ You can — until the dataset is large, or you need drift detection, or you want
 
 **100,000 rows × 4 columns, 5 checks — Apple M-series:**
 
-| Tool | Best time | vs StatGuard |
+| Tool | Best time | vs statguardian |
 |---|---|---|
-| **StatGuard 0.1** | **2.0 ms** | baseline |
+| **statguardian 0.1** | **2.0 ms** | baseline |
 | Pure Python loops | 11.5 ms | 5.8× slower |
 | pandera 0.31 (pandas) | 26.5 ms | 13× slower |
 | Pydantic v2 (TypeAdapter bulk) | 43.5 ms | 22× slower |
 | Pydantic v2 (row-by-row) | 46.2 ms | 23× slower |
 | Great Expectations 1.18 | 50.4 ms | 25× slower |
 
-> Pydantic allocates one Python object per row regardless of batch size. StatGuard never touches individual rows — it operates on entire Arrow columns.
+> Pydantic allocates one Python object per row regardless of batch size. statguardian never touches individual rows — it operates on entire Arrow columns.
 
 See [BENCHMARKS.md](BENCHMARKS.md) for full methodology, scaling table, and reproduce steps.
 
 **Feature comparison:**
 
-| | Pydantic v2 | pandera | Great Expectations | WhyLogs | **StatGuard** |
+| | Pydantic v2 | pandera | Great Expectations | WhyLogs | **statguardian** |
 |---|---|---|---|---|---|
 | Performance | Row-by-row Python | Python/pandas | Python-heavy | Python | **Rust — 13–25× faster** |
 | Schema / type validation | ✓ | ✓ | ✓ | ✗ | ✓ |
@@ -532,7 +532,7 @@ See [BENCHMARKS.md](BENCHMARKS.md) for full methodology, scaling table, and repr
 
 ## Format and connector compatibility
 
-| | pandera | Great Expectations | Pydantic v2 | **StatGuard** |
+| | pandera | Great Expectations | Pydantic v2 | **statguardian** |
 |---|---|---|---|---|
 | **Files** (Parquet, CSV, JSON, Avro, Arrow IPC) | ✓ via pandas | ✓ via pandas | ✗ load first | ✓ native |
 | **Delta Lake** (no Spark) | ✗ | ✗ | ✗ | ✓ |
@@ -884,8 +884,8 @@ All optional features use OSI-approved open-source licenses only. Proprietary dr
 **Connectors**
 - [ ] Kafka — streaming validation with micro-batch windows and watermarks
 - [ ] Apache Flink — native DataStream and Table API integration
-- [ ] Airflow operator — `StatGuardOperator` for pipeline-gate tasks
-- [ ] dbt test macro — run StatGuard contracts as dbt tests after model runs
+- [ ] Airflow operator — `statguardianOperator` for pipeline-gate tasks
+- [ ] dbt test macro — run statguardian contracts as dbt tests after model runs
 - [ ] GitHub Actions — `statguard-action` for contract validation in CI
 
 **DSL and rules**

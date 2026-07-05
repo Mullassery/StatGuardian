@@ -1,15 +1,15 @@
 # Format, Storage & Connector Compatibility
 
-Comprehensive matrix comparing StatGuard against Pydantic, pandera, and Great Expectations.
-All StatGuard connectors use open-source licensed drivers only (MIT / Apache-2.0 / BSD).
+Comprehensive matrix comparing statguardian against Pydantic, pandera, and Great Expectations.
+All statguardian connectors use open-source licensed drivers only (MIT / Apache-2.0 / BSD).
 
-**Verified against:** StatGuard 0.1 · Pydantic 2.13 · pandera 0.31 · Great Expectations 1.18
+**Verified against:** statguardian 0.1 · Pydantic 2.13 · pandera 0.31 · Great Expectations 1.18
 
 ---
 
 ## File formats
 
-| Format | StatGuard | pandera | Great Expectations | Pydantic v2 |
+| Format | statguardian | pandera | Great Expectations | Pydantic v2 |
 |---|---|---|---|---|
 | **Parquet** | ✓ native | ✓ via pandas/polars | ✓ via pandas or Spark | ✗ load first |
 | **CSV / TSV** | ✓ native | ✓ via pandas/polars | ✓ via pandas or Spark | ✗ load first |
@@ -23,7 +23,7 @@ All StatGuard connectors use open-source licensed drivers only (MIT / Apache-2.0
 
 ## Lakehouse table formats
 
-| Format | StatGuard | pandera | Great Expectations | Pydantic v2 |
+| Format | statguardian | pandera | Great Expectations | Pydantic v2 |
 |---|---|---|---|---|
 | **Delta Lake** | ✓ native (no Spark) | ✗ | ✓ Spark required | ✗ |
 | **Apache Iceberg** | ✓ native (no Spark) | ✗ | ✓ Spark required | ✗ |
@@ -32,7 +32,7 @@ All StatGuard connectors use open-source licensed drivers only (MIT / Apache-2.0
 
 ### Delta Lake — features
 
-| Feature | StatGuard | Great Expectations |
+| Feature | statguardian | Great Expectations |
 |---|---|---|
 | Read current snapshot | ✓ | ✓ (Spark required) |
 | Time-travel by version | ✓ | ✓ (Spark required) |
@@ -43,7 +43,7 @@ All StatGuard connectors use open-source licensed drivers only (MIT / Apache-2.0
 
 ### Apache Iceberg — features
 
-| Feature | StatGuard | Great Expectations |
+| Feature | statguardian | Great Expectations |
 |---|---|---|
 | Read current snapshot | ✓ | ✓ (Spark required) |
 | Time-travel by snapshot ID | ✓ | ✓ (Spark required) |
@@ -59,7 +59,7 @@ All StatGuard connectors use open-source licensed drivers only (MIT / Apache-2.0
 
 ## Cloud storage (S3, GCS, Azure)
 
-| Feature | StatGuard | pandera | Great Expectations | Pydantic v2 |
+| Feature | statguardian | pandera | Great Expectations | Pydantic v2 |
 |---|---|---|---|---|
 | **AWS S3** | ✓ (`s3://`) | ✓ via s3fs/pandas | ✓ native datasource | ✗ |
 | **S3-compatible** (MinIO, Ceph, R2) | ✓ (`s3://` + `AWS_ENDPOINT_URL`) | ✓ via s3fs | ✗ | ✗ |
@@ -72,7 +72,7 @@ All StatGuard connectors use open-source licensed drivers only (MIT / Apache-2.0
 
 ### Cloud authentication
 
-StatGuard picks up credentials automatically from standard env vars — no
+statguardian picks up credentials automatically from standard env vars — no
 config file needed:
 
 ```bash
@@ -236,7 +236,7 @@ pip install clickhouse-driver             # ClickHouse
 
 ## Apache Spark integration
 
-StatGuard accepts PySpark DataFrames directly via the Arrow columnar bridge —
+statguardian accepts PySpark DataFrames directly via the Arrow columnar bridge —
 no data serialisation to Python dicts.
 
 ```python
@@ -276,7 +276,7 @@ Works on: local mode, YARN, Kubernetes, Databricks, AWS EMR, Google Dataproc, Az
 
 ## Compute engines
 
-| Engine | StatGuard | pandera | Great Expectations | Pydantic v2 |
+| Engine | statguardian | pandera | Great Expectations | Pydantic v2 |
 |---|---|---|---|---|
 | Polars | ✓ native (primary) | ✓ experimental | ✗ | ✗ |
 | Pandas | ✓ via Polars convert | ✓ primary | ✓ primary | ✗ |
@@ -288,7 +288,7 @@ Works on: local mode, YARN, Kubernetes, Databricks, AWS EMR, Google Dataproc, Az
 
 ## Feature summary
 
-| Capability | StatGuard | pandera | Great Expectations | Pydantic v2 |
+| Capability | statguardian | pandera | Great Expectations | Pydantic v2 |
 |---|---|---|---|---|
 | Native file formats | 8 | 0 (via pandas) | 0 (via pandas) | 0 |
 | Cloud storage (S3/GCS/Azure) | ✓ | via extras | ✓ native | ✗ |
@@ -341,9 +341,9 @@ Integration via Flink Python API + Arrow IPC serialisation (zero-copy).
 
 ```python
 # (Planned) Orchestrate validation as an Airflow DAG task
-from statguardian.airflow import StatGuardOperator
+from statguardian.airflow import statguardianOperator
 
-validation_task = StatGuardOperator(
+validation_task = statguardianOperator(
     task_id="validate_orders",
     contract_path="orders.sg",
     data_path="s3://bucket/orders/{{ ds }}/",
@@ -352,7 +352,7 @@ validation_task = StatGuardOperator(
 )
 ```
 
-Uses the standard Airflow task API. No Airflow-specific code in StatGuard itself—
+Uses the standard Airflow task API. No Airflow-specific code in statguardian itself—
 the operator is a thin wrapper around `execute_cloud()` / `execute_sql()` / `execute_spark()`.
 
 Available as: `pip install statguardian[airflow]` (installs `apache-airflow` + orchestration adapter).

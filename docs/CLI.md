@@ -1,4 +1,4 @@
-# StatGuard CLI Reference
+# statguardian CLI Reference
 
 The `statguard` command-line tool validates data files and DSL contracts from the terminal.
 
@@ -314,7 +314,7 @@ report = statguardian.execute_spark(contract, spark_df)
 
 ### `statguard: command not found`
 
-StatGuard is not installed or not in PATH. Install it:
+statguardian is not installed or not in PATH. Install it:
 
 ```bash
 pip install statguardian

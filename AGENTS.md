@@ -1,4 +1,4 @@
-# StatGuard — AI Agent Reference
+# statguardian — AI Agent Reference
 
 This file is for AI coding assistants (Claude, Copilot, Cursor, etc.) and
 automated tooling. It describes the project layout, key abstractions,
@@ -21,7 +21,7 @@ License audit: [LICENSES.md](LICENSES.md)
 
 ## What this project is
 
-StatGuard is a **Rust-native data quality and drift monitoring engine** with
+statguardian is a **Rust-native data quality and drift monitoring engine** with
 a **Python API**. It compiles a declarative DSL into an optimised columnar
 execution plan and runs it over Polars DataFrames.
 
@@ -48,7 +48,7 @@ statguard/
 │   │   └── src/
 │   │       ├── ast.rs            all public AST types (DataContract, FieldDef, …)
 │   │       ├── parser/
-│   │       │   ├── grammar.pest  PEG grammar for the StatGuard DSL
+│   │       │   ├── grammar.pest  PEG grammar for the statguardian DSL
 │   │       │   └── mod.rs        pest parser → AST conversion
 │   │       ├── compiler/
 │   │       │   ├── dag.rs        DagNode enum + ExecutionDag struct
