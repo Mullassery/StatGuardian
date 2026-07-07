@@ -1,5 +1,5 @@
 [package]
-name        = "statguard-validators"
+name        = "statguardian-validators"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -7,7 +7,7 @@ license.workspace = true
 description = "Schema, constraint, and rule validation for StatGuard"
 
 [dependencies]
-statguard-core = { path = "../statguard-core" }
+statguardian-core = { path = "../statguardian-core" }
 polars         = { workspace = true }
 regex          = { workspace = true }
 serde          = { workspace = true }

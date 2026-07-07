@@ -5,7 +5,7 @@ pub use rules::RuleEngine;
 pub use schema::SchemaValidator;
 
 use serde::{Deserialize, Serialize};
-use statguard_core::ast::Severity;
+use statguardian_core::ast::Severity;
 
 /// A single validation finding produced by any validator.
 #[derive(Debug, Clone, Serialize, Deserialize)]

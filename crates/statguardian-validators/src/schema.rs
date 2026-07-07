@@ -1,6 +1,6 @@
 use polars::prelude::*;
 use regex::Regex;
-use statguard_core::ast::{DataType as ContractType, FieldDef, Severity, Constraint};
+use statguardian_core::ast::{DataType as ContractType, FieldDef, Severity, Constraint};
 use crate::Violation;
 
 pub struct SchemaValidator;

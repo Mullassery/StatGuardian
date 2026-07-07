@@ -1,5 +1,5 @@
 [package]
-name        = "statguard-io"
+name        = "statguardian-io"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -37,7 +37,7 @@ lakehouse = ["delta", "iceberg"]
 full = ["cloud", "sql", "lakehouse"]
 
 [dependencies]
-statguard-core = { path = "../statguard-core" }
+statguardian-core = { path = "../statguardian-core" }
 polars         = { workspace = true }
 serde          = { workspace = true }
 serde_json     = { workspace = true }

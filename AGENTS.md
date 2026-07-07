@@ -158,15 +158,15 @@ Data ingestion (statguard-io):
 
 ### Add a new file format reader
 
-1. Add a `read_<format>()` method to `DataReader` in `crates/statguard-io/src/lib.rs`.
+1. Add a `read_<format>()` method to `DataReader` in `crates/statguardian-io/src/lib.rs`.
 2. Add the extension to the `match` in `DataReader::read_file()`.
 3. If it's a directory-based format (like Delta/Iceberg), add detection logic before the extension match.
-4. Add a Python binding in `crates/statguard-py/src/lib.rs` if needed.
+4. Add a Python binding in `crates/statguardian-py/src/lib.rs` if needed.
 5. Update `AGENTS.md` IO layout and `README.md` supported formats table.
 
 ### Add a Python binding for a new feature
 
-All Python-visible types/functions are in `crates/statguard-py/src/lib.rs`.
+All Python-visible types/functions are in `crates/statguardian-py/src/lib.rs`.
 Add a `#[pyfunction]` or method to `#[pymethods]`, then register it in the
 `#[pymodule]` function at the bottom of the file.
 Re-export from `python/statguard/__init__.py`.
@@ -223,7 +223,7 @@ Proprietary ODBC/JDBC (Oracle, SQL Server native) are intentionally excluded.
 
 ### Current public API
 
-Rust layer (`crates/statguard-py/src/lib.rs`):
+Rust layer (`crates/statguardian-py/src/lib.rs`):
 
 | Symbol | Kind | Description |
 |---|---|---|

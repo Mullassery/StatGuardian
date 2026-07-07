@@ -1,5 +1,5 @@
 [package]
-name        = "statguard-engine"
+name        = "statguardian-engine"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -7,11 +7,11 @@ license.workspace = true
 description = "High-performance execution engine for StatGuard contracts (batch + streaming)"
 
 [dependencies]
-statguard-core       = { path = "../statguard-core" }
-statguard-validators = { path = "../statguard-validators" }
-statguard-stats      = { path = "../statguard-stats" }
-statguard-metrics    = { path = "../statguard-metrics" }
-statguard-io         = { path = "../statguard-io" }
+statguardian-core       = { path = "../statguardian-core" }
+statguardian-validators = { path = "../statguardian-validators" }
+statguardian-stats      = { path = "../statguardian-stats" }
+statguardian-metrics    = { path = "../statguardian-metrics" }
+statguardian-io         = { path = "../statguardian-io" }
 polars               = { workspace = true }
 rayon                = { workspace = true }
 serde                = { workspace = true }

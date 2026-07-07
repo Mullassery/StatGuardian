@@ -1,6 +1,6 @@
 use polars::prelude::*;
 use serde::{Deserialize, Serialize};
-use statguard_core::ast::{Severity, StatFn, StatsRule};
+use statguardian_core::ast::{Severity, StatFn, StatsRule};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DriftResult {

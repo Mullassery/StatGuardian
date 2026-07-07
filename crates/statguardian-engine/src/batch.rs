@@ -2,13 +2,13 @@ use std::time::Instant;
 use polars::prelude::*;
 use rayon::prelude::*;
 
-use statguard_core::ast::Severity;
-use statguard_core::compiler::dag::{DagNode, ExecutionDag};
-use statguard_core::compiler::optimizer::Optimizer;
-use statguard_core::DataContract;
-use statguard_metrics::report::ValidationReport;
-use statguard_stats::{DriftEngine, Profiler};
-use statguard_validators::{SchemaValidator, RuleEngine, Violation};
+use statguardian_core::ast::Severity;
+use statguardian_core::compiler::dag::{DagNode, ExecutionDag};
+use statguardian_core::compiler::optimizer::Optimizer;
+use statguardian_core::DataContract;
+use statguardian_metrics::report::ValidationReport;
+use statguardian_stats::{DriftEngine, Profiler};
+use statguardian_validators::{SchemaValidator, RuleEngine, Violation};
 
 pub struct BatchExecutor;
 

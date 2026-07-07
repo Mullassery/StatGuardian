@@ -1,5 +1,5 @@
 use polars::prelude::*;
-use statguard_core::ast::{
+use statguardian_core::ast::{
     ComparisonOp, CrossColumnRule, LiteralValue, MetricFn, QualityRule, Severity,
 };
 use crate::Violation;

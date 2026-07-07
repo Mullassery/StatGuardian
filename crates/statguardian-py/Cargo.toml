@@ -11,10 +11,10 @@ name    = "_statguardian"
 crate-type = ["cdylib"]
 
 [dependencies]
-statguard-core    = { path = "../statguard-core" }
-statguard-engine  = { path = "../statguard-engine" }
-statguard-metrics = { path = "../statguard-metrics" }
-statguard-io      = { path = "../statguard-io", features = [] }
+statguardian-core    = { path = "../statguardian-core" }
+statguardian-engine  = { path = "../statguardian-engine" }
+statguardian-metrics = { path = "../statguardian-metrics" }
+statguardian-io      = { path = "../statguardian-io", features = [] }
 pyo3              = { workspace = true }
 pyo3-polars       = { workspace = true }
 polars            = { workspace = true }

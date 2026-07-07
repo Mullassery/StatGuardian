@@ -33,7 +33,7 @@ pub struct StreamConfig {
     pub allowed_lateness: Option<Duration>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StreamingWindow {
     pub window_id: String,
     pub start_time: SystemTime,
@@ -146,8 +146,8 @@ impl SlidingWindowExecutor {
     pub fn get_windows_for_event(
         &mut self,
         timestamp: SystemTime,
-    ) -> Result<Vec<&mut StreamingWindow>, String> {
-        let duration_since_epoch = timestamp
+    ) -> Result<Vec<StreamingWindow>, String> {
+        let _duration_since_epoch = timestamp
             .duration_since(UNIX_EPOCH)
             .map_err(|e| e.to_string())?;
 
@@ -167,7 +167,9 @@ impl SlidingWindowExecutor {
                     self.current_windows.insert(window_id.clone(), window);
                 }
 
-                windows.push(self.current_windows.get_mut(&window_id).unwrap());
+                if let Some(w) = self.current_windows.get(&window_id) {
+                    windows.push(w.clone());
+                }
             }
 
             if window_end > timestamp {

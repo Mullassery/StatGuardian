@@ -130,10 +130,10 @@ Discussions   = "https://github.com/Mullassery/Statguardian/discussions"
 statguardian = "statguardian._cli:main"
 
 [tool.maturin]
-manifest-path    = "crates/statguardian-py/Cargo.toml"
+manifest-path    = "crates/statguard-py/Cargo.toml"
 python-source    = "python"
 module-name      = "statguardian._statguardian"
 features         = ["pyo3/extension-module"]
-include          = ["LICENSE", "LICENSES.md", "README.md"]
+include          = ["LICENSE", "README.md"]
 profile          = "release"
 strip            = true

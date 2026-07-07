@@ -886,7 +886,7 @@ All optional features use OSI-approved open-source licenses only. Proprietary dr
 - [ ] Apache Flink — native DataStream and Table API integration
 - [ ] Airflow operator — `statguardianOperator` for pipeline-gate tasks
 - [ ] dbt test macro — run statguardian contracts as dbt tests after model runs
-- [ ] GitHub Actions — `statguard-action` for contract validation in CI
+- [ ] GitHub Actions — `statguardian-action` for contract validation in CI
 
 **DSL and rules**
 - [ ] Referential integrity in DSL — `foreign_key(customers.id)` enforced at execution time (Python-level `check_referential_integrity()` available now)

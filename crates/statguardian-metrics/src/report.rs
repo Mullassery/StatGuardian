@@ -2,9 +2,9 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use statguard_core::ast::Severity;
-use statguard_stats::{ColumnProfile, DriftResult};
-use statguard_validators::Violation;
+use statguardian_core::ast::Severity;
+use statguardian_stats::{ColumnProfile, DriftResult};
+use statguardian_validators::Violation;
 
 /// Composite health score for a dataset (0.0 = complete failure, 1.0 = perfect).
 #[derive(Debug, Clone, Serialize, Deserialize)]

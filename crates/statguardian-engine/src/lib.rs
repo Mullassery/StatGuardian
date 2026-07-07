@@ -1,8 +1,8 @@
 pub mod batch;
 
 use polars::prelude::DataFrame;
-use statguard_core::{compiler::dag::ExecutionDag, DataContract};
-use statguard_metrics::report::ValidationReport;
+use statguardian_core::{compiler::dag::ExecutionDag, DataContract};
+use statguardian_metrics::report::ValidationReport;
 
 pub use batch::BatchExecutor;
 
@@ -73,7 +73,7 @@ pub fn run(dsl: &str, df: &DataFrame) -> Result<ValidationReport, statguard_core
 mod tests {
     use super::*;
     use polars::prelude::*;
-    use statguard_core::parse_and_compile;
+    use statguardian_core::parse_and_compile;
 
     fn make_users_df() -> DataFrame {
         df!(

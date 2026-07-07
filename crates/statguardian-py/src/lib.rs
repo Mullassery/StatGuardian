@@ -3,10 +3,10 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use pyo3_polars::PyDataFrame;
 
-use statguard_core::{parse_and_compile, DataContract};
-use statguard_core::compiler::dag::ExecutionDag;
-use statguard_engine::Engine;
-use statguard_metrics::report::ValidationReport;
+use statguardian_core::{parse_and_compile, DataContract};
+use statguardian_core::compiler::dag::ExecutionDag;
+use statguardian_engine::Engine;
+use statguardian_metrics::report::ValidationReport;
 
 // ── PyDataContract ─────────────────────────────────────────────────────────────
 

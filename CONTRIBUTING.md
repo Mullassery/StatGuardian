@@ -47,17 +47,17 @@ See [AGENTS.md](AGENTS.md) for a complete layout and key abstractions.
 
 ### Python bindings
 
-1. Edit `crates/statguard-py/src/lib.rs`.
+1. Edit `crates/statguardian-py/src/lib.rs`.
 2. Rebuild with `maturin develop --release`.
 3. Test from Python.
 
 ### DSL grammar
 
-The grammar lives in `crates/statguard-core/src/parser/grammar.pest`.
+The grammar lives in `crates/statguardian-core/src/parser/grammar.pest`.
 After editing:
 
 1. Rebuild with `cargo build`.
-2. Update `parse_*` functions in `crates/statguard-core/src/parser/mod.rs`.
+2. Update `parse_*` functions in `crates/statguardian-core/src/parser/mod.rs`.
 3. Add a DSL test in `parser/mod.rs` `tests` module.
 
 ## Code conventions

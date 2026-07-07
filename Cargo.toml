@@ -1,12 +1,12 @@
 [workspace]
 members = [
-    "crates/statguard-core",
-    "crates/statguard-engine",
-    "crates/statguard-validators",
-    "crates/statguard-stats",
-    "crates/statguard-io",
-    "crates/statguard-metrics",
-    "crates/statguard-py",
+    "crates/statguardian-core",
+    "crates/statguardian-engine",
+    "crates/statguardian-validators",
+    "crates/statguardian-stats",
+    "crates/statguardian-io",
+    "crates/statguardian-metrics",
+    "crates/statguardian-py",
     "tests",
 ]
 resolver = "2"

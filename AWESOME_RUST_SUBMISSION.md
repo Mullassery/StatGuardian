@@ -30,11 +30,11 @@ statguardian is a premier example of **Rust-powered Python libraries** that solv
 
 ## Architecture
 
-- **crates/statguard-py/src/lib.rs** — PyO3 bindings (~500 lines)
-- **crates/statguard-core** — DSL parser & compiler (pest PEG)
-- **crates/statguard-engine** — Columnar execution (Rayon + Polars)
-- **crates/statguard-io** — Universal reader (Parquet, CSV, JSON, Avro, ORC, S3, GCS, Azure, Delta, Iceberg, SQL)
-- **crates/statguard-stats** — Drift detection (PSI, KS test, HyperLogLog)
+- **crates/statguardian-py/src/lib.rs** — PyO3 bindings (~500 lines)
+- **crates/statguardian-core** — DSL parser & compiler (pest PEG)
+- **crates/statguardian-engine** — Columnar execution (Rayon + Polars)
+- **crates/statguardian-io** — Universal reader (Parquet, CSV, JSON, Avro, ORC, S3, GCS, Azure, Delta, Iceberg, SQL)
+- **crates/statguardian-stats** — Drift detection (PSI, KS test, HyperLogLog)
 - **python/statguard** — Python API shim + CLI
 
 ## Verification

@@ -1,5 +1,5 @@
 [package]
-name        = "statguard-metrics"
+name        = "statguardian-metrics"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -7,9 +7,9 @@ license.workspace = true
 description = "Report generation and observability output for StatGuard"
 
 [dependencies]
-statguard-core       = { path = "../statguard-core" }
-statguard-validators = { path = "../statguard-validators" }
-statguard-stats      = { path = "../statguard-stats" }
+statguardian-core       = { path = "../statguardian-core" }
+statguardian-validators = { path = "../statguardian-validators" }
+statguardian-stats      = { path = "../statguardian-stats" }
 serde                = { workspace = true }
 serde_json           = { workspace = true }
 thiserror            = { workspace = true }
