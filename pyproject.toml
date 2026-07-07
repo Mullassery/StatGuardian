@@ -7,6 +7,7 @@ name            = "statguardian"
 version         = "1.0.0"
 description     = "Fast, declarative data quality framework. Schema validation, data drift detection, anomaly detection, outlier handling. 13x faster than pandera. Supports Pandas, Polars, DuckDB. Automated data contract enforcement for data pipelines."
 authors         = [{ name = "Georgi Mammen Mullassery", email = "mullassery@gmail.com" }]
+maintainers = [{ name = "Georgi Mammen Mullassery", email = "mullassery@gmail.com" }]
 license         = { text = "MIT" }
 readme          = "README.md"
 requires-python = ">=3.8"
@@ -37,7 +38,7 @@ keywords        = [
     "data-observability"
 ]
 classifiers     = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
