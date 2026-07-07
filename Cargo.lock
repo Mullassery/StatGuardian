@@ -3589,20 +3589,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "statguard"
-version = "0.1.0"
-dependencies = [
- "polars",
- "pyo3",
- "pyo3-polars",
- "serde_json",
- "statguard-core",
- "statguard-engine",
- "statguard-io",
- "statguard-metrics",
-]
-
-[[package]]
 name = "statguard-core"
 version = "0.1.0"
 dependencies = [
@@ -3698,6 +3684,20 @@ dependencies = [
  "serde_json",
  "statguard-core",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "statguardian"
+version = "0.1.0"
+dependencies = [
+ "polars",
+ "pyo3",
+ "pyo3-polars",
+ "serde_json",
+ "statguard-core",
+ "statguard-engine",
+ "statguard-io",
+ "statguard-metrics",
 ]
 
 [[package]]
