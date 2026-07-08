@@ -1,3 +1,4 @@
+use crate::{IoError, IoResult};
 /// SQL database reader — pure-Rust drivers, MIT/Apache-2.0 licensed.
 ///
 /// Uses `sqlx` for direct database connections with no ODBC/JDBC dependency.
@@ -31,7 +32,6 @@
 /// If you need them, use the Python `execute_sql()` API with connectorx and
 /// the appropriate ODBC driver installed separately.
 use polars::prelude::*;
-use crate::{IoError, IoResult};
 
 /// Identifies the SQL backend from a connection URL scheme.
 #[derive(Debug, Clone, PartialEq)]
@@ -51,10 +51,8 @@ impl SqlBackend {
             "mysql" | "mariadb" => SqlBackend::Mysql,
             "sqlite" => SqlBackend::Sqlite,
             // These are handled in the Python layer
-            "bigquery" | "snowflake" | "redshift" | "redshift+psycopg2"
-            | "databricks" | "clickhouse" | "duckdb" | "mongodb" => {
-                SqlBackend::PythonLayer(scheme)
-            }
+            "bigquery" | "snowflake" | "redshift" | "redshift+psycopg2" | "databricks"
+            | "clickhouse" | "duckdb" | "mongodb" => SqlBackend::PythonLayer(scheme),
             other => SqlBackend::PythonLayer(other.to_string()),
         }
     }
@@ -86,7 +84,8 @@ impl SqlReader {
                 #[cfg(not(feature = "sql-postgres"))]
                 Err(IoError::UnsupportedFormat(
                     "PostgreSQL support requires feature `sql-postgres`. \
-                     Rebuild with: cargo build --features sql-postgres".into()
+                     Rebuild with: cargo build --features sql-postgres"
+                        .into(),
                 ))
             }
             SqlBackend::Mysql => {
@@ -95,7 +94,8 @@ impl SqlReader {
                 #[cfg(not(feature = "sql-mysql"))]
                 Err(IoError::UnsupportedFormat(
                     "MySQL support requires feature `sql-mysql`. \
-                     Rebuild with: cargo build --features sql-mysql".into()
+                     Rebuild with: cargo build --features sql-mysql"
+                        .into(),
                 ))
             }
             SqlBackend::Sqlite => {
@@ -104,7 +104,8 @@ impl SqlReader {
                 #[cfg(not(feature = "sql-sqlite"))]
                 Err(IoError::UnsupportedFormat(
                     "SQLite support requires feature `sql-sqlite`. \
-                     Rebuild with: cargo build --features sql-sqlite".into()
+                     Rebuild with: cargo build --features sql-sqlite"
+                        .into(),
                 ))
             }
         }
@@ -115,10 +116,16 @@ impl SqlReader {
         use sqlx::postgres::PgPool;
         let rt = build_runtime()?;
         rt.block_on(async {
-            let pool = PgPool::connect(url).await
-                .map_err(|e| IoError::ReadError { path: url.to_string(), msg: e.to_string() })?;
-            fetch_to_dataframe::<sqlx::Postgres, _>(&pool, query).await
-                .map_err(|e| IoError::ReadError { path: url.to_string(), msg: e.to_string() })
+            let pool = PgPool::connect(url).await.map_err(|e| IoError::ReadError {
+                path: url.to_string(),
+                msg: e.to_string(),
+            })?;
+            fetch_to_dataframe::<sqlx::Postgres, _>(&pool, query)
+                .await
+                .map_err(|e| IoError::ReadError {
+                    path: url.to_string(),
+                    msg: e.to_string(),
+                })
         })
     }
 
@@ -127,10 +134,18 @@ impl SqlReader {
         use sqlx::mysql::MySqlPool;
         let rt = build_runtime()?;
         rt.block_on(async {
-            let pool = MySqlPool::connect(url).await
-                .map_err(|e| IoError::ReadError { path: url.to_string(), msg: e.to_string() })?;
-            fetch_to_dataframe::<sqlx::MySql, _>(&pool, query).await
-                .map_err(|e| IoError::ReadError { path: url.to_string(), msg: e.to_string() })
+            let pool = MySqlPool::connect(url)
+                .await
+                .map_err(|e| IoError::ReadError {
+                    path: url.to_string(),
+                    msg: e.to_string(),
+                })?;
+            fetch_to_dataframe::<sqlx::MySql, _>(&pool, query)
+                .await
+                .map_err(|e| IoError::ReadError {
+                    path: url.to_string(),
+                    msg: e.to_string(),
+                })
         })
     }
 
@@ -139,27 +154,42 @@ impl SqlReader {
         use sqlx::sqlite::SqlitePool;
         let rt = build_runtime()?;
         rt.block_on(async {
-            let pool = SqlitePool::connect(url).await
-                .map_err(|e| IoError::ReadError { path: url.to_string(), msg: e.to_string() })?;
-            fetch_to_dataframe::<sqlx::Sqlite, _>(&pool, query).await
-                .map_err(|e| IoError::ReadError { path: url.to_string(), msg: e.to_string() })
+            let pool = SqlitePool::connect(url)
+                .await
+                .map_err(|e| IoError::ReadError {
+                    path: url.to_string(),
+                    msg: e.to_string(),
+                })?;
+            fetch_to_dataframe::<sqlx::Sqlite, _>(&pool, query)
+                .await
+                .map_err(|e| IoError::ReadError {
+                    path: url.to_string(),
+                    msg: e.to_string(),
+                })
         })
     }
 }
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
-#[cfg(any(feature = "sql-postgres", feature = "sql-mysql", feature = "sql-sqlite"))]
+#[cfg(any(
+    feature = "sql-postgres",
+    feature = "sql-mysql",
+    feature = "sql-sqlite"
+))]
 fn build_runtime() -> IoResult<tokio::runtime::Runtime> {
-    tokio::runtime::Runtime::new()
-        .map_err(|e| IoError::ReadError { path: "runtime".into(), msg: e.to_string() })
+    tokio::runtime::Runtime::new().map_err(|e| IoError::ReadError {
+        path: "runtime".into(),
+        msg: e.to_string(),
+    })
 }
 
-#[cfg(any(feature = "sql-postgres", feature = "sql-mysql", feature = "sql-sqlite"))]
-async fn fetch_to_dataframe<DB, E>(
-    executor: E,
-    query: &str,
-) -> Result<DataFrame, sqlx::Error>
+#[cfg(any(
+    feature = "sql-postgres",
+    feature = "sql-mysql",
+    feature = "sql-sqlite"
+))]
+async fn fetch_to_dataframe<DB, E>(executor: E, query: &str) -> Result<DataFrame, sqlx::Error>
 where
     DB: sqlx::Database,
     E: sqlx::Executor<'_, Database = DB> + Copy,
@@ -174,7 +204,8 @@ where
 
     // Build column vectors from row data
     let col_names: Vec<&str> = rows[0].columns().iter().map(|c| c.name()).collect();
-    let mut columns: Vec<Vec<Option<String>>> = vec![Vec::with_capacity(rows.len()); col_names.len()];
+    let mut columns: Vec<Vec<Option<String>>> =
+        vec![Vec::with_capacity(rows.len()); col_names.len()];
 
     for row in &rows {
         for (i, _col) in col_names.iter().enumerate() {
@@ -185,13 +216,18 @@ where
         }
     }
 
-    let series: Vec<Column> = col_names.iter().zip(columns)
+    let series: Vec<Column> = col_names
+        .iter()
+        .zip(columns)
         .map(|(name, vals)| Series::new((*name).into(), vals).into_column())
         .collect();
 
-    DataFrame::new(series).map_err(|e| sqlx::Error::Decode(Box::new(
-        std::io::Error::new(std::io::ErrorKind::Other, e.to_string())
-    )))
+    DataFrame::new(series).map_err(|e| {
+        sqlx::Error::Decode(Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            e.to_string(),
+        )))
+    })
 }
 
 #[cfg(test)]
@@ -200,10 +236,22 @@ mod tests {
 
     #[test]
     fn test_backend_detection() {
-        assert_eq!(SqlBackend::from_url("postgresql://localhost/db"), SqlBackend::Postgres);
-        assert_eq!(SqlBackend::from_url("postgres://localhost/db"),   SqlBackend::Postgres);
-        assert_eq!(SqlBackend::from_url("mysql://localhost/db"),      SqlBackend::Mysql);
-        assert_eq!(SqlBackend::from_url("sqlite:///tmp/test.db"),     SqlBackend::Sqlite);
+        assert_eq!(
+            SqlBackend::from_url("postgresql://localhost/db"),
+            SqlBackend::Postgres
+        );
+        assert_eq!(
+            SqlBackend::from_url("postgres://localhost/db"),
+            SqlBackend::Postgres
+        );
+        assert_eq!(
+            SqlBackend::from_url("mysql://localhost/db"),
+            SqlBackend::Mysql
+        );
+        assert_eq!(
+            SqlBackend::from_url("sqlite:///tmp/test.db"),
+            SqlBackend::Sqlite
+        );
         assert!(!SqlBackend::from_url("bigquery://project/ds").is_rust_native());
         assert!(!SqlBackend::from_url("snowflake://user@account/db").is_rust_native());
         assert!(!SqlBackend::from_url("clickhouse://localhost/db").is_rust_native());
@@ -214,7 +262,10 @@ mod tests {
         let result = SqlReader::read("SELECT 1", "bigquery://my-project/my-dataset");
         match result {
             Err(IoError::UnsupportedFormat(msg)) => {
-                assert!(msg.contains("execute_sql()"), "error should mention Python API: {msg}");
+                assert!(
+                    msg.contains("execute_sql()"),
+                    "error should mention Python API: {msg}"
+                );
             }
             other => panic!("expected UnsupportedFormat, got {other:?}"),
         }

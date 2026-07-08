@@ -74,7 +74,10 @@ fn test_special_characters_in_constraint() {
     "#;
 
     let result = parse_and_compile(dsl);
-    assert!(result.is_ok(), "special regex characters should be handled safely");
+    assert!(
+        result.is_ok(),
+        "special regex characters should be handled safely"
+    );
 }
 
 #[test]

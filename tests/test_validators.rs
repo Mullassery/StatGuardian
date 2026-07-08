@@ -25,7 +25,8 @@ fn test_parser_and_engine_basic() {
     let data = df!(
         "id" => &[1i64, 2, 3],
         "value" => &[1.0f64, 2.0, 3.0]
-    ).unwrap();
+    )
+    .unwrap();
 
     let report = engine.execute(&data, None);
     assert_eq!(report.row_count, 3);
@@ -49,7 +50,8 @@ fn test_validation_on_valid_data() {
     let data = df!(
         "id" => &[1i64, 2, 3],
         "status" => &["active", "inactive", "pending"]
-    ).unwrap();
+    )
+    .unwrap();
 
     let report = engine.execute(&data, None);
     assert!(report.health.score >= 0.0);
@@ -102,14 +104,18 @@ fn test_large_dataset_processing() {
     let data = df!(
         "id" => ids,
         "value" => values
-    ).unwrap();
+    )
+    .unwrap();
 
     let start = std::time::Instant::now();
     let report = engine.execute(&data, None);
     let elapsed = start.elapsed();
 
     assert_eq!(report.row_count, n as usize);
-    assert!(elapsed.as_secs() < 30, "processing should be reasonably fast");
+    assert!(
+        elapsed.as_secs() < 30,
+        "processing should be reasonably fast"
+    );
 }
 
 #[test]
@@ -128,7 +134,8 @@ fn test_empty_dataframe_handling() {
 
     let empty = df!(
         "id" => Vec::<Option<i64>>::new()
-    ).unwrap();
+    )
+    .unwrap();
 
     let report = engine.execute(&empty, None);
     assert_eq!(report.row_count, 0);

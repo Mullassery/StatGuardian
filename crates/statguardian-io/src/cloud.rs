@@ -1,3 +1,4 @@
+use crate::{IoError, IoResult};
 /// Cloud storage reader — S3, GCS, Azure Blob Storage.
 ///
 /// Uses Polars' lazy columnar readers which delegate to the Apache Arrow
@@ -31,7 +32,6 @@
 /// gs://my-bucket/data/**/*.parquet
 /// ```
 use polars::prelude::*;
-use crate::{IoError, IoResult};
 
 /// Returns `true` if `path` is a cloud storage URI handled by this module.
 pub fn is_cloud_uri(path: &str) -> bool {
@@ -85,7 +85,10 @@ impl CloudReader {
     /// Read Parquet from cloud (supports glob patterns and partitioned datasets).
     pub fn read_parquet(uri: &str) -> IoResult<DataFrame> {
         LazyFrame::scan_parquet(uri, ScanArgsParquet::default())
-            .map_err(|e| IoError::ReadError { path: uri.to_string(), msg: e.to_string() })?
+            .map_err(|e| IoError::ReadError {
+                path: uri.to_string(),
+                msg: e.to_string(),
+            })?
             .collect()
             .map_err(IoError::Polars)
     }
@@ -95,7 +98,10 @@ impl CloudReader {
         LazyCsvReader::new(uri)
             .with_infer_schema_length(Some(1000))
             .finish()
-            .map_err(|e| IoError::ReadError { path: uri.to_string(), msg: e.to_string() })?
+            .map_err(|e| IoError::ReadError {
+                path: uri.to_string(),
+                msg: e.to_string(),
+            })?
             .collect()
             .map_err(IoError::Polars)
     }
@@ -104,7 +110,10 @@ impl CloudReader {
     pub fn read_ndjson(uri: &str) -> IoResult<DataFrame> {
         LazyJsonLineReader::new(uri)
             .finish()
-            .map_err(|e| IoError::ReadError { path: uri.to_string(), msg: e.to_string() })?
+            .map_err(|e| IoError::ReadError {
+                path: uri.to_string(),
+                msg: e.to_string(),
+            })?
             .collect()
             .map_err(IoError::Polars)
     }
@@ -112,7 +121,10 @@ impl CloudReader {
     /// Read Arrow IPC from cloud.
     pub fn read_ipc(uri: &str) -> IoResult<DataFrame> {
         LazyFrame::scan_ipc(uri, ScanArgsIpc::default())
-            .map_err(|e| IoError::ReadError { path: uri.to_string(), msg: e.to_string() })?
+            .map_err(|e| IoError::ReadError {
+                path: uri.to_string(),
+                msg: e.to_string(),
+            })?
             .collect()
             .map_err(IoError::Polars)
     }
@@ -129,7 +141,9 @@ mod tests {
         assert!(is_cloud_uri("gs://bucket/data/"));
         assert!(is_cloud_uri("gcs://bucket/file.csv"));
         assert!(is_cloud_uri("az://container/blob.parquet"));
-        assert!(is_cloud_uri("abfss://container@account.dfs.core.windows.net/file.parquet"));
+        assert!(is_cloud_uri(
+            "abfss://container@account.dfs.core.windows.net/file.parquet"
+        ));
         assert!(!is_cloud_uri("/local/path/file.parquet"));
         assert!(!is_cloud_uri("file:///local/file.parquet"));
         assert!(!is_cloud_uri("relative/path.csv"));

@@ -1,3 +1,4 @@
+use crate::{DataReader, IoError, IoResult};
 /// Apache Iceberg table format reader.
 ///
 /// Implements the Iceberg v1 and v2 spec by:
@@ -15,7 +16,6 @@
 use polars::prelude::*;
 use serde::Deserialize;
 use std::path::Path;
-use crate::{DataReader, IoError, IoResult};
 
 // ── Iceberg metadata JSON types ───────────────────────────────────────────────
 
@@ -117,12 +117,17 @@ impl IcebergReader {
     /// List all available snapshots (for audit, drift comparison).
     pub fn list_snapshots(table_path: &str) -> IoResult<Vec<SnapshotInfo>> {
         let metadata = load_metadata(table_path)?;
-        Ok(metadata.snapshots.unwrap_or_default().iter().map(|s| SnapshotInfo {
-            snapshot_id: s.snapshot_id,
-            timestamp_ms: s.timestamp_ms,
-            parent_snapshot_id: s.parent_snapshot_id,
-            operation: s.summary.get("operation").cloned(),
-        }).collect())
+        Ok(metadata
+            .snapshots
+            .unwrap_or_default()
+            .iter()
+            .map(|s| SnapshotInfo {
+                snapshot_id: s.snapshot_id,
+                timestamp_ms: s.timestamp_ms,
+                parent_snapshot_id: s.parent_snapshot_id,
+                operation: s.summary.get("operation").cloned(),
+            })
+            .collect())
     }
 
     /// Compare two snapshots for drift analysis.
@@ -133,7 +138,7 @@ impl IcebergReader {
         current_snapshot_id: i64,
     ) -> IoResult<(DataFrame, DataFrame)> {
         let reference = Self::read_snapshot(table_path, Some(reference_snapshot_id))?;
-        let current   = Self::read_snapshot(table_path, Some(current_snapshot_id))?;
+        let current = Self::read_snapshot(table_path, Some(current_snapshot_id))?;
         Ok((reference, current))
     }
 }
@@ -156,8 +161,10 @@ fn load_metadata(table_path: &str) -> IoResult<IcebergMetadata> {
     // Try version-hint first
     let hint_path = metadata_dir.join("version-hint.text");
     let metadata_file = if hint_path.exists() {
-        let hint = std::fs::read_to_string(&hint_path)
-            .map_err(|e| IoError::ReadError { path: hint_path.display().to_string(), msg: e.to_string() })?;
+        let hint = std::fs::read_to_string(&hint_path).map_err(|e| IoError::ReadError {
+            path: hint_path.display().to_string(),
+            msg: e.to_string(),
+        })?;
         let version: u64 = hint.trim().parse().map_err(|_| IoError::ReadError {
             path: hint_path.display().to_string(),
             msg: "invalid version-hint.text".into(),
@@ -168,8 +175,10 @@ fn load_metadata(table_path: &str) -> IoResult<IcebergMetadata> {
         find_latest_metadata_file(&metadata_dir)?
     };
 
-    let content = std::fs::read_to_string(&metadata_file)
-        .map_err(|e| IoError::ReadError { path: metadata_file.display().to_string(), msg: e.to_string() })?;
+    let content = std::fs::read_to_string(&metadata_file).map_err(|e| IoError::ReadError {
+        path: metadata_file.display().to_string(),
+        msg: e.to_string(),
+    })?;
 
     serde_json::from_str(&content).map_err(|e| IoError::ReadError {
         path: metadata_file.display().to_string(),
@@ -186,7 +195,8 @@ fn find_latest_metadata_file(metadata_dir: &Path) -> IoResult<std::path::PathBuf
             let s = name.to_string_lossy();
             // Match "v<N>.metadata.json" or "<UUID>.metadata.json"
             if s.ends_with(".metadata.json") {
-                let version: u64 = s.trim_start_matches('v')
+                let version: u64 = s
+                    .trim_start_matches('v')
                     .trim_end_matches(".metadata.json")
                     .parse()
                     .unwrap_or(0);
@@ -198,12 +208,15 @@ fn find_latest_metadata_file(metadata_dir: &Path) -> IoResult<std::path::PathBuf
         .collect();
 
     candidates.sort_by_key(|(v, _)| std::cmp::Reverse(*v));
-    candidates.into_iter().next().map(|(_, p)| p).ok_or_else(|| IoError::ReadError {
-        path: metadata_dir.display().to_string(),
-        msg: "no *.metadata.json files found".into(),
-    })
+    candidates
+        .into_iter()
+        .next()
+        .map(|(_, p)| p)
+        .ok_or_else(|| IoError::ReadError {
+            path: metadata_dir.display().to_string(),
+            msg: "no *.metadata.json files found".into(),
+        })
 }
-
 
 // ── Snapshot resolution ───────────────────────────────────────────────────────
 
@@ -212,12 +225,12 @@ fn resolve_snapshot(
     snapshot_id: Option<i64>,
     table_path: &str,
 ) -> IoResult<IcebergSnapshot> {
-    let target_id = snapshot_id.or(metadata.current_snapshot_id).ok_or_else(|| {
-        IoError::ReadError {
+    let target_id = snapshot_id
+        .or(metadata.current_snapshot_id)
+        .ok_or_else(|| IoError::ReadError {
             path: table_path.to_string(),
             msg: "Iceberg table has no current snapshot".into(),
-        }
-    })?;
+        })?;
 
     metadata
         .snapshots
@@ -294,10 +307,15 @@ fn collect_from_manifest_list(
 }
 
 fn collect_from_json_manifest_list(path: &str, table_path: &str) -> IoResult<Vec<IcebergDataFile>> {
-    let content = std::fs::read_to_string(path)
-        .map_err(|e| IoError::ReadError { path: path.to_string(), msg: e.to_string() })?;
-    let entries: Vec<serde_json::Value> = serde_json::from_str(&content)
-        .map_err(|e| IoError::ReadError { path: path.to_string(), msg: e.to_string() })?;
+    let content = std::fs::read_to_string(path).map_err(|e| IoError::ReadError {
+        path: path.to_string(),
+        msg: e.to_string(),
+    })?;
+    let entries: Vec<serde_json::Value> =
+        serde_json::from_str(&content).map_err(|e| IoError::ReadError {
+            path: path.to_string(),
+            msg: e.to_string(),
+        })?;
 
     let mut files = Vec::new();
     for entry in &entries {
@@ -353,25 +371,36 @@ fn read_manifest(manifest_path: &str, table_path: &str) -> IoResult<Vec<IcebergD
 }
 
 fn read_manifest_json(path: &str, table_path: &str) -> IoResult<Vec<IcebergDataFile>> {
-    let content = std::fs::read_to_string(path)
-        .map_err(|e| IoError::ReadError { path: path.to_string(), msg: e.to_string() })?;
-    let entries: Vec<serde_json::Value> = serde_json::from_str(&content)
-        .map_err(|e| IoError::ReadError { path: path.to_string(), msg: e.to_string() })?;
+    let content = std::fs::read_to_string(path).map_err(|e| IoError::ReadError {
+        path: path.to_string(),
+        msg: e.to_string(),
+    })?;
+    let entries: Vec<serde_json::Value> =
+        serde_json::from_str(&content).map_err(|e| IoError::ReadError {
+            path: path.to_string(),
+            msg: e.to_string(),
+        })?;
 
-    Ok(entries.iter().filter_map(|e| {
-        let data_file = e.get("data_file")?;
-        let file_path = data_file.get("file_path")?.as_str()?.to_string();
-        let file_format = data_file.get("file_format")
-            .and_then(|v| v.as_str()).unwrap_or("PARQUET").to_string();
-        let record_count = data_file.get("record_count")?.as_i64().unwrap_or(0);
-        let file_size_bytes = data_file.get("file_size_in_bytes")?.as_i64().unwrap_or(0);
-        Some(IcebergDataFile {
-            file_path: resolve_path(&file_path, table_path),
-            file_format,
-            record_count,
-            file_size_bytes,
+    Ok(entries
+        .iter()
+        .filter_map(|e| {
+            let data_file = e.get("data_file")?;
+            let file_path = data_file.get("file_path")?.as_str()?.to_string();
+            let file_format = data_file
+                .get("file_format")
+                .and_then(|v| v.as_str())
+                .unwrap_or("PARQUET")
+                .to_string();
+            let record_count = data_file.get("record_count")?.as_i64().unwrap_or(0);
+            let file_size_bytes = data_file.get("file_size_in_bytes")?.as_i64().unwrap_or(0);
+            Some(IcebergDataFile {
+                file_path: resolve_path(&file_path, table_path),
+                file_format,
+                record_count,
+                file_size_bytes,
+            })
         })
-    }).collect())
+        .collect())
 }
 
 fn scan_data_directory(table_path: &str) -> IoResult<Vec<IcebergDataFile>> {
@@ -385,7 +414,8 @@ fn scan_data_directory(table_path: &str) -> IoResult<Vec<IcebergDataFile>> {
         .map(|p| {
             let file_path = p.display().to_string();
             let file_size_bytes = std::fs::metadata(&file_path)
-                .map(|m| m.len() as i64).unwrap_or(0);
+                .map(|m| m.len() as i64)
+                .unwrap_or(0);
             IcebergDataFile {
                 file_path,
                 file_format: "PARQUET".into(),

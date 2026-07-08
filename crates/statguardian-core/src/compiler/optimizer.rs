@@ -1,6 +1,6 @@
-use std::collections::{HashMap, HashSet};
-use crate::compiler::dag::{DagNode, ExecutionDag};
 use crate::ast::Severity;
+use crate::compiler::dag::{DagNode, ExecutionDag};
+use std::collections::{HashMap, HashSet};
 
 /// Multi-pass optimizer that transforms a raw node list into an efficient plan.
 pub struct Optimizer {
@@ -11,7 +11,9 @@ pub struct Optimizer {
 
 impl Default for Optimizer {
     fn default() -> Self {
-        Self { stop_on_blocking: true }
+        Self {
+            stop_on_blocking: true,
+        }
     }
 }
 
@@ -84,9 +86,9 @@ impl Optimizer {
             // Secondary: blocking first within a column
             let sev_order = |n: &DagNode| match n.severity() {
                 Severity::Blocking => 0u8,
-                Severity::Error    => 1,
-                Severity::Warning  => 2,
-                Severity::Info     => 3,
+                Severity::Error => 1,
+                Severity::Warning => 2,
+                Severity::Info => 3,
             };
             let sev_cmp = sev_order(a).cmp(&sev_order(b));
             if sev_cmp != std::cmp::Ordering::Equal {
@@ -102,9 +104,7 @@ impl Optimizer {
     pub fn group_by_column(dag: &ExecutionDag) -> HashMap<String, Vec<&DagNode>> {
         let mut map: HashMap<String, Vec<&DagNode>> = HashMap::new();
         for node in &dag.nodes {
-            map.entry(node.column().to_string())
-                .or_default()
-                .push(node);
+            map.entry(node.column().to_string()).or_default().push(node);
         }
         map
     }
@@ -118,8 +118,14 @@ mod tests {
 
     #[test]
     fn test_dedup_removes_identical_nodes() {
-        let n1 = DagNode::NullCheck { column: "id".into(), severity: Severity::Error };
-        let n2 = DagNode::NullCheck { column: "id".into(), severity: Severity::Error };
+        let n1 = DagNode::NullCheck {
+            column: "id".into(),
+            severity: Severity::Error,
+        };
+        let n2 = DagNode::NullCheck {
+            column: "id".into(),
+            severity: Severity::Error,
+        };
         let opt = Optimizer::default();
         let result = opt.optimize(vec![n1, n2]);
         assert_eq!(result.nodes.len(), 1);
@@ -128,9 +134,20 @@ mod tests {
     #[test]
     fn test_sort_puts_cheap_checks_first() {
         let nodes = vec![
-            DagNode::OutlierDetection { column: "age".into(), method: "iqr".into(), severity: Severity::Error },
-            DagNode::NullCheck { column: "age".into(), severity: Severity::Error },
-            DagNode::RegexCheck { column: "age".into(), pattern: ".+".into(), severity: Severity::Error },
+            DagNode::OutlierDetection {
+                column: "age".into(),
+                method: "iqr".into(),
+                severity: Severity::Error,
+            },
+            DagNode::NullCheck {
+                column: "age".into(),
+                severity: Severity::Error,
+            },
+            DagNode::RegexCheck {
+                column: "age".into(),
+                pattern: ".+".into(),
+                severity: Severity::Error,
+            },
         ];
         let opt = Optimizer::default();
         let result = opt.optimize(nodes);

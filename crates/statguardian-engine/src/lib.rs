@@ -60,11 +60,13 @@ impl Engine {
 pub fn run(dsl: &str, df: &DataFrame) -> Result<ValidationReport, statguardian_core::CoreError> {
     let pairs = statguardian_core::parse_and_compile(dsl)?;
     // Use first contract
-    let (contract, dag) = pairs.into_iter().next().ok_or_else(|| {
-        statguardian_core::CoreError::Compile {
-            message: "no datasets defined in DSL".into(),
-        }
-    })?;
+    let (contract, dag) =
+        pairs
+            .into_iter()
+            .next()
+            .ok_or_else(|| statguardian_core::CoreError::Compile {
+                message: "no datasets defined in DSL".into(),
+            })?;
     let engine = Engine::new(contract, dag);
     Ok(engine.execute(df, None))
 }
@@ -134,10 +136,15 @@ dataset users {
         let report = engine.execute(&df, None);
 
         // All schema checks should pass (maybe quality violations remain)
-        let blocking: Vec<_> = report.violations.iter()
+        let blocking: Vec<_> = report
+            .violations
+            .iter()
             .filter(|v| v.severity == statguardian_core::ast::Severity::Blocking)
             .collect();
-        assert!(blocking.is_empty(), "blocking violations on clean data: {blocking:?}");
+        assert!(
+            blocking.is_empty(),
+            "blocking violations on clean data: {blocking:?}"
+        );
     }
 
     #[test]

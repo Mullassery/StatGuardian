@@ -3,8 +3,8 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use pyo3_polars::PyDataFrame;
 
-use statguardian_core::{parse_and_compile, DataContract};
 use statguardian_core::compiler::dag::ExecutionDag;
+use statguardian_core::{parse_and_compile, DataContract};
 use statguardian_engine::Engine;
 use statguardian_metrics::report::ValidationReport;
 
@@ -30,7 +30,10 @@ impl PyDataContract {
             .into_iter()
             .next()
             .ok_or_else(|| PyValueError::new_err("no datasets defined in DSL"))?;
-        Ok(Self { inner: contract, dag })
+        Ok(Self {
+            inner: contract,
+            dag,
+        })
     }
 
     /// Load contract DSL from a file path.
@@ -297,7 +300,10 @@ fn execute_streaming(
     let reports = engine
         .execute_streaming(path, batch_size)
         .map_err(|e| PyRuntimeError::new_err(format!("streaming error: {e}")))?;
-    Ok(reports.into_iter().map(|r| PyValidationReport { inner: r }).collect())
+    Ok(reports
+        .into_iter()
+        .map(|r| PyValidationReport { inner: r })
+        .collect())
 }
 
 // ── Delta Lake ────────────────────────────────────────────────────────────────
@@ -325,7 +331,7 @@ fn execute_delta(
     let ref_df = match (reference_path, reference_version) {
         (Some(rp), rv) => Some(
             statguardian_io::DeltaReader::read_version(rp, rv)
-                .map_err(|e| PyRuntimeError::new_err(format!("Delta reference read error: {e}")))?
+                .map_err(|e| PyRuntimeError::new_err(format!("Delta reference read error: {e}")))?,
         ),
         _ => None,
     };
@@ -353,9 +359,12 @@ fn compare_delta_versions(
     reference_version: u64,
     current_version: Option<u64>,
 ) -> PyResult<PyValidationReport> {
-    let (reference, current) =
-        statguardian_io::DeltaReader::read_two_versions(table_path, reference_version, current_version.unwrap_or(u64::MAX))
-            .map_err(|e| PyRuntimeError::new_err(format!("Delta compare error: {e}")))?;
+    let (reference, current) = statguardian_io::DeltaReader::read_two_versions(
+        table_path,
+        reference_version,
+        current_version.unwrap_or(u64::MAX),
+    )
+    .map_err(|e| PyRuntimeError::new_err(format!("Delta compare error: {e}")))?;
 
     let engine = Engine::new(contract.inner.clone(), contract.dag.clone());
     let report = engine.execute(&current, Some(&reference));
@@ -384,8 +393,9 @@ fn execute_iceberg(
 
     let ref_df = match reference_snapshot {
         Some(ref_id) => Some(
-            statguardian_io::IcebergReader::read_snapshot(table_path, Some(ref_id))
-                .map_err(|e| PyRuntimeError::new_err(format!("Iceberg reference read error: {e}")))?
+            statguardian_io::IcebergReader::read_snapshot(table_path, Some(ref_id)).map_err(
+                |e| PyRuntimeError::new_err(format!("Iceberg reference read error: {e}")),
+            )?,
         ),
         None => None,
     };
@@ -404,22 +414,25 @@ fn list_iceberg_snapshots(table_path: &str, py: Python<'_>) -> PyResult<Vec<PyOb
     let snapshots = statguardian_io::IcebergReader::list_snapshots(table_path)
         .map_err(|e| PyRuntimeError::new_err(format!("Iceberg error: {e}")))?;
 
-    snapshots.iter().map(|s| {
-        let d = PyDict::new(py);
-        d.set_item("snapshot_id", s.snapshot_id)?;
-        d.set_item("timestamp_ms", s.timestamp_ms)?;
-        d.set_item("parent_snapshot_id", s.parent_snapshot_id)?;
-        d.set_item("operation", s.operation.as_deref())?;
-        Ok(d.into())
-    }).collect()
+    snapshots
+        .iter()
+        .map(|s| {
+            let d = PyDict::new(py);
+            d.set_item("snapshot_id", s.snapshot_id)?;
+            d.set_item("timestamp_ms", s.timestamp_ms)?;
+            d.set_item("parent_snapshot_id", s.parent_snapshot_id)?;
+            d.set_item("operation", s.operation.as_deref())?;
+            Ok(d.into())
+        })
+        .collect()
 }
 
 /// Parse and validate DSL syntax without executing.
 /// Returns the contract name if valid, raises ValueError on parse error.
 #[pyfunction]
 fn validate_dsl(dsl: &str) -> PyResult<String> {
-    let pairs = parse_and_compile(dsl)
-        .map_err(|e| PyValueError::new_err(format!("DSL error: {e}")))?;
+    let pairs =
+        parse_and_compile(dsl).map_err(|e| PyValueError::new_err(format!("DSL error: {e}")))?;
     let name = pairs
         .first()
         .map(|(c, _)| c.name.clone())

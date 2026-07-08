@@ -1,3 +1,4 @@
+use crate::{DataReader, IoError, IoResult};
 /// Delta Lake table format reader.
 ///
 /// Reads the Delta transaction log to determine the current set of active
@@ -11,7 +12,6 @@
 use polars::prelude::*;
 use serde::Deserialize;
 use std::path::Path;
-use crate::{DataReader, IoError, IoResult};
 
 // ── Delta transaction log types ───────────────────────────────────────────────
 
@@ -34,7 +34,7 @@ struct DeltaRemove {
 /// at most one of these variants populated.
 #[derive(Debug, Deserialize, Default)]
 struct DeltaAction {
-    add:    Option<DeltaAdd>,
+    add: Option<DeltaAdd>,
     remove: Option<DeltaRemove>,
 }
 
@@ -97,7 +97,7 @@ impl DeltaReader {
         current_version: u64,
     ) -> IoResult<(DataFrame, DataFrame)> {
         let reference = Self::read_version(table_path, Some(reference_version))?;
-        let current   = Self::read_version(table_path, Some(current_version))?;
+        let current = Self::read_version(table_path, Some(current_version))?;
         Ok((reference, current))
     }
 
@@ -132,7 +132,8 @@ impl DeltaReader {
         commit_files.retain(|(v, _)| *v <= limit);
 
         // Replay transaction log: accumulate adds, remove on remove
-        let mut active: std::collections::HashMap<String, String> = std::collections::HashMap::new();
+        let mut active: std::collections::HashMap<String, String> =
+            std::collections::HashMap::new();
 
         for (_, path) in &commit_files {
             let content = std::fs::read_to_string(path).map_err(|e| IoError::ReadError {
@@ -142,13 +143,18 @@ impl DeltaReader {
 
             for line in content.lines() {
                 let line = line.trim();
-                if line.is_empty() { continue; }
+                if line.is_empty() {
+                    continue;
+                }
 
                 let action: DeltaAction = serde_json::from_str(line).unwrap_or_default();
 
                 if let Some(add) = action.add {
-                    let full = format!("{}/{}", table_root.trim_end_matches('/'),
-                        url_decode(&add.path));
+                    let full = format!(
+                        "{}/{}",
+                        table_root.trim_end_matches('/'),
+                        url_decode(&add.path)
+                    );
                     active.insert(add.path, full);
                 }
                 if let Some(remove) = action.remove {
@@ -181,18 +187,15 @@ impl DeltaReader {
         let mut best_version = 0u64;
         for (ver, path) in &commit_files {
             // The commitInfo action contains a `timestamp` field
-            let content = std::fs::read_to_string(path)
-                .unwrap_or_default();
-            let commit_ts: Option<i64> = content
-                .lines()
-                .find_map(|line| {
-                    let v: serde_json::Value = serde_json::from_str(line).ok()?;
-                    v.get("commitInfo")?.get("timestamp")?.as_i64()
-                });
+            let content = std::fs::read_to_string(path).unwrap_or_default();
+            let commit_ts: Option<i64> = content.lines().find_map(|line| {
+                let v: serde_json::Value = serde_json::from_str(line).ok()?;
+                v.get("commitInfo")?.get("timestamp")?.as_i64()
+            });
 
             match commit_ts {
                 Some(ts) if ts <= timestamp_ms => best_version = *ver,
-                Some(_) => break, // passed the requested time
+                Some(_) => break,            // passed the requested time
                 None => best_version = *ver, // no timestamp, include it
             }
         }
@@ -204,7 +207,11 @@ impl DeltaReader {
 fn url_decode(s: &str) -> std::borrow::Cow<'_, str> {
     if s.contains('%') {
         // Minimal percent-decoding for common cases
-        std::borrow::Cow::Owned(s.replace("%20", " ").replace("%3D", "=").replace("%2F", "/"))
+        std::borrow::Cow::Owned(
+            s.replace("%20", " ")
+                .replace("%3D", "=")
+                .replace("%2F", "/"),
+        )
     } else {
         std::borrow::Cow::Borrowed(s)
     }
@@ -251,7 +258,8 @@ mod tests {
         write_delta_add(&log, 0, "part-0.parquet");
         write_delta_add(&log, 1, "part-1.parquet");
 
-        let files = DeltaReader::resolve_active_files(&log, dir.path().to_str().unwrap(), None).unwrap();
+        let files =
+            DeltaReader::resolve_active_files(&log, dir.path().to_str().unwrap(), None).unwrap();
         assert_eq!(files.len(), 2);
     }
 
@@ -263,7 +271,8 @@ mod tests {
         write_delta_add(&log, 0, "part-0.parquet");
         write_delta_add(&log, 1, "part-1.parquet");
 
-        let files = DeltaReader::resolve_active_files(&log, dir.path().to_str().unwrap(), Some(0)).unwrap();
+        let files =
+            DeltaReader::resolve_active_files(&log, dir.path().to_str().unwrap(), Some(0)).unwrap();
         assert_eq!(files.len(), 1);
     }
 

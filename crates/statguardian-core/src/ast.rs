@@ -18,13 +18,13 @@ pub enum DataType {
 impl std::fmt::Display for DataType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            DataType::Int      => write!(f, "int"),
-            DataType::Float    => write!(f, "float"),
-            DataType::String   => write!(f, "string"),
-            DataType::Bool     => write!(f, "bool"),
-            DataType::Date     => write!(f, "date"),
+            DataType::Int => write!(f, "int"),
+            DataType::Float => write!(f, "float"),
+            DataType::String => write!(f, "string"),
+            DataType::Bool => write!(f, "bool"),
+            DataType::Date => write!(f, "date"),
             DataType::Datetime => write!(f, "datetime"),
-            DataType::Bytes    => write!(f, "bytes"),
+            DataType::Bytes => write!(f, "bytes"),
         }
     }
 }
@@ -72,8 +72,8 @@ impl std::fmt::Display for LiteralValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             LiteralValue::Number(n) => write!(f, "{n}"),
-            LiteralValue::Str(s)   => write!(f, "\"{s}\""),
-            LiteralValue::Bool(b)  => write!(f, "{b}"),
+            LiteralValue::Str(s) => write!(f, "\"{s}\""),
+            LiteralValue::Bool(b) => write!(f, "{b}"),
         }
     }
 }
@@ -105,29 +105,29 @@ pub enum ComparisonOp {
 impl ComparisonOp {
     pub fn evaluate(&self, lhs: f64, rhs: f64) -> bool {
         match self {
-            ComparisonOp::Gt  => lhs > rhs,
-            ComparisonOp::Lt  => lhs < rhs,
+            ComparisonOp::Gt => lhs > rhs,
+            ComparisonOp::Lt => lhs < rhs,
             ComparisonOp::Gte => lhs >= rhs,
             ComparisonOp::Lte => lhs <= rhs,
-            ComparisonOp::Eq  => (lhs - rhs).abs() < f64::EPSILON,
+            ComparisonOp::Eq => (lhs - rhs).abs() < f64::EPSILON,
             ComparisonOp::Neq => (lhs - rhs).abs() >= f64::EPSILON,
         }
     }
 
     pub fn evaluate_str(&self, lhs: &str, rhs: &str) -> bool {
         match self {
-            ComparisonOp::Eq  => lhs == rhs,
+            ComparisonOp::Eq => lhs == rhs,
             ComparisonOp::Neq => lhs != rhs,
-            ComparisonOp::Lt  => lhs < rhs,
+            ComparisonOp::Lt => lhs < rhs,
             ComparisonOp::Lte => lhs <= rhs,
-            ComparisonOp::Gt  => lhs > rhs,
+            ComparisonOp::Gt => lhs > rhs,
             ComparisonOp::Gte => lhs >= rhs,
         }
     }
 
     pub fn evaluate_bool(&self, lhs: bool, rhs: bool) -> bool {
         match self {
-            ComparisonOp::Eq  => lhs == rhs,
+            ComparisonOp::Eq => lhs == rhs,
             ComparisonOp::Neq => lhs != rhs,
             _ => false,
         }
@@ -137,11 +137,11 @@ impl ComparisonOp {
 impl std::fmt::Display for ComparisonOp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ComparisonOp::Gt  => write!(f, ">"),
-            ComparisonOp::Lt  => write!(f, "<"),
+            ComparisonOp::Gt => write!(f, ">"),
+            ComparisonOp::Lt => write!(f, "<"),
             ComparisonOp::Gte => write!(f, ">="),
             ComparisonOp::Lte => write!(f, "<="),
-            ComparisonOp::Eq  => write!(f, "=="),
+            ComparisonOp::Eq => write!(f, "=="),
             ComparisonOp::Neq => write!(f, "!="),
         }
     }
@@ -157,7 +157,6 @@ pub enum Severity {
     Error,
     Blocking,
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QualityRule {
@@ -203,15 +202,15 @@ pub enum StatFn {
 impl std::fmt::Display for StatFn {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            StatFn::Mean   => write!(f, "mean"),
-            StatFn::Std    => write!(f, "std"),
+            StatFn::Mean => write!(f, "mean"),
+            StatFn::Std => write!(f, "std"),
             StatFn::Median => write!(f, "median"),
-            StatFn::Min    => write!(f, "min"),
-            StatFn::Max    => write!(f, "max"),
-            StatFn::P05    => write!(f, "p05"),
-            StatFn::P95    => write!(f, "p95"),
-            StatFn::P99    => write!(f, "p99"),
-            StatFn::P999   => write!(f, "p999"),
+            StatFn::Min => write!(f, "min"),
+            StatFn::Max => write!(f, "max"),
+            StatFn::P05 => write!(f, "p05"),
+            StatFn::P95 => write!(f, "p95"),
+            StatFn::P99 => write!(f, "p99"),
+            StatFn::P999 => write!(f, "p999"),
         }
     }
 }

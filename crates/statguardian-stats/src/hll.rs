@@ -12,7 +12,9 @@ pub struct HyperLogLog {
 
 impl Default for HyperLogLog {
     fn default() -> Self {
-        Self { registers: vec![0u8; NUM_REGISTERS] }
+        Self {
+            registers: vec![0u8; NUM_REGISTERS],
+        }
     }
 }
 
@@ -36,7 +38,12 @@ impl HyperLogLog {
     /// Estimate the number of distinct elements.
     pub fn cardinality(&self) -> u64 {
         let m = NUM_REGISTERS as f64;
-        let raw = ALPHA * m * m / self.registers.iter().map(|&r| 2f64.powi(-(r as i32))).sum::<f64>();
+        let raw = ALPHA * m * m
+            / self
+                .registers
+                .iter()
+                .map(|&r| 2f64.powi(-(r as i32)))
+                .sum::<f64>();
 
         // Small-range correction
         let estimate = if raw <= 2.5 * m {

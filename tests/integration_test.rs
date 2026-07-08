@@ -58,7 +58,11 @@ fn test_clean_data_passes_with_high_score() {
     let report = engine.execute(&make_clean_df(), None);
 
     assert!(report.passed, "clean data should pass");
-    assert!(report.health.score > 0.9, "score should be high: {}", report.health.score);
+    assert!(
+        report.health.score > 0.9,
+        "score should be high: {}",
+        report.health.score
+    );
     assert_eq!(report.row_count, 5);
     assert!(!report.column_profiles.is_empty());
 }
@@ -68,7 +72,10 @@ fn test_dirty_data_produces_violations() {
     let engine = engine_from_dsl(FULL_DSL);
     let report = engine.execute(&make_dirty_df(), None);
 
-    assert!(!report.violations.is_empty(), "dirty data must produce violations");
+    assert!(
+        !report.violations.is_empty(),
+        "dirty data must produce violations"
+    );
     // duplicate id with @blocking severity should mark as failed
     assert!(!report.passed, "duplicate primary key should fail");
 }
@@ -80,13 +87,19 @@ fn test_violation_categories() {
 
     let checks: Vec<&str> = report.violations.iter().map(|v| v.check.as_str()).collect();
     // We expect at least one of these categories to appear:
-    let has_null    = checks.iter().any(|c| c.contains("null"));
-    let has_range   = checks.iter().any(|c| c.contains("between") || c.contains("range") || c.contains("min") || c.contains("max"));
-    let has_unique  = checks.iter().any(|c| c.contains("unique") || c.contains("duplicate"));
-    let has_regex   = checks.iter().any(|c| c.contains("regex"));
+    let has_null = checks.iter().any(|c| c.contains("null"));
+    let has_range = checks.iter().any(|c| {
+        c.contains("between") || c.contains("range") || c.contains("min") || c.contains("max")
+    });
+    let has_unique = checks
+        .iter()
+        .any(|c| c.contains("unique") || c.contains("duplicate"));
+    let has_regex = checks.iter().any(|c| c.contains("regex"));
 
-    assert!(has_null    || has_range || has_unique || has_regex,
-            "expected typed violations, got: {checks:?}");
+    assert!(
+        has_null || has_range || has_unique || has_regex,
+        "expected typed violations, got: {checks:?}"
+    );
 }
 
 #[test]
@@ -105,11 +118,13 @@ dataset metrics {
     let engine = engine_from_dsl(DRIFT_DSL);
 
     let reference = df!("value" => &[1.0f64, 2.0, 3.0, 4.0, 5.0]).unwrap();
-    let current   = df!("value" => &[1.0f64, 2.0, 3.0, 4.0, 5.0]).unwrap(); // identical
+    let current = df!("value" => &[1.0f64, 2.0, 3.0, 4.0, 5.0]).unwrap(); // identical
 
     let report = engine.execute(&current, Some(&reference));
-    assert!(report.drift_results.iter().all(|r| r.passed),
-            "identical distributions should not drift");
+    assert!(
+        report.drift_results.iter().all(|r| r.passed),
+        "identical distributions should not drift"
+    );
 }
 
 #[test]
@@ -123,11 +138,13 @@ dataset metrics {
 
     let engine = engine_from_dsl(DRIFT_DSL);
     let reference = df!("value" => &[1.0f64, 2.0, 3.0]).unwrap();
-    let current   = df!("value" => &[100.0f64, 200.0, 300.0]).unwrap(); // massive shift
+    let current = df!("value" => &[100.0f64, 200.0, 300.0]).unwrap(); // massive shift
 
     let report = engine.execute(&current, Some(&reference));
-    assert!(report.drift_results.iter().any(|r| !r.passed),
-            "large distribution shift should be detected as drift");
+    assert!(
+        report.drift_results.iter().any(|r| !r.passed),
+        "large distribution shift should be detected as drift"
+    );
 }
 
 #[test]
@@ -145,8 +162,8 @@ fn test_report_prometheus_output() {
 fn test_report_json_is_valid() {
     let engine = engine_from_dsl(FULL_DSL);
     let report = engine.execute(&make_clean_df(), None);
-    let json: serde_json::Value = serde_json::from_str(&report.to_json())
-        .expect("report JSON should be valid");
+    let json: serde_json::Value =
+        serde_json::from_str(&report.to_json()).expect("report JSON should be valid");
 
     assert!(json["id"].is_string());
     assert!(json["passed"].is_boolean());

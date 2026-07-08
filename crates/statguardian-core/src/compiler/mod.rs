@@ -12,7 +12,6 @@ pub struct Compiler {
     optimizer: Optimizer,
 }
 
-
 impl Compiler {
     pub fn new() -> Self {
         Self::default()
@@ -23,7 +22,9 @@ impl Compiler {
 
         // Schema → DAG nodes
         for field in &contract.schema {
-            nodes.push(DagNode::Profile { column: field.name.clone() });
+            nodes.push(DagNode::Profile {
+                column: field.name.clone(),
+            });
             nodes.push(DagNode::TypeCheck {
                 column: field.name.clone(),
                 expected_type: field.data_type.to_string(),
@@ -119,7 +120,11 @@ impl Compiler {
             let node = match rule.function {
                 AnomalyFn::DetectOutliers => DagNode::OutlierDetection {
                     column: rule.column.clone(),
-                    method: rule.args.get("method").cloned().unwrap_or_else(|| "iqr".into()),
+                    method: rule
+                        .args
+                        .get("method")
+                        .cloned()
+                        .unwrap_or_else(|| "iqr".into()),
                     severity: rule.severity.clone(),
                 },
                 AnomalyFn::DetectDuplicates => DagNode::DuplicateDetection {

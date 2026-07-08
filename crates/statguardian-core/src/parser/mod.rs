@@ -1,6 +1,6 @@
+use indexmap::IndexMap;
 use pest::Parser;
 use pest_derive::Parser;
-use indexmap::IndexMap;
 
 use crate::ast::*;
 use crate::error::{CoreError, CoreResult};
@@ -25,8 +25,8 @@ pub fn parse(input: &str) -> CoreResult<Vec<DataContract>> {
         )));
     }
 
-    let pairs = ContractParser::parse(Rule::contract, input)
-        .map_err(|e| CoreError::Parse(Box::new(e)))?;
+    let pairs =
+        ContractParser::parse(Rule::contract, input).map_err(|e| CoreError::Parse(Box::new(e)))?;
 
     let mut contracts = Vec::new();
 
@@ -56,9 +56,9 @@ fn parse_dataset(pair: pest::iterators::Pair<Rule>) -> CoreResult<DataContract> 
                     contract.quality_rules = qr;
                     contract.cross_column_rules = ccr;
                 }
-                Rule::stats_section   => contract.stats_rules   = parse_stats(inner)?,
-                Rule::anomaly_section => contract.anomaly_rules  = parse_anomalies(inner)?,
-                Rule::stream_section  => contract.stream_config  = Some(parse_stream(inner)?),
+                Rule::stats_section => contract.stats_rules = parse_stats(inner)?,
+                Rule::anomaly_section => contract.anomaly_rules = parse_anomalies(inner)?,
+                Rule::stream_section => contract.stream_config = Some(parse_stream(inner)?),
                 _ => {}
             }
         }
@@ -89,34 +89,40 @@ fn parse_field(pair: pest::iterators::Pair<Rule>) -> CoreResult<FieldDef> {
             constraints.push(parse_constraint(c)?);
         }
     }
-    Ok(FieldDef { name, data_type, constraints })
+    Ok(FieldDef {
+        name,
+        data_type,
+        constraints,
+    })
 }
 
 fn parse_data_type(pair: pest::iterators::Pair<Rule>) -> CoreResult<DataType> {
     Ok(match pair.as_str() {
-        "int"      => DataType::Int,
-        "float"    => DataType::Float,
-        "string"   => DataType::String,
-        "bool"     => DataType::Bool,
-        "date"     => DataType::Date,
+        "int" => DataType::Int,
+        "float" => DataType::Float,
+        "string" => DataType::String,
+        "bool" => DataType::Bool,
+        "date" => DataType::Date,
         "datetime" => DataType::Datetime,
-        "bytes"    => DataType::Bytes,
-        other      => return Err(CoreError::Unsupported(format!("unknown type: {other}"))),
+        "bytes" => DataType::Bytes,
+        other => return Err(CoreError::Unsupported(format!("unknown type: {other}"))),
     })
 }
 
 fn parse_constraint(pair: pest::iterators::Pair<Rule>) -> CoreResult<Constraint> {
     let inner = pair.into_inner().next().unwrap();
     Ok(match inner.as_rule() {
-        Rule::not_null          => Constraint::NotNull,
-        Rule::unique            => Constraint::Unique,
-        Rule::positive          => Constraint::Positive,
-        Rule::negative          => Constraint::Negative,
-        Rule::primary_key       => Constraint::PrimaryKey,
+        Rule::not_null => Constraint::NotNull,
+        Rule::unique => Constraint::Unique,
+        Rule::positive => Constraint::Positive,
+        Rule::negative => Constraint::Negative,
+        Rule::primary_key => Constraint::PrimaryKey,
         Rule::coerce_constraint => Constraint::Coerce,
-        Rule::regex_constraint  => {
+        Rule::regex_constraint => {
             let s = inner.into_inner().next().unwrap().as_str();
-            Constraint::Regex { pattern: s.to_string() }
+            Constraint::Regex {
+                pattern: s.to_string(),
+            }
         }
         Rule::between_constraint => {
             let mut nums = inner.into_inner();
@@ -125,11 +131,23 @@ fn parse_constraint(pair: pest::iterators::Pair<Rule>) -> CoreResult<Constraint>
             Constraint::Between { min, max }
         }
         Rule::min_constraint => {
-            let v = inner.into_inner().next().unwrap().as_str().parse::<f64>().unwrap();
+            let v = inner
+                .into_inner()
+                .next()
+                .unwrap()
+                .as_str()
+                .parse::<f64>()
+                .unwrap();
             Constraint::Min { value: v }
         }
         Rule::max_constraint => {
-            let v = inner.into_inner().next().unwrap().as_str().parse::<f64>().unwrap();
+            let v = inner
+                .into_inner()
+                .next()
+                .unwrap()
+                .as_str()
+                .parse::<f64>()
+                .unwrap();
             Constraint::Max { value: v }
         }
         Rule::len_constraint => {
@@ -144,11 +162,15 @@ fn parse_constraint(pair: pest::iterators::Pair<Rule>) -> CoreResult<Constraint>
         }
         Rule::foreign_key => {
             let mut parts = inner.into_inner();
-            let table  = parts.next().unwrap().as_str().to_string();
+            let table = parts.next().unwrap().as_str().to_string();
             let column = parts.next().unwrap().as_str().to_string();
             Constraint::ForeignKey { table, column }
         }
-        other => return Err(CoreError::Unsupported(format!("unknown constraint: {other:?}"))),
+        other => {
+            return Err(CoreError::Unsupported(format!(
+                "unknown constraint: {other:?}"
+            )))
+        }
     })
 }
 
@@ -161,7 +183,7 @@ fn parse_quality(
     let mut cross_column_rules = Vec::new();
     for r in pair.into_inner() {
         match r.as_rule() {
-            Rule::quality_rule      => quality_rules.push(parse_quality_rule(r)?),
+            Rule::quality_rule => quality_rules.push(parse_quality_rule(r)?),
             Rule::cross_column_rule => cross_column_rules.push(parse_cross_column_rule(r)?),
             _ => {}
         }
@@ -187,7 +209,13 @@ fn parse_quality_rule(pair: pest::iterators::Pair<Rule>) -> CoreResult<QualityRu
     let op = parse_comparison_op(inner.next().unwrap())?;
     let threshold = inner.next().unwrap().as_str().parse::<f64>().unwrap();
 
-    Ok(QualityRule { metric, column, op, threshold, severity })
+    Ok(QualityRule {
+        metric,
+        column,
+        op,
+        threshold,
+        severity,
+    })
 }
 
 fn parse_cross_column_rule(pair: pest::iterators::Pair<Rule>) -> CoreResult<CrossColumnRule> {
@@ -201,11 +229,11 @@ fn parse_cross_column_rule(pair: pest::iterators::Pair<Rule>) -> CoreResult<Cros
     };
 
     let assert_column = assert_col_pair.as_str().to_string();
-    let assert_op     = parse_comparison_op(inner.next().unwrap())?;
-    let assert_value  = parse_literal_value(inner.next().unwrap())?;
-    let when_column   = inner.next().unwrap().as_str().to_string();
-    let when_op       = parse_comparison_op(inner.next().unwrap())?;
-    let when_value    = parse_literal_value(inner.next().unwrap())?;
+    let assert_op = parse_comparison_op(inner.next().unwrap())?;
+    let assert_value = parse_literal_value(inner.next().unwrap())?;
+    let when_column = inner.next().unwrap().as_str().to_string();
+    let when_op = parse_comparison_op(inner.next().unwrap())?;
+    let when_value = parse_literal_value(inner.next().unwrap())?;
 
     Ok(CrossColumnRule {
         assert_column,
@@ -221,7 +249,7 @@ fn parse_cross_column_rule(pair: pest::iterators::Pair<Rule>) -> CoreResult<Cros
 fn parse_literal_value(pair: pest::iterators::Pair<Rule>) -> CoreResult<LiteralValue> {
     let inner = pair.into_inner().next().unwrap();
     Ok(match inner.as_rule() {
-        Rule::number         => LiteralValue::Number(inner.as_str().parse::<f64>().unwrap()),
+        Rule::number => LiteralValue::Number(inner.as_str().parse::<f64>().unwrap()),
         Rule::string_literal => {
             // string_literal is atomic (`@`) so as_str() includes the surrounding
             // quotes — strip exactly one leading/trailing `"`.
@@ -232,27 +260,31 @@ fn parse_literal_value(pair: pest::iterators::Pair<Rule>) -> CoreResult<LiteralV
                 .unwrap_or(raw);
             LiteralValue::Str(unquoted.to_string())
         }
-        Rule::boolean        => LiteralValue::Bool(inner.as_str() == "true"),
-        other                => return Err(CoreError::Unsupported(format!("unknown literal: {other:?}"))),
+        Rule::boolean => LiteralValue::Bool(inner.as_str() == "true"),
+        other => {
+            return Err(CoreError::Unsupported(format!(
+                "unknown literal: {other:?}"
+            )))
+        }
     })
 }
 
 fn parse_metric_fn(pair: pest::iterators::Pair<Rule>) -> CoreResult<MetricFn> {
     Ok(match pair.as_str() {
-        "completeness"  => MetricFn::Completeness,
-        "uniqueness"    => MetricFn::Uniqueness,
-        "validity"      => MetricFn::Validity,
-        "consistency"   => MetricFn::Consistency,
-        "freshness"     => MetricFn::Freshness,
+        "completeness" => MetricFn::Completeness,
+        "uniqueness" => MetricFn::Uniqueness,
+        "validity" => MetricFn::Validity,
+        "consistency" => MetricFn::Consistency,
+        "freshness" => MetricFn::Freshness,
         "non_null_rate" => MetricFn::NonNullRate,
-        other           => return Err(CoreError::Unsupported(format!("unknown metric: {other}"))),
+        other => return Err(CoreError::Unsupported(format!("unknown metric: {other}"))),
     })
 }
 
 fn parse_comparison_op(pair: pest::iterators::Pair<Rule>) -> CoreResult<ComparisonOp> {
     Ok(match pair.as_str() {
-        ">"  => ComparisonOp::Gt,
-        "<"  => ComparisonOp::Lt,
+        ">" => ComparisonOp::Gt,
+        "<" => ComparisonOp::Lt,
         ">=" => ComparisonOp::Gte,
         "<=" => ComparisonOp::Lte,
         "==" => ComparisonOp::Eq,
@@ -264,11 +296,11 @@ fn parse_comparison_op(pair: pest::iterators::Pair<Rule>) -> CoreResult<Comparis
 fn parse_severity(pair: pest::iterators::Pair<Rule>) -> CoreResult<Severity> {
     let level = pair.into_inner().next().unwrap().as_str();
     Ok(match level {
-        "info"     => Severity::Info,
-        "warning"  => Severity::Warning,
-        "error"    => Severity::Error,
+        "info" => Severity::Info,
+        "warning" => Severity::Warning,
+        "error" => Severity::Error,
         "blocking" => Severity::Blocking,
-        other      => return Err(CoreError::Unsupported(format!("unknown severity: {other}"))),
+        other => return Err(CoreError::Unsupported(format!("unknown severity: {other}"))),
     })
 }
 
@@ -294,26 +326,32 @@ fn parse_stats_rule(pair: pest::iterators::Pair<Rule>) -> CoreResult<StatsRule> 
         (Severity::default(), first)
     };
 
-    let column    = col_pair.as_str().to_string();
-    let stat      = parse_stat_fn(inner.next().unwrap())?;
-    let op        = parse_comparison_op(inner.next().unwrap())?;
+    let column = col_pair.as_str().to_string();
+    let stat = parse_stat_fn(inner.next().unwrap())?;
+    let op = parse_comparison_op(inner.next().unwrap())?;
     let threshold = inner.next().unwrap().as_str().parse::<f64>().unwrap();
 
-    Ok(StatsRule { column, stat, op, threshold, severity })
+    Ok(StatsRule {
+        column,
+        stat,
+        op,
+        threshold,
+        severity,
+    })
 }
 
 fn parse_stat_fn(pair: pest::iterators::Pair<Rule>) -> CoreResult<StatFn> {
     Ok(match pair.as_str() {
-        "mean"   => StatFn::Mean,
-        "std"    => StatFn::Std,
+        "mean" => StatFn::Mean,
+        "std" => StatFn::Std,
         "median" => StatFn::Median,
-        "min"    => StatFn::Min,
-        "max"    => StatFn::Max,
-        "p05"    => StatFn::P05,
-        "p95"    => StatFn::P95,
-        "p99"    => StatFn::P99,
-        "p999"   => StatFn::P999,
-        other    => return Err(CoreError::Unsupported(format!("unknown stat fn: {other}"))),
+        "min" => StatFn::Min,
+        "max" => StatFn::Max,
+        "p05" => StatFn::P05,
+        "p95" => StatFn::P95,
+        "p99" => StatFn::P99,
+        "p999" => StatFn::P999,
+        other => return Err(CoreError::Unsupported(format!("unknown stat fn: {other}"))),
     })
 }
 
@@ -340,7 +378,7 @@ fn parse_anomaly_rule(pair: pest::iterators::Pair<Rule>) -> CoreResult<AnomalyRu
     };
 
     let function = parse_anomaly_fn(fn_pair)?;
-    let column   = inner.next().unwrap().as_str().to_string();
+    let column = inner.next().unwrap().as_str().to_string();
 
     let mut args = IndexMap::new();
     for arg in inner {
@@ -352,17 +390,26 @@ fn parse_anomaly_rule(pair: pest::iterators::Pair<Rule>) -> CoreResult<AnomalyRu
         }
     }
 
-    Ok(AnomalyRule { function, column, args, severity })
+    Ok(AnomalyRule {
+        function,
+        column,
+        args,
+        severity,
+    })
 }
 
 fn parse_anomaly_fn(pair: pest::iterators::Pair<Rule>) -> CoreResult<AnomalyFn> {
     Ok(match pair.as_str() {
-        "detect_outliers"              => AnomalyFn::DetectOutliers,
-        "detect_nulls"                 => AnomalyFn::DetectNulls,
-        "detect_duplicates"            => AnomalyFn::DetectDuplicates,
-        "detect_pattern_breaks"        => AnomalyFn::DetectPatternBreaks,
+        "detect_outliers" => AnomalyFn::DetectOutliers,
+        "detect_nulls" => AnomalyFn::DetectNulls,
+        "detect_duplicates" => AnomalyFn::DetectDuplicates,
+        "detect_pattern_breaks" => AnomalyFn::DetectPatternBreaks,
         "detect_cardinality_explosion" => AnomalyFn::DetectCardinalityExplosion,
-        other => return Err(CoreError::Unsupported(format!("unknown anomaly fn: {other}"))),
+        other => {
+            return Err(CoreError::Unsupported(format!(
+                "unknown anomaly fn: {other}"
+            )))
+        }
     })
 }
 
@@ -372,9 +419,15 @@ fn parse_stream(pair: pest::iterators::Pair<Rule>) -> CoreResult<StreamConfig> {
     let mut cfg = StreamConfig::default();
     for opt in pair.into_inner() {
         match opt.as_rule() {
-            Rule::stream_window    => cfg.window    = Some(opt.into_inner().next().unwrap().as_str().to_string()),
-            Rule::stream_watermark => cfg.watermark = Some(opt.into_inner().next().unwrap().as_str().to_string()),
-            Rule::stream_emit      => cfg.emit      = Some(opt.into_inner().next().unwrap().as_str().to_string()),
+            Rule::stream_window => {
+                cfg.window = Some(opt.into_inner().next().unwrap().as_str().to_string())
+            }
+            Rule::stream_watermark => {
+                cfg.watermark = Some(opt.into_inner().next().unwrap().as_str().to_string())
+            }
+            Rule::stream_emit => {
+                cfg.emit = Some(opt.into_inner().next().unwrap().as_str().to_string())
+            }
             _ => {}
         }
     }
@@ -466,8 +519,13 @@ dataset orders {
         let schema = &contracts[0].schema;
         assert_eq!(schema[0].name, "id");
         assert!(schema[0].constraints.contains(&Constraint::NotNull));
-        assert!(schema[1].constraints.iter().any(|c| matches!(c, Constraint::Regex { .. })));
-        assert!(schema[2].constraints.iter().any(|c| matches!(c, Constraint::Between { min, max } if *min == 0.0 && *max == 120.0)));
+        assert!(schema[1]
+            .constraints
+            .iter()
+            .any(|c| matches!(c, Constraint::Regex { .. })));
+        assert!(schema[2].constraints.iter().any(
+            |c| matches!(c, Constraint::Between { min, max } if *min == 0.0 && *max == 120.0)
+        ));
     }
 
     #[test]

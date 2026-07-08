@@ -113,13 +113,16 @@ fn test_parse_preserves_dataset_name() {
     let names = vec!["users", "orders", "products"];
 
     for name in names {
-        let dsl = format!(r#"
+        let dsl = format!(
+            r#"
             dataset {} {{
                 schema {{
                     id: int
                 }}
             }}
-        "#, name);
+        "#,
+            name
+        );
 
         let result = parse_and_compile(&dsl);
         assert!(result.is_ok(), "should parse dataset: {}", name);

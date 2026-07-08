@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::ast::{ComparisonOp, MetricFn, Severity, StatFn};
+use serde::{Deserialize, Serialize};
 
 /// A single node in the execution DAG.
 /// Each node is a pure, side-effect-free unit of work against a column or dataset.
@@ -119,19 +119,19 @@ impl DagNode {
     /// Cost estimate for ordering (lower = cheaper, should run first to short-circuit).
     pub fn cost(&self) -> u8 {
         match self {
-            DagNode::TypeCheck { .. }     => 1,
-            DagNode::NullCheck { .. }     => 1,
+            DagNode::TypeCheck { .. } => 1,
+            DagNode::NullCheck { .. } => 1,
             DagNode::PositiveCheck { .. } => 2,
             DagNode::NegativeCheck { .. } => 2,
-            DagNode::RangeCheck { .. }    => 2,
-            DagNode::LenCheck { .. }      => 2,
-            DagNode::EnumCheck { .. }     => 3,
-            DagNode::RegexCheck { .. }    => 4,
+            DagNode::RangeCheck { .. } => 2,
+            DagNode::LenCheck { .. } => 2,
+            DagNode::EnumCheck { .. } => 3,
+            DagNode::RegexCheck { .. } => 4,
             DagNode::UniquenessCheck { .. } => 5,
             DagNode::QualityMetricCheck { .. } => 5,
-            DagNode::Profile { .. }       => 6,
+            DagNode::Profile { .. } => 6,
             DagNode::CardinalityCheck { .. } => 6,
-            DagNode::DriftCheck { .. }    => 7,
+            DagNode::DriftCheck { .. } => 7,
             DagNode::OutlierDetection { .. } => 8,
             DagNode::DuplicateDetection { .. } => 8,
             DagNode::NullAnomalyDetection { .. } => 3,
@@ -172,14 +172,15 @@ pub struct ExecutionDag {
 
 impl ExecutionDag {
     pub fn new(nodes: Vec<DagNode>) -> Self {
-        let mut referenced_columns: Vec<String> = nodes
-            .iter()
-            .map(|n| n.column().to_string())
-            .collect();
+        let mut referenced_columns: Vec<String> =
+            nodes.iter().map(|n| n.column().to_string()).collect();
         referenced_columns.sort();
         referenced_columns.dedup();
 
-        Self { nodes, referenced_columns }
+        Self {
+            nodes,
+            referenced_columns,
+        }
     }
 
     pub fn node_count(&self) -> usize {

@@ -94,7 +94,8 @@ impl TumblingWindowExecutor {
         let window_id = format!("window_{}", window_number);
 
         if !self.current_windows.contains_key(&window_id) {
-            let window_start = UNIX_EPOCH + Duration::from_secs(window_number * self.window_size.as_secs());
+            let window_start =
+                UNIX_EPOCH + Duration::from_secs(window_number * self.window_size.as_secs());
             let window_end = window_start + self.window_size;
             let window = StreamingWindow::new(window_id.clone(), window_start, window_end);
             self.current_windows.insert(window_id.clone(), window);
@@ -211,6 +212,8 @@ mod tests {
         let mut window = StreamingWindow::new("test".to_string(), start, end);
 
         let out_of_bounds = UNIX_EPOCH + Duration::from_secs(90);
-        assert!(window.add_event(out_of_bounds, "event".to_string()).is_err());
+        assert!(window
+            .add_event(out_of_bounds, "event".to_string())
+            .is_err());
     }
 }

@@ -3,10 +3,10 @@ pub mod delta;
 pub mod iceberg;
 pub mod sql;
 
-pub use cloud::{CloudReader, is_cloud_uri};
+pub use cloud::{is_cloud_uri, CloudReader};
 pub use delta::DeltaReader;
-pub use iceberg::{IcebergReader, IcebergDataFile, SnapshotInfo};
-pub use sql::{SqlReader, SqlBackend};
+pub use iceberg::{IcebergDataFile, IcebergReader, SnapshotInfo};
+pub use sql::{SqlBackend, SqlReader};
 
 use polars::prelude::*;
 use std::path::Path;
@@ -59,14 +59,14 @@ impl DataReader {
         }
 
         match p.extension().and_then(|e| e.to_str()) {
-            Some("parquet")                  => Self::read_parquet(path),
-            Some("csv") | Some("tsv")        => Self::read_csv(path),
-            Some("json") | Some("ndjson")    => Self::read_json(path),
-            Some("ipc") | Some("arrow")      => Self::read_ipc(path),
-            Some("avro")                     => Self::read_avro(path),
-            Some("orc")                      => Self::read_orc(path),
+            Some("parquet") => Self::read_parquet(path),
+            Some("csv") | Some("tsv") => Self::read_csv(path),
+            Some("json") | Some("ndjson") => Self::read_json(path),
+            Some("ipc") | Some("arrow") => Self::read_ipc(path),
+            Some("avro") => Self::read_avro(path),
+            Some("orc") => Self::read_orc(path),
             Some(ext) => Err(IoError::UnsupportedFormat(ext.to_string())),
-            None      => Err(IoError::UnsupportedFormat("(no extension)".into())),
+            None => Err(IoError::UnsupportedFormat("(no extension)".into())),
         }
     }
 
@@ -120,7 +120,9 @@ impl DataReader {
     /// Read an Apache Avro file.
     pub fn read_avro(path: &str) -> IoResult<DataFrame> {
         let file = open(path)?;
-        polars::io::avro::AvroReader::new(file).finish().map_err(IoError::Polars)
+        polars::io::avro::AvroReader::new(file)
+            .finish()
+            .map_err(IoError::Polars)
     }
 
     /// Read an Apache ORC file.
@@ -161,7 +163,12 @@ pub struct StreamingBatcher {
 
 impl StreamingBatcher {
     pub fn new(path: impl Into<String>, batch_size: usize) -> Self {
-        Self { path: path.into(), batch_size, offset: 0, total_rows: None }
+        Self {
+            path: path.into(),
+            batch_size,
+            offset: 0,
+            total_rows: None,
+        }
     }
 
     pub fn next_batch(&mut self) -> IoResult<Option<DataFrame>> {
@@ -172,7 +179,7 @@ impl StreamingBatcher {
         if self.offset >= n {
             return Ok(None);
         }
-        let end   = (self.offset + self.batch_size).min(n);
+        let end = (self.offset + self.batch_size).min(n);
         let batch = df.slice(self.offset as i64, end - self.offset);
         self.offset = end;
         Ok(Some(batch))
@@ -198,7 +205,11 @@ pub struct RowBuffer {
 
 impl RowBuffer {
     pub fn new(window_size: usize) -> Self {
-        Self { window_size, buffer: Vec::new(), schema: None }
+        Self {
+            window_size,
+            buffer: Vec::new(),
+            schema: None,
+        }
     }
 
     pub fn push(&mut self, row: StreamRow) -> IoResult<Option<DataFrame>> {
@@ -217,7 +228,7 @@ impl RowBuffer {
 
     pub fn flush(&mut self) -> IoResult<DataFrame> {
         let schema = self.schema.as_ref().cloned().unwrap_or_default();
-        let rows   = std::mem::take(&mut self.buffer);
+        let rows = std::mem::take(&mut self.buffer);
 
         let columns: Vec<Column> = schema
             .iter()

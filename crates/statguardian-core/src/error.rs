@@ -15,7 +15,11 @@ pub enum CoreError {
     UnknownColumn { column: String },
 
     #[error("type mismatch: column '{column}' has type {actual}, expected {expected}")]
-    TypeMismatch { column: String, actual: String, expected: String },
+    TypeMismatch {
+        column: String,
+        actual: String,
+        expected: String,
+    },
 
     #[error(transparent)]
     Other(#[from] anyhow::Error),

@@ -1,8 +1,8 @@
+use crate::Violation;
 use polars::prelude::*;
 use statguardian_core::ast::{
     ComparisonOp, CrossColumnRule, LiteralValue, MetricFn, QualityRule, Severity,
 };
-use crate::Violation;
 
 pub struct RuleEngine;
 
@@ -15,18 +15,26 @@ impl RuleEngine {
     /// Evaluate cross-column conditional assertions:
     ///   assert <col> <op> <value> when <col> <op> <value>
     pub fn evaluate_cross_column(df: &DataFrame, rules: &[CrossColumnRule]) -> Vec<Violation> {
-        rules.iter().flat_map(|r| evaluate_cross_column_rule(df, r)).collect()
+        rules
+            .iter()
+            .flat_map(|r| evaluate_cross_column_rule(df, r))
+            .collect()
     }
 }
 
 // ── Quality metric rules ──────────────────────────────────────────────────────
 
 fn evaluate_rule(df: &DataFrame, rule: &QualityRule) -> Vec<Violation> {
-    let series = match df.column(&rule.column).ok().and_then(|c| c.as_series().cloned()) {
+    let series = match df
+        .column(&rule.column)
+        .ok()
+        .and_then(|c| c.as_series().cloned())
+    {
         Some(s) => s,
         None => {
             return vec![Violation::new(
-                &rule.column, "quality_check",
+                &rule.column,
+                "quality_check",
                 format!("column '{}' not found", rule.column),
                 Severity::Blocking,
             )];
@@ -44,7 +52,11 @@ fn evaluate_rule(df: &DataFrame, rule: &QualityRule) -> Vec<Violation> {
             metric_name(&rule.metric),
             format!(
                 "quality check failed: {}({}) = {:.4} {} {:.4}",
-                metric_name(&rule.metric), rule.column, observed, rule.op, rule.threshold
+                metric_name(&rule.metric),
+                rule.column,
+                observed,
+                rule.op,
+                rule.threshold
             ),
             rule.severity.clone(),
         )
@@ -80,11 +92,11 @@ fn compute_metric(series: &Series, metric: &MetricFn) -> Option<f64> {
 fn metric_name(m: &MetricFn) -> &'static str {
     match m {
         MetricFn::Completeness => "completeness",
-        MetricFn::Uniqueness   => "uniqueness",
-        MetricFn::Validity     => "validity",
-        MetricFn::Consistency  => "consistency",
-        MetricFn::Freshness    => "freshness",
-        MetricFn::NonNullRate  => "non_null_rate",
+        MetricFn::Uniqueness => "uniqueness",
+        MetricFn::Validity => "validity",
+        MetricFn::Consistency => "consistency",
+        MetricFn::Freshness => "freshness",
+        MetricFn::NonNullRate => "non_null_rate",
     }
 }
 
@@ -92,22 +104,36 @@ fn metric_name(m: &MetricFn) -> &'static str {
 
 fn evaluate_cross_column_rule(df: &DataFrame, rule: &CrossColumnRule) -> Vec<Violation> {
     // Get both columns upfront
-    let when_series = match df.column(&rule.when_column).ok().and_then(|c| c.as_series().cloned()) {
+    let when_series = match df
+        .column(&rule.when_column)
+        .ok()
+        .and_then(|c| c.as_series().cloned())
+    {
         Some(s) => s,
-        None => return vec![Violation::new(
-            &rule.assert_column, "cross_column_rule",
-            format!("condition column '{}' not found", rule.when_column),
-            rule.severity.clone(),
-        )],
+        None => {
+            return vec![Violation::new(
+                &rule.assert_column,
+                "cross_column_rule",
+                format!("condition column '{}' not found", rule.when_column),
+                rule.severity.clone(),
+            )]
+        }
     };
 
-    let assert_series = match df.column(&rule.assert_column).ok().and_then(|c| c.as_series().cloned()) {
+    let assert_series = match df
+        .column(&rule.assert_column)
+        .ok()
+        .and_then(|c| c.as_series().cloned())
+    {
         Some(s) => s,
-        None => return vec![Violation::new(
-            &rule.assert_column, "cross_column_rule",
-            format!("assertion column '{}' not found", rule.assert_column),
-            rule.severity.clone(),
-        )],
+        None => {
+            return vec![Violation::new(
+                &rule.assert_column,
+                "cross_column_rule",
+                format!("assertion column '{}' not found", rule.assert_column),
+                rule.severity.clone(),
+            )]
+        }
     };
 
     let n = df.height();
@@ -115,9 +141,10 @@ fn evaluate_cross_column_rule(df: &DataFrame, rule: &CrossColumnRule) -> Vec<Vio
 
     for i in 0..n {
         if row_matches(&when_series, i, &rule.when_op, &rule.when_value)
-            && !row_matches(&assert_series, i, &rule.assert_op, &rule.assert_value) {
-                failing_rows.push(i);
-            }
+            && !row_matches(&assert_series, i, &rule.assert_op, &rule.assert_value)
+        {
+            failing_rows.push(i);
+        }
     }
 
     if failing_rows.is_empty() {
@@ -130,8 +157,12 @@ fn evaluate_cross_column_rule(df: &DataFrame, rule: &CrossColumnRule) -> Vec<Vio
         format!(
             "{} row(s) violate: assert {} {} {} when {} {} {}",
             failing_rows.len(),
-            rule.assert_column, rule.assert_op, rule.assert_value,
-            rule.when_column,   rule.when_op,   rule.when_value,
+            rule.assert_column,
+            rule.assert_op,
+            rule.assert_value,
+            rule.when_column,
+            rule.when_op,
+            rule.when_value,
         ),
         rule.severity.clone(),
     )

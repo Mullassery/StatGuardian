@@ -25,9 +25,18 @@ impl DatasetHealthScore {
         drift_results: &[DriftResult],
         total_checks: usize,
     ) -> Self {
-        let blocking = violations.iter().filter(|v| v.severity == Severity::Blocking).count();
-        let errors   = violations.iter().filter(|v| v.severity == Severity::Error).count();
-        let warnings = violations.iter().filter(|v| v.severity == Severity::Warning).count();
+        let blocking = violations
+            .iter()
+            .filter(|v| v.severity == Severity::Blocking)
+            .count();
+        let errors = violations
+            .iter()
+            .filter(|v| v.severity == Severity::Error)
+            .count();
+        let warnings = violations
+            .iter()
+            .filter(|v| v.severity == Severity::Warning)
+            .count();
 
         // Penalty weights: blocking=1.0, error=0.5, warning=0.1
         let penalty = (blocking as f64 * 1.0 + errors as f64 * 0.5 + warnings as f64 * 0.1)
@@ -110,8 +119,7 @@ impl ValidationReport {
         total_checks: usize,
         duration_ms: u64,
     ) -> Self {
-        let health =
-            DatasetHealthScore::compute(&violations, &drift_results, total_checks);
+        let health = DatasetHealthScore::compute(&violations, &drift_results, total_checks);
         let passed = !violations.iter().any(|v| v.severity == Severity::Blocking);
 
         Self {
@@ -184,9 +192,21 @@ impl ValidationReport {
 
     /// Summary for human display.
     pub fn summary(&self) -> ExecutionSummary {
-        let blocking = self.violations.iter().filter(|v| v.severity == Severity::Blocking).count();
-        let errors   = self.violations.iter().filter(|v| v.severity == Severity::Error).count();
-        let warnings = self.violations.iter().filter(|v| v.severity == Severity::Warning).count();
+        let blocking = self
+            .violations
+            .iter()
+            .filter(|v| v.severity == Severity::Blocking)
+            .count();
+        let errors = self
+            .violations
+            .iter()
+            .filter(|v| v.severity == Severity::Error)
+            .count();
+        let warnings = self
+            .violations
+            .iter()
+            .filter(|v| v.severity == Severity::Warning)
+            .count();
 
         ExecutionSummary {
             dataset: self.dataset.clone(),
