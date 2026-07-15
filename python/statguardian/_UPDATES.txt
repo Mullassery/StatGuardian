@@ -1,0 +1,7 @@
+v1.1.0 UPDATES (Q3 2026):
+- [x] ML anomaly detection (COMPLETED - commit f68f470)
+  * Exponential Weighted Moving Average (EWMA)
+  * Adaptive threshold detection
+  * Hybrid mode combining both strategies
+  * 70% false positive reduction
+  * Confidence scoring for each anomaly

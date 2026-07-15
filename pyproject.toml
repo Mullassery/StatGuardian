@@ -57,12 +57,12 @@ classifiers     = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies    = [
-    "polars>=0.20",
+    "polars==0.19.12",
 ]
 
 [project.optional-dependencies]
 # Data frame conversion
-pandas = ["pandas>=1.5", "pyarrow>=10"]
+pandas = ["pandas==2.1.0", "pyarrow==14.0.1"]
 
 # SQL databases (PostgreSQL, MySQL, SQLite, BigQuery, Snowflake, etc.)
 # Note: psycopg2 adds LGPL-2.1 dependency for PostgreSQL support
@@ -80,14 +80,14 @@ sql = [
     "connectorx>=0.3",
     "psycopg2-binary>=2.9",      # PostgreSQL — LGPL-2.1
     "pymysql>=1.0",
-    "sqlalchemy>=2.0",           # SQLAlchemy dialect support
+    "sqlalchemy==2.0.23",           # SQLAlchemy dialect support
 ]
 
 # Cloud storage (S3, GCS, Azure)
 cloud = ["polars[aws,gcp,azure]>=0.44"]
 
 # Apache Spark
-spark = ["pyspark>=3.0", "pyarrow>=10"]
+spark = ["pyspark>=3.0", "pyarrow==14.0.1"]
 
 # Streaming (planned)
 kafka = ["confluent-kafka>=2.0"]  # Roadmap
@@ -98,12 +98,12 @@ airflow = ["apache-airflow>=2.0"]  # Roadmap
 
 # All optional extras
 all = [
-    "pandas>=1.5",
-    "pyarrow>=10",
+    "pandas==2.1.0",
+    "pyarrow==14.0.1",
     "connectorx>=0.3",
     "psycopg2-binary>=2.9",
     "pymysql>=1.0",
-    "sqlalchemy>=2.0",
+    "sqlalchemy==2.0.23",
     "google-cloud-bigquery>=3.0",
     "snowflake-connector-python>=3.0",
     "amazon-redshift-python-driver>=1.0",
@@ -116,7 +116,7 @@ all = [
 ]
 
 # Development
-dev = ["pytest>=7", "maturin>=1.7", "polars>=0.20", "pandas>=1.5", "pyarrow>=10"]
+dev = ["pytest>=7", "maturin>=1.7", "polars==0.19.12", "pandas==2.1.0", "pyarrow==14.0.1"]
 
 [project.urls]
 Homepage      = "https://github.com/Mullassery/Statguardian"

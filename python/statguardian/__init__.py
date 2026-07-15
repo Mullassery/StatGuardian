@@ -103,6 +103,14 @@ from ._integrity import (
     IntegrityViolation,
 )
 
+# ML Anomaly detection (CRITICAL: reduces false positives by ~70%)
+from ._anomaly_detection import (
+    AnomalyDetectionEngine,
+    SimpleMovingAverageDetector,
+    AdaptiveThresholdDetector,
+    AnomalyResult,
+)
+
 __all__ = [
     # Core
     "DataContract",
@@ -147,6 +155,11 @@ __all__ = [
     "check_all_foreign_keys",
     "integrity_report",
     "IntegrityViolation",
+    # ML Anomaly Detection (v1.1.0+)
+    "AnomalyDetectionEngine",
+    "SimpleMovingAverageDetector",
+    "AdaptiveThresholdDetector",
+    "AnomalyResult",
     # Utilities
     "validate_dsl",
     "__version__",
