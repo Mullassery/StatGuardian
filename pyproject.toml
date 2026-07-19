@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name            = "statguardian"
-version         = "2.0.0"
+version         = "2.1.0"
 description     = "Fast, declarative data quality framework. Schema validation, data drift detection, anomaly detection, outlier handling. 13x faster than pandera. Supports Pandas, Polars, DuckDB. Automated data contract enforcement for data pipelines."
 authors         = [{ name = "Georgi Mammen Mullassery", email = "mullassery@gmail.com" }]
 maintainers = [{ name = "Georgi Mammen Mullassery", email = "mullassery@gmail.com" }]
@@ -58,6 +58,7 @@ classifiers     = [
 ]
 dependencies    = [
     "polars==0.19.12",
+    "python-frontmatter>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -120,9 +121,6 @@ all = [
     "pyspark>=3.0",
     "polars[aws,gcp,azure]>=0.44",
 ]
-
-# Development
-dev = ["pytest>=7", "maturin>=1.7", "polars==0.19.12", "pandas==2.1.0", "pyarrow==14.0.1"]
 
 [project.urls]
 Homepage      = "https://github.com/Mullassery/Statguardian"

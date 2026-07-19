@@ -6,7 +6,8 @@
 [![PyPI](https://img.shields.io/badge/PyPI-statguardian-blue)](https://pypi.org/project/statguardian/)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)]()
 [![Rust](https://img.shields.io/badge/built%20with-Rust-orange.svg)](https://www.rust-lang.org)
-![Status: v2.2 In Progress](https://img.shields.io/badge/Status-v2.2%20In%20Progress-yellow)
+![OKF: Native](https://img.shields.io/badge/OKF-Native%20Contracts-green)
+![Status: v2.1 Ready](https://img.shields.io/badge/Status-v2.1%20Ready-brightgreen)
 ![25 Tests Passing](https://img.shields.io/badge/Tests-25%20Passing-brightgreen)
 
 ---
@@ -209,6 +210,29 @@ if report.has_drift:
 - Catch issues before they cascade
 - Prevent bad data from reaching dashboards
 - Reduce debugging time by 80%
+
+---
+
+## 📋 OKF: Data Quality Contracts as Portable Knowledge
+
+StatGuardian now supports **OpenKnowledge Format (OKF)** — store your data quality contracts as portable, shareable markdown documents.
+
+```
+quality_contracts/
+├── contracts/
+│   ├── customers.md          # Quality contract (reusable)
+│   └── orders.md
+├── baselines/                # Statistical baselines (community-shared)
+└── rules/                    # Rule effectiveness tracking
+```
+
+### Benefits
+- **Contract Marketplace** — Share validated contracts org-wide
+- **Baseline Library** — Community statistical benchmarks (per domain)
+- **Rule Tracking** — See which validation rules catch real issues
+- **Anomaly Patterns** — Detect recurring data quality problems
+
+**See:** [OKF_INTEGRATION.md](OKF_INTEGRATION.md) for complete guide.
 
 ---
 
