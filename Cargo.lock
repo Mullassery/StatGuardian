@@ -3693,7 +3693,7 @@ dependencies = [
  "pretty_assertions",
  "serde",
  "serde_json",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -3712,7 +3712,7 @@ dependencies = [
  "statguardian-metrics",
  "statguardian-stats",
  "statguardian-validators",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -3736,7 +3736,7 @@ dependencies = [
  "sqlx",
  "statguardian-core",
  "tempfile",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
  "tokio",
 ]
 
@@ -3751,7 +3751,7 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
  "uuid",
 ]
 
@@ -3765,7 +3765,7 @@ dependencies = [
  "statguardian-core",
  "statguardian-stats",
  "statguardian-validators",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
  "uuid",
 ]
 
@@ -3778,7 +3778,7 @@ dependencies = [
  "serde",
  "serde_json",
  "statguardian-core",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -3791,7 +3791,7 @@ dependencies = [
  "serde",
  "serde_json",
  "statguardian-core",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
