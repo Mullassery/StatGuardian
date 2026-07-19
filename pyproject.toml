@@ -57,7 +57,7 @@ classifiers     = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies    = [
-    "polars==0.19.12",
+    "polars==1.42.1",
     "python-frontmatter>=1.0.0",
 ]
 
