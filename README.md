@@ -50,6 +50,10 @@ Engineering: "We didn't even know there was a problem 😱"
 
 ## The Solution: StatGuardian
 
+**Enterprise data quality engine. Contracts as code, automated validation, drift detection, and anomaly intelligence.**
+
+**Architectural Role:** Central authority for quality governance. Every project in the platform validates through StatGuardian contracts. Quality is non-negotiable.
+
 **Define your data contract once. Detect all quality issues automatically.**
 
 ```python
