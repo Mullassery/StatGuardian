@@ -18,16 +18,16 @@
 
 ```
 Pipeline produces: 
-├─ Wrong schema (7 columns instead of 8)
-├─ Null values in required fields (payment_id is NULL)
-├─ Out-of-range values (temperature = 99,999°C)
-├─ Statistical drift (mean increased by 40% overnight)
-├─ Duplicates (same transaction ID appears 5 times)
-└─ Anomalies (one customer spent $1B in a day)
+ Wrong schema (7 columns instead of 8)
+ Null values in required fields (payment_id is NULL)
+ Out-of-range values (temperature = 99,999C)
+ Statistical drift (mean increased by 40% overnight)
+ Duplicates (same transaction ID appears 5 times)
+ Anomalies (one customer spent $1B in a day)
 
-Your data warehouse: "All good! ✅"
+Your data warehouse: "All good! "
 Business dashboard: "Why are our KPIs nonsense?"
-Engineering: "We didn't even know there was a problem 😱"
+Engineering: "We didn't even know there was a problem "
 ```
 
 ### Why This Happens
@@ -69,31 +69,31 @@ report = statguardian.execute_file(contract, "orders.parquet")
 
 # 3. Get instant feedback
 if report.passed:
-    print("✅ Data quality: PASS")
-    print(f"  Completeness: {report.completeness:.2%}")
-    print(f"  Schema match: {report.schema_match:.2%}")
-    print(f"  Statistical drift: OK (< 15%)")
+ print(" Data quality: PASS")
+ print(f" Completeness: {report.completeness:.2%}")
+ print(f" Schema match: {report.schema_match:.2%}")
+ print(f" Statistical drift: OK (< 15%)")
 else:
-    print("❌ Data quality: FAIL")
-    for issue in report.issues:
-        print(f"  CRITICAL: {issue.severity} - {issue.message}")
-        print(f"    Rows affected: {issue.affected_rows}")
-        print(f"    Recommendation: {issue.remediation}")
+ print(" Data quality: FAIL")
+ for issue in report.issues:
+ print(f" CRITICAL: {issue.severity} - {issue.message}")
+ print(f" Rows affected: {issue.affected_rows}")
+ print(f" Recommendation: {issue.remediation}")
 ```
 
 ### Real Issues StatGuardian Catches
 
 | Issue Type | Example | Caught By StatGuardian? |
 |---|---|---|
-| Schema mismatch | 7 columns instead of 8 | ✅ Yes |
-| Missing required field | order_id is NULL | ✅ Yes |
-| Invalid enum | status = "pending_" (typo) | ✅ Yes |
-| Out-of-range values | price = -$50 | ✅ Yes |
-| Duplicates | Same order_id twice | ✅ Yes |
-| Statistical drift | Price mean +40% overnight | ✅ Yes |
-| Outliers | $1B transaction from $10 avg customer | ✅ Yes |
-| Schema type mismatches | customer_id stored as float instead of string | ✅ Yes |
-| Data encoding issues | Unicode characters in ASCII field | ✅ Yes |
+| Schema mismatch | 7 columns instead of 8 | Yes |
+| Missing required field | order_id is NULL | Yes |
+| Invalid enum | status = "pending_" (typo) | Yes |
+| Out-of-range values | price = -$50 | Yes |
+| Duplicates | Same order_id twice | Yes |
+| Statistical drift | Price mean +40% overnight | Yes |
+| Outliers | $1B transaction from $10 avg customer | Yes |
+| Schema type mismatches | customer_id stored as float instead of string | Yes |
+| Data encoding issues | Unicode characters in ASCII field | Yes |
 
 ---
 
@@ -104,31 +104,31 @@ else:
 ```
 # orders.sg - Your data quality contract
 dataset orders {
-    schema {
-        order_id:     string, not_null, unique, primary_key
-        customer_id:  string, not_null
-        amount:       float,  positive, max=100000.0
-        currency:     string, not_null, enum=["USD","EUR","GBP","JPY"]
-        status:       string, not_null, enum=["pending","paid","cancelled","refunded"]
-        created_at:   date,   not_null
-    }
+ schema {
+ order_id: string, not_null, unique, primary_key
+ customer_id: string, not_null
+ amount: float, positive, max=100000.0
+ currency: string, not_null, enum=["USD","EUR","GBP","JPY"]
+ status: string, not_null, enum=["pending","paid","cancelled","refunded"]
+ created_at: date, not_null
+ }
 
-    quality {
-        @blocking: completeness(order_id) > 0.9999
-        @blocking: uniqueness(order_id) == 1.0
-        @warning:  completeness(customer_id) > 0.99
-    }
+ quality {
+ @blocking: completeness(order_id) > 0.9999
+ @blocking: uniqueness(order_id) == 1.0
+ @warning: completeness(customer_id) > 0.99
+ }
 
-    stats {
-        amount.mean drift < 0.15        # Mean shouldn't change >15%
-        amount.p95 drift < 0.25          # P95 shouldn't change >25%
-        status distribution stable       # Distribution shouldn't change
-    }
+ stats {
+ amount.mean drift < 0.15 # Mean shouldn't change >15%
+ amount.p95 drift < 0.25 # P95 shouldn't change >25%
+ status distribution stable # Distribution shouldn't change
+ }
 
-    anomalies {
-        detect_outliers(amount, method="iqr")  # Catch extreme values
-        detect_duplicates(order_id)             # Catch duplicates
-    }
+ anomalies {
+ detect_outliers(amount, method="iqr") # Catch extreme values
+ detect_duplicates(order_id) # Catch duplicates
+ }
 }
 ```
 
@@ -151,9 +151,9 @@ report = statguardian.execute_dataframe(contract, df)
 
 # Or from a table (auto-connects):
 report = statguardian.execute_table(
-    contract,
-    table="my_dataset.orders",
-    warehouse="snowflake"  # or "bigquery", "redshift", etc.
+ contract,
+ table="my_dataset.orders",
+ warehouse="snowflake" # or "bigquery", "redshift", etc.
 )
 ```
 
@@ -162,10 +162,10 @@ report = statguardian.execute_table(
 ```python
 # Detailed report
 if not report.passed:
-    for issue in report.issues:
-        print(f"{issue.severity}: {issue.field} - {issue.message}")
-        print(f"  Affected rows: {issue.affected_rows:,}")
-        print(f"  Action: {issue.remediation}")
+ for issue in report.issues:
+ print(f"{issue.severity}: {issue.field} - {issue.message}")
+ print(f" Affected rows: {issue.affected_rows:,}")
+ print(f" Action: {issue.remediation}")
 
 # Metrics
 print(f"Completeness: {report.completeness:.2%}")
@@ -175,41 +175,41 @@ print(f"Consistency: {report.consistency:.2%}")
 # Drift detection
 print(f"Statistical drift: {report.drift_score:.2%}")
 if report.has_drift:
-    for field, drift in report.field_drifts.items():
-        print(f"  {field}: {drift.change:.1%} change")
+ for field, drift in report.field_drifts.items():
+ print(f" {field}: {drift.change:.1%} change")
 ```
 
 ---
 
 ## Why StatGuardian?
 
-### ⚡ Performance
+### Performance
 - Process **millions of rows in <10ms** (built in Rust)
 - Streaming validation for real-time pipelines
 - Minimal memory footprint
 - No Python overhead
 
-### 🛡️ Reliability
+### Reliability
 - **Schema validation** — Catch type/column mismatches
 - **Quality rules** — Custom business logic (with @blocking/@warning)
 - **Statistical drift detection** — Catch silent data changes
 - **Anomaly detection** — Find outliers automatically
 - **Duplicate detection** — Identify redundant records
 
-### 📊 Coverage
+### Coverage
 - **8+ file formats** (Parquet, CSV, JSON, Avro, Arrow IPC, etc.)
 - **6+ lakehouse tables** (Delta, Iceberg, Hudi, Snowflake, BigQuery, etc.)
 - **Multiple data sources** (S3, GCS, ADLS, local filesystem, HTTP)
 - **Streaming support** — Real-time validation
 
-### 🔒 Production-Ready
+### Production-Ready
 - **Privacy** — Differential privacy support
 - **Audit logging** — Complete audit trail
 - **RBAC** — Role-based access control
 - **GDPR** — Automatic anonymization
 - **Custom rules** — Extensible validation language
 
-### 💰 Cost Savings
+### Cost Savings
 - Eliminate manual data quality checks
 - Catch issues before they cascade
 - Prevent bad data from reaching dashboards
@@ -217,17 +217,17 @@ if report.has_drift:
 
 ---
 
-## 📋 OKF: Data Quality Contracts as Portable Knowledge
+## OKF: Data Quality Contracts as Portable Knowledge
 
 StatGuardian now supports **OpenKnowledge Format (OKF)** — store your data quality contracts as portable, shareable markdown documents.
 
 ```
 quality_contracts/
-├── contracts/
-│   ├── customers.md          # Quality contract (reusable)
-│   └── orders.md
-├── baselines/                # Statistical baselines (community-shared)
-└── rules/                    # Rule effectiveness tracking
+ contracts/
+ customers.md # Quality contract (reusable)
+ orders.md
+ baselines/ # Statistical baselines (community-shared)
+ rules/ # Rule effectiveness tracking
 ```
 
 ### Benefits
@@ -254,11 +254,11 @@ quality_contracts/
 
 **With StatGuardian:**
 ```
-❌ FAIL: amount drift detected (1000% change)
-  Previous mean: $50.00
-  Current mean: $500.00
-  Variance increase: 10000%
-  Action: BLOCKING - investigate before pipeline continues
+ FAIL: amount drift detected (1000% change)
+ Previous mean: $50.00
+ Current mean: $500.00
+ Variance increase: 10000%
+ Action: BLOCKING - investigate before pipeline continues
 ```
 Bug caught in seconds, not days.
 
@@ -269,10 +269,10 @@ Bug caught in seconds, not days.
 **Traditional:** ML model training silently drops 5% of records, reduces accuracy
 **With StatGuardian:**
 ```
-❌ FAIL: Schema violation
-  Field: age
-  Issue: NULL values in NOT_NULL field (5% of records)
-  Action: Blocked pipeline before ML training
+ FAIL: Schema violation
+ Field: age
+ Issue: NULL values in NOT_NULL field (5% of records)
+ Action: Blocked pipeline before ML training
 ```
 
 ### Example 3: Analytics
@@ -282,11 +282,11 @@ Bug caught in seconds, not days.
 **Traditional:** Dashboard shows 100x higher revenue for EU customers (silently wrong for weeks)
 **With StatGuardian:**
 ```
-❌ FAIL: Statistical anomaly detected
-  Field: currency
-  Issue: Unexpected values detected: "EUR" in USD-only records
-  Affected: 8,500 rows
-  Action: BLOCKING - requires manual review
+ FAIL: Statistical anomaly detected
+ Field: currency
+ Issue: Unexpected values detected: "EUR" in USD-only records
+ Affected: 8,500 rows
+ Action: BLOCKING - requires manual review
 ```
 
 ---
@@ -296,15 +296,15 @@ Bug caught in seconds, not days.
 ```
 Validation Speed (1M rows):
 
-CSV parsing + schema check:       ▌ 8ms
-Parquet parsing + validation:     ▌ 12ms
-Drift detection (5-field table):  ▌ 15ms
-Complete validation (all checks): ▌ 40ms
+CSV parsing + schema check: 8ms
+Parquet parsing + validation: 12ms
+Drift detection (5-field table): 15ms
+Complete validation (all checks): 40ms
 
 vs alternatives:
-Pandas-based validation:          ████████ 3,200ms (80x slower)
-Custom SQL validation:            ██████████ 4,500ms (112x slower)
-Manual inspection:                ████████████████████ weeks
+Pandas-based validation: 3,200ms (80x slower)
+Custom SQL validation: 4,500ms (112x slower)
+Manual inspection: weeks
 ```
 
 ---
@@ -315,23 +315,23 @@ Manual inspection:                ███████████████�
 
 ```
 schema {
-    # Basic types
-    id:         string, not_null, unique
-    age:        int, min=0, max=150
-    price:      float, positive
-    flag:       boolean
-    
-    # Enums
-    status:     string, enum=["active", "inactive", "pending"]
-    country:    string, enum=["US", "UK", "CA", "AU"]
-    
-    # Temporal
-    created_at: date, not_null
-    updated_at: timestamp
-    
-    # Complex
-    tags:       array<string>
-    metadata:   struct<key: string, value: string>
+ # Basic types
+ id: string, not_null, unique
+ age: int, min=0, max=150
+ price: float, positive
+ flag: boolean
+ 
+ # Enums
+ status: string, enum=["active", "inactive", "pending"]
+ country: string, enum=["US", "UK", "CA", "AU"]
+ 
+ # Temporal
+ created_at: date, not_null
+ updated_at: timestamp
+ 
+ # Complex
+ tags: array<string>
+ metadata: struct<key: string, value: string>
 }
 ```
 
@@ -339,19 +339,19 @@ schema {
 
 ```
 quality {
-    # Basic completeness
-    @blocking: completeness(id) == 1.0
-    @warning:  completeness(email) > 0.95
-    
-    # Uniqueness
-    @blocking: uniqueness(order_id) == 1.0
-    
-    # Custom SQL-like conditions
-    @blocking: count(id) > 0  # At least 1 row
-    @warning:  stddev(amount) < 1000  # Values not too spread
-    
-    # Domain-specific
-    @blocking: sum(refunds) <= sum(purchases)  # Refunds ≤ purchases
+ # Basic completeness
+ @blocking: completeness(id) == 1.0
+ @warning: completeness(email) > 0.95
+ 
+ # Uniqueness
+ @blocking: uniqueness(order_id) == 1.0
+ 
+ # Custom SQL-like conditions
+ @blocking: count(id) > 0 # At least 1 row
+ @warning: stddev(amount) < 1000 # Values not too spread
+ 
+ # Domain-specific
+ @blocking: sum(refunds) <= sum(purchases) # Refunds  purchases
 }
 ```
 
@@ -359,14 +359,14 @@ quality {
 
 ```
 stats {
-    # Drift detection (compared to baseline)
-    amount.mean drift < 0.15      # Mean shouldn't change >15%
-    amount.p95 drift < 0.25       # P95 shouldn't change >25%
-    age.stddev drift < 0.10       # Variance shouldn't change >10%
-    
-    # Distribution stability
-    status distribution stable    # Relative proportions unchanged
-    country distribution stable
+ # Drift detection (compared to baseline)
+ amount.mean drift < 0.15 # Mean shouldn't change >15%
+ amount.p95 drift < 0.25 # P95 shouldn't change >25%
+ age.stddev drift < 0.10 # Variance shouldn't change >10%
+ 
+ # Distribution stability
+ status distribution stable # Relative proportions unchanged
+ country distribution stable
 }
 ```
 
@@ -374,10 +374,10 @@ stats {
 
 ```
 anomalies {
-    detect_outliers(amount, method="iqr")           # IQR method
-    detect_outliers(price, method="zscore", std=5)  # Z-score >5σ
-    detect_duplicates(order_id)                     # Exact duplicates
-    detect_skew(age, method="pearson")              # Distribution shape
+ detect_outliers(amount, method="iqr") # IQR method
+ detect_outliers(price, method="zscore", std=5) # Z-score >5
+ detect_duplicates(order_id) # Exact duplicates
+ detect_skew(age, method="pearson") # Distribution shape
 }
 ```
 
@@ -446,8 +446,8 @@ MIT License — See [LICENSE](LICENSE) for details
 
 <div align="center">
 
-**🛡️ Catch data quality issues before they break your pipeline.**
+** Catch data quality issues before they break your pipeline.**
 
-**[Get Started →](INSTALL.md)** • **[View Examples →](docs/examples.md)** • **[Read Comparisons →](docs/comparison.md)**
+**[Get Started ](INSTALL.md)**  **[View Examples ](docs/examples.md)**  **[Read Comparisons ](docs/comparison.md)**
 
 </div>
