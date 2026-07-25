@@ -88,4 +88,4 @@ Open an issue at <https://github.com/Mullassery/statguardian/issues> with:
 ## License
 
 By contributing you agree that your changes will be licensed under the
-[MIT License](LICENSE).
+[Proprietary License](LICENSE).

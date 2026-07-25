@@ -432,7 +432,7 @@ Contributions welcome! Areas:
 
 ## License
 
-MIT License — See [LICENSE](LICENSE) for details
+Proprietary License — See [LICENSE](LICENSE) for details
 
 ---
 

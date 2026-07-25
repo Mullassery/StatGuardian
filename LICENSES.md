@@ -1,10 +1,10 @@
 # statguardian Open Source Licenses
 
-statguardian is licensed under the **MIT License**. This document details the licenses of all included and optional dependencies.
+statguardian is licensed under the **Proprietary License**. This document details the licenses of all included and optional dependencies.
 
 ## Core Project License
 
-- **statguardian** — MIT License (see [LICENSE](LICENSE))
+- **statguardian** — Proprietary License (see [LICENSE](LICENSE))
 
 ---
 
