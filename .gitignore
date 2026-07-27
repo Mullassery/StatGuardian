@@ -1,72 +1,43 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+# Sensitive files and credentials
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.crt
+credentials.json
+secrets.json
+.credentials
+config.local.*
+.config.local
+oauth_tokens.json
 
-# Virtual environments
-venv/
-ENV/
-env/
-
-# IDE
+# IDE files
 .vscode/
 .idea/
 *.swp
-*.swo
 *~
 .DS_Store
 
-# Testing
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
 .pytest_cache/
-.coverage
-htmlcov/
-.tox/
 
-# Build
+# Virtual environments
+venv/
+env/
+.venv
+
+# Rust
 target/
 Cargo.lock
-*.o
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Temporary
-.tmp/
-*.local
-
-# Internal/Private (not for public GitHub)
-planning/
-internal/
-STRATEGY.md
-ROADMAP*.md
-PRODUCT_ROADMAP.md
-PRIORITIZATION_FRAMEWORK.md
-ROADMAP_EXECUTIVE_SUMMARY.md
-ROADMAP_STATGUARDIAN_*.md
-ARCHITECTURE_LINEAGE_FIRST_CLASS.md
-ARCHITECTURE_V2_3_ML_DETECTION.md
-ARCHITECTURE_V3_0_STREAMING_VALIDATION.md
-WEEK1_COMPLETE.md
-devnotes/
-*.roadmap
-*.strategy
-*.internal
+# Temp files
+*.tmp
+*.log
+temp/
+tmp/
