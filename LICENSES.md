@@ -83,7 +83,7 @@ All cloud storage drivers are OSS with permissive licenses:
 - **Polars cloud features** (s3, gcp, azure) — MIT
   - Uses Arrow's object_store crate (Apache-2.0)
   - Installed via: `pip install statguardian[cloud]`
-  - Includes AWS SDK, Google Cloud client, Azure SDK (all Apache-2.0)
+  - Includes AWS SDK, Cloud Services client, Azure SDK (all Apache-2.0)
 
 ---
 

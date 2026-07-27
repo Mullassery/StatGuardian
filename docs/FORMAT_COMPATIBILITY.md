@@ -63,7 +63,7 @@ All statguardian connectors use open-source licensed drivers only (MIT / Apache-
 |---|---|---|---|---|
 | **AWS S3** | ✓ (`s3://`) | ✓ via s3fs/pandas | ✓ native datasource | ✗ |
 | **S3-compatible** (MinIO, Ceph, R2) | ✓ (`s3://` + `AWS_ENDPOINT_URL`) | ✓ via s3fs | ✗ | ✗ |
-| **Google Cloud Storage** | ✓ (`gs://`) | ✓ via gcsfs/pandas | ✓ native datasource | ✗ |
+| **Cloud Services Storage** | ✓ (`gs://`) | ✓ via gcsfs/pandas | ✓ native datasource | ✗ |
 | **Azure Blob Storage** | ✓ (`az://`, `abfss://`) | ✓ via adlfs/pandas | ✓ native datasource | ✗ |
 | **DBFS (Databricks)** | ✗ | ✗ | ✓ native datasource | ✗ |
 | Glob patterns (`*.parquet`) | ✓ | ✗ | ✓ | ✗ |
@@ -86,7 +86,7 @@ export AWS_ACCESS_KEY_ID=minioadmin
 export AWS_SECRET_ACCESS_KEY=minioadmin
 export AWS_ENDPOINT_URL=http://localhost:9000
 
-# Google Cloud Storage
+# Cloud Services Storage
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
 
 # Azure Blob Storage

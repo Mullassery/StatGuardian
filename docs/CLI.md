@@ -149,7 +149,7 @@ statguardian validate --contract orders.sg \
 statguardian validate --contract orders.sg --file data.parquet --format json | jq '.violations'
 ```
 
-#### Prometheus scraping (Datadog, Grafana, etc.)
+# Monitoring system, Grafana, etc.)
 
 ```bash
 statguardian validate --contract orders.sg --file data.parquet --format prometheus | curl --data-binary @- http://localhost:9091/metrics/job/statguard
@@ -377,7 +377,7 @@ export AWS_SECRET_ACCESS_KEY=...
 export AWS_DEFAULT_REGION=us-east-1
 ```
 
-**Google Cloud Storage:**
+**Cloud Services Storage:**
 
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
