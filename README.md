@@ -87,6 +87,9 @@ StatGuardian processes 1M rows in 0.3s (vs pandera's 4.2s).
 
 ```bash
 pip install statguardian
+
+# Verify installation
+statguardian --version
 ```
 
 For development:
