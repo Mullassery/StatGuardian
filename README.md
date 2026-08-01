@@ -83,6 +83,135 @@ StatGuardian processes 1M rows in 0.3s (vs pandera's 4.2s).
 | Telemetry | 1M | 340ms | 4200ms | 12x |
 | Credit Card | 50M | 15s | 210s | 14x |
 
+## Features
+
+**Core Validation**
+- Type validation (int, float, str, bool, datetime, etc.)
+- Min/max constraints for numeric types
+- Enum validation for categorical data
+- Null/not-null constraints
+- Pattern matching for strings (regex)
+- Custom validation functions
+- Composite constraints (multiple rules per field)
+
+**Data Quality Analysis**
+- Automatic drift detection (schema changes)
+- Anomaly detection (outliers, unexpected values)
+- Statistical profiling (mean, std, quartiles)
+- Missing value reporting
+- Duplicate detection
+
+**Framework Support**
+- Pandas DataFrames (primary target)
+- Polars DataFrames (full compatibility)
+- DuckDB relations (streaming support)
+- NumPy arrays (optional)
+- Unified API across all frameworks
+
+**Performance & Scale**
+- Rust core for 13x speedup
+- Streaming validation (memory-efficient)
+- Batch processing (optimal for large datasets)
+- Zero-copy operations where possible
+
+## Requirements
+
+- **Python:** 3.10+
+- **Core:** Rust-powered validation engine (precompiled)
+- **Data Frameworks:** 
+  - pandas ≥1.3.0 (primary)
+  - polars ≥0.19.0 (optional)
+  - duckdb ≥0.8.0 (optional)
+- **Optional:** numpy ≥1.20.0 (for array support)
+- **Precompiled:** Wheels for macOS, Linux, Windows (all Python 3.10-3.13)
+
+## Examples
+
+**Basic Type Validation**
+```python
+from statguardian import validate
+
+# Simple schema
+schema = {
+    "user_id": int,
+    "email": str,
+    "created_at": "datetime",
+}
+
+result = validate(df, schema)
+print(f"Valid: {result.is_valid}")
+print(f"Violations: {result.violations}")
+```
+
+**Constraint Validation**
+```python
+schema = {
+    "age": {"type": int, "min": 0, "max": 150},
+    "email": {"type": str, "pattern": r"^[\w\.-]+@[\w\.-]+\.\w+$"},
+    "status": {"enum": ["active", "inactive", "pending"]},
+    "balance": {"type": float, "min": 0},
+}
+
+result = validate(transactions, schema)
+if not result.is_valid:
+    for violation in result.violations:
+        print(f"Row {violation['row']}: {violation['message']}")
+```
+
+**Drift & Anomaly Detection**
+```python
+# Detect schema changes
+result = validate(new_data, schema)
+if result.has_drift:
+    print(f"New columns: {result.new_fields}")
+    print(f"Missing columns: {result.missing_fields}")
+
+# Detect anomalies
+if result.anomalies:
+    print(f"Outlier rows: {result.anomaly_rows}")
+```
+
+**Multi-Framework Validation**
+```python
+import pandas as pd
+import polars as pl
+
+# Pandas
+df_pd = pd.read_csv("data.csv")
+result_pd = validate(df_pd, schema)
+
+# Polars (identical code)
+df_pl = pl.read_csv("data.csv")
+result_pl = validate(df_pl, schema)
+
+# Both return same validation results
+```
+
+## API Reference
+
+**Core Functions**
+
+- `validate(data, schema) -> ValidationResult`
+  - Validates data against schema
+  - Returns detailed violations report
+  - Supports Pandas, Polars, DuckDB
+
+- `ValidationResult`
+  - `.is_valid`: Boolean flag
+  - `.violations`: List of violations
+  - `.has_drift`: Boolean (schema changed)
+  - `.anomalies`: List of anomaly indices
+  - `.statistics`: Profiling stats (count, mean, std, etc.)
+
+**Schema Constraints**
+
+- Type: `"int"`, `"float"`, `"str"`, `"bool"`, `"datetime"`
+- Numeric: `min`, `max`, `mean`, `std`
+- Categorical: `enum` (allowed values)
+- String: `pattern` (regex)
+- Nullability: `not_null` (True/False)
+- Custom: `custom_fn(value) -> bool`
+
 ## Installation
 
 ```bash
