@@ -16,6 +16,7 @@ resolver = "2"
 version = "2.1.0"
 edition = "2021"
 authors = ["Georgi Mammen Mullassery <mullassery@gmail.com>"]
+license = "Proprietary"
 repository = "https://github.com/Mullassery/statguardian"
 
 [workspace.dependencies]
