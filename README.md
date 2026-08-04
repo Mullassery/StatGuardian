@@ -8,6 +8,20 @@ Data quality validation. 13x faster than pandera.
 
 Stop data quality issues from reaching production. StatGuardian validates data at runtime, instantly catching schema violations, type errors, and anomalies.
 
+
+## Real Use Cases
+
+This library is used for:
+- See examples below
+- Check GitHub issues for real-world usage
+
+## Get Started
+
+```python
+# Quick example - copy and run
+# See full docs for detailed usage
+```
+
 ## 30-Second Start
 
 ```python
