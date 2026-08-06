@@ -38,7 +38,7 @@ Quick start::
     print(report.summary())
 """
 
-from ._statguard import (
+from ._statguardian import (
     DataContract,
     ValidationReport,
     # Core execution

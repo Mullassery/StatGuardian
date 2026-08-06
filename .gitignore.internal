@@ -1,0 +1,26 @@
+# Internal/Strategic Documentation (DO NOT COMMIT TO PUBLIC REPO)
+PRODUCT_ROADMAP.md
+PRIORITIZATION_FRAMEWORK.md
+ROADMAP_EXECUTIVE_SUMMARY.md
+ROADMAP_STATGUARDIAN_V*.md
+ROADMAP_HONEST.md
+ROADMAP.md
+WEEK1_COMPLETE.md
+
+# Internal architecture for unreleased versions
+ARCHITECTURE_V2_3_ML_DETECTION.md
+ARCHITECTURE_V3_0_STREAMING_VALIDATION.md
+ARCHITECTURE_LINEAGE_FIRST_CLASS.md
+
+# Developer-only files
+.claude/
+.env*
+*.local
+devnotes/
+internal/
+
+# Build artifacts (already in main .gitignore)
+target/
+*.swp
+*.swo
+*~
