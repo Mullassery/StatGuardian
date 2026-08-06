@@ -21,7 +21,7 @@ repository = "https://github.com/Mullassery/statguardian"
 
 [workspace.dependencies]
 # Data processing
-polars = { version = "0.44", features = [
+polars = { version = "0.54", features = [
     "lazy", "parquet", "csv", "json", "ipc",
     "avro",
     "strings", "regex", "dtype-date", "dtype-datetime",
