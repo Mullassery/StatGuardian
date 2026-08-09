@@ -43,10 +43,13 @@ StatGuardian provides Rust-native data quality, drift detection, and anomaly det
 - Incremental validation
 
 📅 **v3.5 (Oct 2026)** — Governance
-- Data lineage tracking
 - Compliance reporting (GDPR, SOX, HIPAA)
 - Access control & audit logging
 - Data quality SLA monitoring
+
+Note: data lineage tracking (versioned lineage graphs, impact-chain analysis,
+change history) shipped ahead of schedule — see `statguardian.get_lineage_graph`,
+`save_lineage_version`, `get_lineage_version`, `get_lineage_history`.
 
 📅 **v4.0 (Q4 2026)** — Intelligence Layer
 - Data profiling ML model

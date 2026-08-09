@@ -23,12 +23,18 @@ Example:
 
 from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import json
-import uuid
+import os
 
-# Note: In production, these would be bound from Rust via pyo3
-# For now, we use pure Python implementations that work with the Rust models
+from . import _statguardian
+
+
+def _utcnow_iso() -> str:
+    """RFC3339 UTC timestamp (with a 'Z' offset) -- required for round-tripping
+    through the Rust side's `DateTime<Utc>` (chrono), which rejects the offset-less
+    strings that plain `datetime.utcnow().isoformat()` produces."""
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 @dataclass
@@ -88,7 +94,7 @@ class LineageChange:
     changed_at: Optional[str] = None
     changed_by: Optional[str] = None
     tables_affected: List[str] = field(default_factory=list)
-    severity: str = "NONE"  # "NONE", "LOW", "MEDIUM", "HIGH"
+    severity: str = "none"  # "none", "low", "medium", "high"
     propagates_schema_changes: bool = False
 
 
@@ -164,7 +170,7 @@ class LineageVersion:
     schema_versions: Dict[str, int] = field(default_factory=dict)
     quality_scores: Dict[str, float] = field(default_factory=dict)
     changes_from_previous: List[LineageChange] = field(default_factory=list)
-    change_severity: str = "NONE"
+    change_severity: str = "none"
 
 
 def create_lineage_node(
@@ -187,7 +193,7 @@ def create_lineage_node(
         database=database,
         schema_name=schema_name,
         table_name=table_name,
-        created_at=datetime.utcnow().isoformat(),
+        created_at=_utcnow_iso(),
     )
 
 
@@ -201,7 +207,7 @@ def create_lineage_edge(
         edge_id=edge_id,
         source_node_id=source_node_id,
         target_node_id=target_node_id,
-        created_at=datetime.utcnow().isoformat(),
+        created_at=_utcnow_iso(),
     )
 
 
@@ -242,37 +248,103 @@ def lineage_version_from_dict(data: dict) -> LineageVersion:
         changes_from_previous=[
             LineageChange(**c) for c in data.get("changes_from_previous", [])
         ],
-        change_severity=data.get("change_severity", "NONE"),
+        change_severity=data.get("change_severity", "none"),
     )
 
 
-# Note: These are stub implementations. In production, they would connect
-# to the Rust backend via PyO3 bindings or via FFI.
+def _lineage_db_path(warehouse_config: dict) -> str:
+    """Resolve the SQLite lineage store path for a warehouse config.
+
+    Defaults to `.statguardian/lineage.db` under the current working directory
+    (created on first write) unless `lineage_db_path` is set explicitly.
+    """
+    path = warehouse_config.get("lineage_db_path", ".statguardian/lineage.db")
+    if path != ":memory:":
+        parent = os.path.dirname(path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+    return path
+
+
+def save_lineage_version(
+    warehouse_config: dict,
+    lineage_graph: LineageGraph,
+    changes: Optional[List[LineageChange]] = None,
+    quality_scores: Optional[Dict[str, float]] = None,
+) -> LineageVersion:
+    """
+    Persist a new lineage version snapshot for a warehouse.
+
+    The version number is assigned automatically (one past the current
+    latest, or 1 if this is the first version).
+
+    Args:
+        warehouse_config: Configuration dict (see `_lineage_db_path`)
+        lineage_graph: The current lineage graph to snapshot
+        changes: Changes since the previous version (optional)
+        quality_scores: Per-table quality scores (table_id -> 0.0-1.0)
+
+    Returns:
+        The saved LineageVersion, including its assigned version_number.
+    """
+    db_path = _lineage_db_path(warehouse_config)
+    warehouse_id = lineage_graph.warehouse_id
+
+    latest_json = _statguardian.lineage_get_latest_version(db_path, warehouse_id)
+    next_version_number = (
+        json.loads(latest_json)["version_number"] + 1 if latest_json else 1
+    )
+
+    changes = changes or []
+    for change in changes:
+        if change.changed_at is None:
+            change.changed_at = _utcnow_iso()
+
+    severity_rank = {"none": 0, "low": 1, "medium": 2, "high": 3}
+    change_severity = "none"
+    for change in changes:
+        if severity_rank.get(change.severity, 0) > severity_rank.get(change_severity, 0):
+            change_severity = change.severity
+
+    version = LineageVersion(
+        version_id=f"{warehouse_id}__v{next_version_number}",
+        lineage_graph=lineage_graph,
+        version_number=next_version_number,
+        timestamp=_utcnow_iso(),
+        quality_scores=quality_scores or {},
+        changes_from_previous=changes,
+        change_severity=change_severity,
+    )
+
+    _statguardian.lineage_save_version(db_path, json.dumps(asdict(version)))
+    return version
 
 
 def get_lineage_graph(warehouse_config: dict) -> LineageGraph:
     """
-    Get current lineage graph for a warehouse.
+    Get the current (latest) lineage graph for a warehouse.
 
     Args:
         warehouse_config: Configuration dict with warehouse connection details
 
     Returns:
-        LineageGraph: Complete warehouse DAG
+        LineageGraph: Complete warehouse DAG, or an empty graph if no version
+        has been saved yet for this warehouse.
     """
-    # TODO: Implement via Rust FFI / PyO3 binding
-    # For now, return empty graph
-    return LineageGraph(
-        warehouse_id=warehouse_config.get("warehouse_id", "unknown"),
-        timestamp=datetime.utcnow().isoformat(),
-    )
+    warehouse_id = warehouse_config.get("warehouse_id", "unknown")
+    version = get_lineage_version(warehouse_config)
+
+    if version is not None:
+        return version.lineage_graph
+
+    return LineageGraph(warehouse_id=warehouse_id, timestamp=_utcnow_iso())
 
 
 def get_lineage_version(
     warehouse_config: dict, version: Optional[int] = None
 ) -> Optional[LineageVersion]:
     """
-    Get specific lineage version.
+    Get a specific lineage version.
 
     Args:
         warehouse_config: Configuration dict
@@ -281,26 +353,58 @@ def get_lineage_version(
     Returns:
         LineageVersion or None if not found
     """
-    # TODO: Implement via Rust FFI / PyO3 binding
-    return None
+    db_path = _lineage_db_path(warehouse_config)
+    warehouse_id = warehouse_config.get("warehouse_id", "unknown")
+
+    if version is None:
+        version_json = _statguardian.lineage_get_latest_version(db_path, warehouse_id)
+    else:
+        version_json = _statguardian.lineage_get_version(db_path, warehouse_id, version)
+
+    if version_json is None:
+        return None
+
+    return lineage_version_from_dict(json.loads(version_json))
 
 
 def get_lineage_history(
     warehouse_config: dict, table_id: str, limit: int = 10
 ) -> List[LineageVersion]:
     """
-    Get lineage history for a specific table.
+    Get lineage history for a specific table: the versions among the most
+    recent `limit` whose recorded changes actually touched `table_id`
+    (as a source, target, or otherwise-affected table).
 
     Args:
         warehouse_config: Configuration dict
         table_id: Table identifier
-        limit: Max versions to return
+        limit: Max recent versions to scan
 
     Returns:
-        List of LineageVersion objects
+        List of LineageVersion objects, most recent first.
     """
-    # TODO: Implement via Rust FFI / PyO3 binding
-    return []
+    db_path = _lineage_db_path(warehouse_config)
+    warehouse_id = warehouse_config.get("warehouse_id", "unknown")
+
+    version_numbers = _statguardian.lineage_list_versions(db_path, warehouse_id, limit)
+
+    history = []
+    for version_number in version_numbers:
+        version_json = _statguardian.lineage_get_version(db_path, warehouse_id, version_number)
+        if version_json is None:
+            continue
+
+        version = lineage_version_from_dict(json.loads(version_json))
+        touches_table = any(
+            change.source_table == table_id
+            or change.target_table == table_id
+            or table_id in change.tables_affected
+            for change in version.changes_from_previous
+        )
+        if touches_table:
+            history.append(version)
+
+    return history
 
 
 __all__ = [
@@ -315,6 +419,7 @@ __all__ = [
     "lineage_edge_from_dict",
     "lineage_graph_from_dict",
     "lineage_version_from_dict",
+    "save_lineage_version",
     "get_lineage_graph",
     "get_lineage_version",
     "get_lineage_history",

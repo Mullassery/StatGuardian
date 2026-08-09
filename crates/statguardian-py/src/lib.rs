@@ -6,6 +6,7 @@ use pyo3_polars::PyDataFrame;
 use statguardian_core::compiler::dag::ExecutionDag;
 use statguardian_core::{parse_and_compile, DataContract};
 use statguardian_engine::Engine;
+use statguardian_lineage::{LineageStore, LineageVersion, SQLiteLineageStore};
 use statguardian_metrics::report::ValidationReport;
 
 // ── PyDataContract ─────────────────────────────────────────────────────────────
@@ -440,6 +441,91 @@ fn validate_dsl(dsl: &str) -> PyResult<String> {
     Ok(name)
 }
 
+// ── Lineage ────────────────────────────────────────────────────────────────────
+//
+// Bindings for statguardian-lineage's SQLite-backed lineage store. The FFI
+// boundary is JSON strings (the crate already implements Serialize/Deserialize
+// for LineageVersion via serde), which lets the pure-Python side reuse the
+// LineageVersion/LineageGraph dataclasses and `*_from_dict` helpers it already
+// defines in `statguardian/_lineage.py` instead of duplicating them as pyclasses.
+
+/// Persist a lineage version snapshot to the SQLite store at `db_path`.
+///
+/// Args:
+///     db_path:      Path to the SQLite lineage database (created if missing).
+///     version_json: A LineageVersion serialized as JSON.
+#[pyfunction]
+fn lineage_save_version(db_path: &str, version_json: &str) -> PyResult<()> {
+    let version: LineageVersion = serde_json::from_str(version_json)
+        .map_err(|e| PyValueError::new_err(format!("invalid lineage version JSON: {e}")))?;
+
+    let mut store = SQLiteLineageStore::new(db_path)
+        .map_err(|e| PyRuntimeError::new_err(format!("lineage store error: {e}")))?;
+
+    store
+        .save_version(&version)
+        .map_err(|e| PyRuntimeError::new_err(format!("lineage save error: {e}")))?;
+
+    for change in &version.changes_from_previous {
+        store
+            .save_change(change, &version.version_id)
+            .map_err(|e| PyRuntimeError::new_err(format!("lineage change save error: {e}")))?;
+    }
+
+    Ok(())
+}
+
+/// Get a specific lineage version for a warehouse, as JSON. Returns None if not found.
+#[pyfunction]
+fn lineage_get_version(
+    db_path: &str,
+    warehouse_id: &str,
+    version_number: u32,
+) -> PyResult<Option<String>> {
+    let store = SQLiteLineageStore::new(db_path)
+        .map_err(|e| PyRuntimeError::new_err(format!("lineage store error: {e}")))?;
+
+    let version = store
+        .get_version(warehouse_id, version_number)
+        .map_err(|e| PyRuntimeError::new_err(format!("lineage query error: {e}")))?;
+
+    version
+        .map(|v| {
+            serde_json::to_string(&v)
+                .map_err(|e| PyRuntimeError::new_err(format!("serialization error: {e}")))
+        })
+        .transpose()
+}
+
+/// Get the latest lineage version for a warehouse, as JSON. Returns None if none exist.
+#[pyfunction]
+fn lineage_get_latest_version(db_path: &str, warehouse_id: &str) -> PyResult<Option<String>> {
+    let store = SQLiteLineageStore::new(db_path)
+        .map_err(|e| PyRuntimeError::new_err(format!("lineage store error: {e}")))?;
+
+    let version = store
+        .get_latest_version(warehouse_id)
+        .map_err(|e| PyRuntimeError::new_err(format!("lineage query error: {e}")))?;
+
+    version
+        .map(|v| {
+            serde_json::to_string(&v)
+                .map_err(|e| PyRuntimeError::new_err(format!("serialization error: {e}")))
+        })
+        .transpose()
+}
+
+/// List version numbers for a warehouse, most recent first.
+#[pyfunction]
+fn lineage_list_versions(db_path: &str, warehouse_id: &str, limit: usize) -> PyResult<Vec<u32>> {
+    let store = SQLiteLineageStore::new(db_path)
+        .map_err(|e| PyRuntimeError::new_err(format!("lineage store error: {e}")))?;
+
+    store
+        .list_versions(warehouse_id, limit)
+        .map_err(|e| PyRuntimeError::new_err(format!("lineage query error: {e}")))
+}
+
 // ── Module definition ─────────────────────────────────────────────────────────
 
 #[pymodule]
@@ -462,6 +548,12 @@ fn _statguardian(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // Utilities
     m.add_function(wrap_pyfunction!(validate_dsl, m)?)?;
+
+    // Lineage
+    m.add_function(wrap_pyfunction!(lineage_save_version, m)?)?;
+    m.add_function(wrap_pyfunction!(lineage_get_version, m)?)?;
+    m.add_function(wrap_pyfunction!(lineage_get_latest_version, m)?)?;
+    m.add_function(wrap_pyfunction!(lineage_list_versions, m)?)?;
 
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     Ok(())

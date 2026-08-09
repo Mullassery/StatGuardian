@@ -111,6 +111,21 @@ from ._anomaly_detection import (
     AnomalyResult,
 )
 
+# Data lineage tracking and versioning
+from ._lineage import (
+    LineageNode,
+    LineageEdge,
+    LineageGraph,
+    LineageVersion,
+    LineageChange,
+    create_lineage_node,
+    create_lineage_edge,
+    save_lineage_version,
+    get_lineage_graph,
+    get_lineage_version,
+    get_lineage_history,
+)
+
 __all__ = [
     # Core
     "DataContract",
@@ -160,6 +175,18 @@ __all__ = [
     "SimpleMovingAverageDetector",
     "AdaptiveThresholdDetector",
     "AnomalyResult",
+    # Data lineage tracking
+    "LineageNode",
+    "LineageEdge",
+    "LineageGraph",
+    "LineageVersion",
+    "LineageChange",
+    "create_lineage_node",
+    "create_lineage_edge",
+    "save_lineage_version",
+    "get_lineage_graph",
+    "get_lineage_version",
+    "get_lineage_history",
     # Utilities
     "validate_dsl",
     "__version__",
