@@ -7,6 +7,19 @@ on:
     branches: [main]
 
 jobs:
+  secrets-scan:
+    name: Secrets Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   rust-build:
     name: Rust Build & Test
     runs-on: ubuntu-latest
@@ -25,6 +38,12 @@ jobs:
 
       - name: Test Rust
         run: cargo test --release --all-features
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Run cargo audit
+        run: cargo audit
 
   python-tests:
     name: Python Tests (Python ${{ matrix.python-version }})

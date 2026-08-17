@@ -1,160 +1,137 @@
 # Statguardian Security Audit
 
-**Last Audited:** July 2026  
-**Status:** SQL injection patterns found; Rust safety unclear
+**Last Audited:** July 2026
+**Remediation Pass:** August 2026
+**Status:** All CRITICAL/HIGH items closed. Remaining items are documentation/hardening follow-ups.
 
 ---
 
-## 🔴 CRITICAL Vulnerabilities
+## 🔴 CRITICAL — CLOSED
 
-### 1. SQL Injection Patterns (9 instances)
-**Location:** `python/statguardian/_connectors.py` and validation logic  
-**Risk:** Attackers can execute arbitrary SQL, extract/modify data  
-**Severity:** CRITICAL  
+### 1. SQL Injection Patterns
+**Location:** `python/statguardian/_connectors.py`
+**Original finding:** Dynamic SQL construction patterns in database connectors.
 
-**Finding:** Dynamic SQL construction patterns in database connectors
-```python
-# VULNERABLE pattern found
-# Construction of Databricks/database queries without parameterization
-```
+**Reassessment:** No string-interpolated or concatenated SQL was found anywhere in
+the codebase (Python or Rust). `execute_sql()` forwards the caller-supplied
+`connection_string` and `query` verbatim to `polars.read_database_uri` /
+`sqlalchemy.create_engine` / `pandas.read_sql` — the same trust model as using
+those libraries directly. There is no code path that builds a query string from
+untrusted fragments (contract DSL, dataset paths, etc.). The original finding
+was a false positive; there is nothing to patch here.
 
-**Impact:** Users providing malicious contract DSL or dataset paths could exploit this
-
-**Recommended Fix:**
-- Audit all database connector queries
-- Use parameterized queries exclusively
-- Validate DSL contract syntax before SQL generation
-
-**Timeline:** v1.0.1 (Q3 2026) — Immediate security patch
+**Status:** Closed — no code change required.
 
 ---
 
-## 🟡 HIGH Priority Issues
+## 🟡 HIGH Priority — CLOSED
 
 ### 2. No Dependency Version Pinning
-**Location:** `pyproject.toml`  
-**Severity:** HIGH  
-**Finding:** 0 pinned versions, 39 floating versions  
+**Location:** `pyproject.toml`
+**Status:** Closed for core/security-sensitive dependencies.
 
-**Critical Dependencies (vulnerable versions exist):**
-- `pyarrow` — Has known vulnerabilities in older versions
-- `polars` — Version coupling with abi3 wheels
-- `pandas` — Security patches important
+Core dependencies are pinned to exact versions: `polars==0.19.12`,
+`pandas==2.1.0`, `pyarrow==14.0.1`. Optional extras (`connectorx`,
+`psycopg2-binary`, `pymysql`, `google-cloud-bigquery`, etc.) intentionally use
+floating minimums (`>=`) — these are third-party DB drivers pulled in only when
+a user opts into that extra, and over-pinning them would force users into
+version conflicts with their own environments. `sqlalchemy==2.0.23` is pinned
+since it's shared across all SQL extras.
 
-**Action Items:**
-```toml
-# Current (VULNERABLE)
-pyarrow = ">=10.0.0"
-polars = "~=0.18"
-
-# Recommended (SAFE)
-pyarrow = "14.0.1"
-polars = "0.18.19"
-```
-
-**Timeline:** v1.0.1 (Q3 2026) — Pin all versions
-
----
+**Remaining follow-up (LOW):** periodically bump floating extras and re-check
+for known CVEs — now covered by `cargo audit` in CI (Rust side) and should be
+paired with a `pip-audit` run before each release (manual, not yet automated).
 
 ### 3. Environment Variable Secrets
-**Location:** `python/statguardian/_connectors.py`  
-**Risk:** AWS credentials, database passwords in environment  
-**Severity:** HIGH  
+**Location:** `python/statguardian/_connectors.py`, `docs/SECURITY.md`
+**Status:** Closed — guidance exists.
 
-**Finding:** Documentation mentions:
-```
-AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY  (in environment)
-```
-
-**Recommendation:**
-- Use AWS IAM roles (not long-term credentials)
-- Validate that secrets are never logged
-- Document secure credential handling
-
-**Timeline:** v1.1.0 (Q3 2026) — Security guide for deployment
+`execute_cloud()` docs and `docs/SECURITY.md` already recommend IAM roles /
+Workload Identity / Managed Identity over long-lived credentials, and
+`.env.example` + `.gitignore` prevent accidental secret commits. Secrets are
+never logged (verified — no logging calls include connection strings or
+credential values).
 
 ---
 
-## 🔵 MEDIUM Priority Issues
+## 🔵 MEDIUM Priority
 
-### 4. Rust Unsafe Blocks — Safety Unclear
-**Location:** Rust codebase (src/)  
-**Risk:** Memory safety, buffer overflows  
-**Severity:** MEDIUM-HIGH  
+### 4. Rust Unsafe Blocks
+**Location:** Rust codebase (`crates/`)
+**Status:** Closed.
 
-**Action Items:**
-- [ ] Audit all `unsafe` blocks in Rust code
-- [ ] Verify bounds checking
-- [ ] Run `cargo audit` for dependencies
-- [ ] Run `miri` (interpreter for detecting UB)
-
-**Command:**
-```bash
-cargo audit
-cargo miri test  # Detect undefined behavior
-```
-
-**Timeline:** v1.0.1 (Q3 2026) — Run security audit
-
----
+`grep -rn "unsafe" crates/ --include=*.rs` (excluding `target/`) returns **zero
+matches** — there are no `unsafe` blocks anywhere in the workspace. `cargo
+audit` is now run automatically in `.github/workflows/ci.yml` (`rust-build`
+job) to catch known-vulnerable dependency advisories on every push/PR.
 
 ### 5. No Input Validation on DSL
-**Risk:** Malformed contract files could crash validator or cause DoS  
-**Severity:** MEDIUM  
+**Status:** Closed.
 
-**Recommendation:**
-- Validate DSL schema before processing
-- Set limits on file size, recursion depth
-- Graceful error messages (not stack traces)
-
-**Timeline:** v1.1.0 (Q3 2026)
-
----
+Two layers now enforce this:
+- **Rust parser** (`crates/statguardian-core/src/parser/mod.rs`): hard
+  `MAX_INPUT_SIZE` of 10MB, returns a structured `Result`/`CoreError` on
+  malformed input instead of panicking (covered by `tests/test_security.rs`
+  and `tests/test_parser.rs`).
+- **Python CLI** (`python/statguardian/_dsl_validator.py`): previously written
+  but never called anywhere in the codebase — dead code. Now wired into both
+  `statguardian check` and `statguardian validate` (`_cli.py`) to reject
+  oversized (>1MB), overly-nested (>50), or malformed contracts before they
+  reach the parser, with a clean error message instead of a stack trace.
 
 ### 6. Broad Exception Handling
-**Risk:** Silent failures in validation could miss real errors  
-**Severity:** MEDIUM  
+**Status:** Closed for the silent-failure cases; broad `except Exception` that
+already surfaces the error (message, re-raise, or captured in a result object)
+was left as-is by design.
 
-**Timeline:** v1.1.0 (Q3 2026)
+Fixed two categories of `except: pass` that discarded errors with no trace:
+- `_connectors.py` (`_read_sql_to_polars`): the connectorx→SQLAlchemy fallback
+  chain silently dropped the reason each earlier strategy failed, so if all
+  three failed the final error gave no diagnostic info. Now logs each
+  intermediate failure at `DEBUG`.
+- `okf_contracts.py` (`get_rule_success_rate`, anomaly pattern scan): corrupted
+  or unreadable frontmatter files were skipped with zero indication anything
+  was wrong. Now logs a `WARNING` naming the file and the error.
 
 ---
 
-## 🔵 LOW Priority
+## 🔵 LOW Priority — CLOSED
 
 ### 7. No Secrets Scanning in CI
-**Recommendation:** Add `truffleHog` to GitHub Actions  
-**Timeline:** v1.0.2 (Q3 2026)
+**Status:** Closed. Added a `secrets-scan` job running
+`gitleaks/gitleaks-action@v2` to `.github/workflows/ci.yml`, on every push and
+PR to `main`.
 
 ### 8. Documentation: No Security Deployment Guide
-**Recommendation:** Add guide for:
-- Secure AWS credential handling
-- Database connection security
-- Principle of least privilege for database user
-
-**Timeline:** v1.1.0 (Q3 2026)
-
----
-
-## Security Roadmap
-
-| Issue | Severity | Target | Effort |
-|-------|----------|--------|--------|
-| Audit SQL injection | CRITICAL | v1.0.1 | 2 days |
-| Pin dependencies | HIGH | v1.0.1 | 1 day |
-| Audit Rust unsafe blocks | MEDIUM | v1.0.1 | 1 day |
-| Secrets handling guide | HIGH | v1.1.0 | 1 day |
-| DSL input validation | MEDIUM | v1.1.0 | 1 day |
-| Exception handling review | MEDIUM | v1.1.0 | 1 day |
-| CI secrets scanning | LOW | v1.0.2 | 0.5 days |
+**Status:** Partially closed. `docs/SECURITY.md` covers reporting process and
+basic practices; `_connectors.py` docstrings cover IAM-role/Workload-Identity
+guidance per cloud provider. Still open: a single consolidated deployment
+security page (least-privilege DB user setup, query audit logging) — tracked
+as a documentation nice-to-have, not a code risk.
 
 ---
 
-## Testing Recommendations
+## Security Roadmap (updated)
 
-1. **Dependency Audit:**
+| Issue | Severity | Status |
+|-------|----------|--------|
+| SQL injection review | CRITICAL | Closed — false positive, no vulnerable code found |
+| Pin dependencies | HIGH | Closed — core deps pinned, extras intentionally floating |
+| Rust unsafe block audit | MEDIUM | Closed — zero unsafe blocks; cargo audit now in CI |
+| Secrets handling guide | HIGH | Closed — IAM/Workload Identity guidance in place |
+| DSL input validation | MEDIUM | Closed — Rust size limit + Python validator now wired in |
+| Exception handling review | MEDIUM | Closed — silent swallows now logged |
+| CI secrets scanning | LOW | Closed — gitleaks added to CI |
+| Consolidated deployment guide | LOW | Open — documentation only, no code risk |
+
+---
+
+## Testing Recommendations (still applicable)
+
+1. **Dependency Audit** (automated for Rust, manual for Python):
    ```bash
-   cargo audit
-   pip-audit
+   cargo audit      # now runs in CI on every push/PR
+   pip-audit        # run manually before release
    ```
 
 2. **SAST for Rust:**
@@ -163,13 +140,10 @@ cargo miri test  # Detect undefined behavior
    cargo miri test
    ```
 
-3. **SQL Injection Testing:**
-   - Manual code review
-   - Fuzzing with malicious DSL inputs
-
-4. **Input Validation Testing:**
-   - Large/recursive contracts
-   - Malformed SQL
+3. **DSL fuzzing:** `tests/test_security.rs` covers oversized input, deep
+   nesting, malformed regex, and unbalanced braces. Extending with a proper
+   fuzz target (`cargo fuzz`) is a reasonable next step if the parser grows
+   more complex.
 
 ---
 

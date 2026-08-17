@@ -40,10 +40,13 @@ include source or download instructions. See: https://www.postgresql.org/about/l
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     pass
+
+logger = logging.getLogger(__name__)
 
 # ── SQL / warehouses ──────────────────────────────────────────────────────────
 
@@ -110,7 +113,7 @@ def _read_sql_to_polars(connection_string: str, query: str):
     try:
         return pl.read_database_uri(query=query, uri=connection_string)
     except Exception as cx_err:
-        pass
+        logger.debug("connectorx read failed, falling back to SQLAlchemy: %s", cx_err)
 
     # Strategy 2: ADBC / SQLAlchemy via polars.read_database
     try:
@@ -119,7 +122,7 @@ def _read_sql_to_polars(connection_string: str, query: str):
         with engine.connect() as conn:
             return pl.read_database(query=query, connection=conn)
     except Exception as sa_err:
-        pass
+        logger.debug("SQLAlchemy read failed, falling back to pandas: %s", sa_err)
 
     # Strategy 3: pandas fallback
     try:

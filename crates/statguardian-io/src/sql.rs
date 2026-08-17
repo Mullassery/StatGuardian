@@ -72,7 +72,7 @@ impl SqlReader {
     /// Execute `query` against `connection_url` and return a DataFrame.
     ///
     /// This is a synchronous wrapper — it creates an internal Tokio runtime.
-    pub fn read(_query: &str, connection_url: &str) -> IoResult<DataFrame> {
+    pub fn read(query: &str, connection_url: &str) -> IoResult<DataFrame> {
         match SqlBackend::from_url(connection_url) {
             SqlBackend::PythonLayer(scheme) => Err(IoError::UnsupportedFormat(format!(
                 "'{scheme}' is not supported in the Rust SQL layer. \
@@ -189,13 +189,16 @@ fn build_runtime() -> IoResult<tokio::runtime::Runtime> {
     feature = "sql-mysql",
     feature = "sql-sqlite"
 ))]
-async fn fetch_to_dataframe<DB, E>(executor: E, query: &str) -> Result<DataFrame, sqlx::Error>
+async fn fetch_to_dataframe<'e, DB, E>(executor: E, query: &str) -> Result<DataFrame, sqlx::Error>
 where
     DB: sqlx::Database,
-    E: sqlx::Executor<'_, Database = DB> + Copy,
+    E: sqlx::Executor<'e, Database = DB> + Copy,
     for<'r> sqlx::query::Query<'r, DB, DB::Arguments<'r>>: sqlx::Execute<'r, DB>,
+    for<'r> String: sqlx::Decode<'r, DB> + sqlx::Type<DB>,
+    for<'r> DB::Arguments<'r>: sqlx::IntoArguments<'r, DB>,
+    usize: sqlx::ColumnIndex<DB::Row>,
 {
-    use sqlx::Row;
+    use sqlx::{Column as _, Row};
 
     let rows: Vec<DB::Row> = sqlx::query(query).fetch_all(executor).await?;
     if rows.is_empty() {

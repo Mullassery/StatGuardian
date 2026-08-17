@@ -5,6 +5,7 @@ as portable, shareable OKF documents.
 """
 
 import json
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -16,6 +17,8 @@ except ImportError:
         "python-frontmatter is required for OKF support. "
         "Install with: pip install python-frontmatter"
     )
+
+logger = logging.getLogger(__name__)
 
 
 class OKFContractDocument:
@@ -339,8 +342,8 @@ class OKFRuleEffectiveness:
                 post = frontmatter.load(str(exec_file))
                 if post.metadata.get("passed", False):
                     passed_count += 1
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning("Skipping unreadable rule execution file %s: %s", exec_file, exc)
 
         return passed_count / len(executions) if executions else None
 
@@ -428,8 +431,8 @@ class OKFAnomalyPattern:
 
                 anomaly_counts[anomaly_type] += 1
                 anomaly_details[anomaly_type].append(post.metadata)
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning("Skipping unreadable anomaly file %s: %s", anomaly_file, exc)
 
         # Filter by minimum occurrences
         recurring = []

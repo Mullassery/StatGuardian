@@ -88,8 +88,13 @@ def main() -> None:
 
 def _cmd_check(args) -> None:
     from statguardian import validate_dsl
+    from statguardian._dsl_validator import validate_dsl_contract
     try:
         dsl = open(args.contract).read()
+        is_valid, error = validate_dsl_contract(dsl)
+        if not is_valid:
+            print(f"✗ DSL error: {error}", file=sys.stderr)
+            sys.exit(1)
         name = validate_dsl(dsl)
         print(f"✓ DSL valid — dataset: {name}")
     except Exception as e:
@@ -99,7 +104,13 @@ def _cmd_check(args) -> None:
 
 def _cmd_validate(args) -> None:
     from statguardian import DataContract, execute_file
+    from statguardian._dsl_validator import validate_dsl_contract
     try:
+        dsl = open(args.contract).read()
+        is_valid, error = validate_dsl_contract(dsl)
+        if not is_valid:
+            print(f"✗ Contract error: {error}", file=sys.stderr)
+            sys.exit(2)
         contract = DataContract.from_file(args.contract)
         report   = execute_file(contract, args.file, args.reference)
     except Exception as e:
