@@ -6,7 +6,7 @@
 
 ---
 
-## 🔴 CRITICAL — CLOSED
+## CRITICAL — CLOSED
 
 ### 1. SQL Injection Patterns
 **Location:** `python/statguardian/_connectors.py`
@@ -24,7 +24,7 @@ was a false positive; there is nothing to patch here.
 
 ---
 
-## 🟡 HIGH Priority — CLOSED
+## HIGH Priority — CLOSED
 
 ### 2. No Dependency Version Pinning
 **Location:** `pyproject.toml`
@@ -54,7 +54,7 @@ credential values).
 
 ---
 
-## 🔵 MEDIUM Priority
+## MEDIUM Priority
 
 ### 4. Rust Unsafe Blocks
 **Location:** Rust codebase (`crates/`)
@@ -95,7 +95,7 @@ Fixed two categories of `except: pass` that discarded errors with no trace:
 
 ---
 
-## 🔵 LOW Priority — CLOSED
+## LOW Priority — CLOSED
 
 ### 7. No Secrets Scanning in CI
 **Status:** Closed. Added a `secrets-scan` job running

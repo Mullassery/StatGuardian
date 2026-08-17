@@ -1,101 +1,80 @@
 # StatGuardian
 
-Data quality validation. 13x faster than pandera.
+A Rust-native data quality engine with a declarative contract DSL: schema validation, drift detection, and anomaly detection for Pandas and Polars.
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/Mullassery/StatGuardian/tests.yml?label=tests)](https://github.com/Mullassery/StatGuardian/actions)
 [![PyPI](https://img.shields.io/pypi/v/statguardian)](https://pypi.org/project/statguardian/)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue)](https://www.python.org/downloads/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue)](https://www.python.org/downloads/)
 
-Stop data quality issues from reaching production. StatGuardian validates data at runtime, instantly catching schema violations, type errors, and anomalies.
+Stop data quality issues from reaching production. StatGuardian validates data at runtime against a versionable contract, catching schema violations, statistical drift, and anomalies before they reach downstream consumers.
 
-
-## Real Use Cases
-
-This library is used for:
-- See examples below
-- Check GitHub issues for real-world usage
-
-## Get Started
-
-```python
-# Quick example - copy and run
-# See full docs for detailed usage
-```
 
 ## 30-Second Start
 
 ```python
-from statguardian import validate
+import polars as pl
+import statguardian
 
-# Define your schema
-schema = {
-    "user_id": int,
-    "email": str,
-    "age": {"type": int, "min": 0, "max": 150},
+contract = statguardian.DataContract.from_dsl("""
+dataset orders {
+    schema {
+        order_id: string, not_null, unique
+        amount:   float,  positive
+        status:   string, not_null, enum=["pending","paid","cancelled"]
+    }
+    quality {
+        completeness(order_id) > 0.999
+    }
 }
+""")
 
-# Validate data
-result = validate(df, schema)
-if not result.is_valid:
-    print(result.violations)
+df = pl.read_parquet("orders.parquet")
+report = statguardian.execute(contract, df)
+print(report.summary())
+print(f"Passed: {report.passed}")
 ```
 
 ## Why StatGuardian?
 
-| Feature | StatGuardian | Pandera |
-|---------|--------------|---------|
-| Speed | 13x faster | Standard |
-| Pandas | Yes | Yes |
-| Polars | Yes | No |
-| DuckDB | Yes | No |
-| Learning Curve | Minimal | Steep |
+- Contracts are declarative and versionable (`.sg` files), not scattered assertions in application code
+- Rust-native execution — schema, quality, drift, and anomaly checks run in the compiled engine, not a Python loop
+- One contract, multiple frameworks: the same `.sg` file validates Pandas and Polars DataFrames, Delta Lake tables, and Apache Iceberg tables
+- Drift and anomaly detection are first-class DSL constructs, not a separate library
+
+A reproducible benchmark comparing StatGuardian against other validation libraries is tracked in `docs/bench/benchmark.py` — run it against your own workload rather than relying on any library's marketing numbers, including ours.
 
 ## Real-World Use Cases
 
-**E-commerce Order Validation**
+**E-commerce order validation**
 ```python
-schema = {
-    "order_id": str,
-    "amount": {"type": float, "min": 0},
-    "status": {"enum": ["pending", "shipped", "delivered"]},
+contract = statguardian.DataContract.from_dsl("""
+dataset orders {
+    schema {
+        order_id: string, not_null, unique
+        amount:   float,  positive
+        status:   string, not_null, enum=["pending","shipped","delivered"]
+    }
 }
-validate(orders_df, schema)
+""")
+report = statguardian.execute(contract, orders_df)
 ```
 
-**ML Feature Pipeline**
+**Drift monitoring between two batches**
 ```python
-schema = {
-    "feature_x": {"type": float, "not_null": True},
-    "feature_y": {"type": float, "mean": 0, "std": 1},
-}
-result = validate(features, schema)
-```
-
-**Data Lake Monitoring**
-```python
-result = validate(incoming_data, schema)
-if result.has_drift:
-    alert("Schema changed!")
+report = statguardian.execute(contract, incoming_df, reference=baseline_df)
+for d in report.drift_results():
+    if not d["passed"]:
+        print(f"Drift detected in {d['column']}: PSI={d.get('psi', 0):.4f}")
 ```
 
 ## Key Capabilities
 
-- 13x speed advantage over pandera
-- Type checking with detailed error messages
-- Automatic drift detection
-- Anomaly detection built-in
-- Supports Pandas, Polars, DuckDB with identical code
-- Zero configuration—just Python
-
-## Performance
-
-StatGuardian processes 1M rows in 0.3s (vs pandera's 4.2s).
-
-| Dataset | Rows | StatGuardian | Pandera | Speedup |
-|---------|------|--------------|---------|---------|
-| Orders | 100K | 12ms | 180ms | 15x |
-| Telemetry | 1M | 340ms | 4200ms | 12x |
-| Credit Card | 50M | 15s | 210s | 14x |
+- Declarative contract DSL: schema, quality rules, statistical drift thresholds, and anomaly checks in one file
+- Type checking with detailed, structured violation messages
+- Statistical drift detection (PSI, KS test) between a dataset and a reference baseline
+- Built-in anomaly detection (outliers, duplicates)
+- Supports Pandas and Polars DataFrames, Delta Lake, and Apache Iceberg tables with the same contract
+- Rust-native execution core
 
 ## Features
 
@@ -116,125 +95,79 @@ StatGuardian processes 1M rows in 0.3s (vs pandera's 4.2s).
 - Duplicate detection
 
 **Framework Support**
-- Pandas DataFrames (primary target)
-- Polars DataFrames (full compatibility)
-- DuckDB relations (streaming support)
-- NumPy arrays (optional)
-- Unified API across all frameworks
-
-**Performance & Scale**
-- Rust core for 13x speedup
-- Streaming validation (memory-efficient)
-- Batch processing (optimal for large datasets)
-- Zero-copy operations where possible
+- Pandas DataFrames
+- Polars DataFrames (native)
+- Delta Lake tables (time-travel validation)
+- Apache Iceberg tables (snapshot validation)
+- Unified contract across all frameworks
 
 ## Requirements
 
-- **Python:** 3.10+
-- **Core:** Rust-powered validation engine (precompiled)
-- **Data Frameworks:** 
-  - pandas ≥1.3.0 (primary)
-  - polars ≥0.19.0 (optional)
-  - duckdb ≥0.8.0 (optional)
-- **Optional:** numpy ≥1.20.0 (for array support)
-- **Precompiled:** Wheels for macOS, Linux, Windows (all Python 3.10-3.13)
+- **Python:** 3.8+
+- **Core:** Rust-native validation engine (precompiled wheel, no local Rust toolchain needed)
+- **Data Frameworks:** polars (required), pandas (optional, via `pip install statguardian[pandas]`)
 
 ## Examples
 
-**Basic Type Validation**
-```python
-from statguardian import validate
+See `examples/` for complete, runnable scripts, including `python_quickstart.py` (schema validation, drift detection, anomaly detection, JSON/Prometheus output) and `.sg` contract files.
 
-# Simple schema
-schema = {
-    "user_id": int,
-    "email": str,
-    "created_at": "datetime",
+**Schema validation**
+```python
+contract = statguardian.DataContract.from_dsl("""
+dataset users {
+    schema {
+        id:    int,    not_null, unique, primary_key
+        email: string, regex="^[^@]+@[^@]+\\.[^@]+$"
+        age:   int,    between(0, 120)
+    }
+    quality {
+        completeness(id) > 0.99
+    }
 }
+""")
 
-result = validate(df, schema)
-print(f"Valid: {result.is_valid}")
-print(f"Violations: {result.violations}")
+report = statguardian.execute(contract, df)
+print(report.summary())
+for v in report.violations():
+    print(v["severity"], v["column"], v["message"])
 ```
 
-**Constraint Validation**
+**Anomaly detection**
 ```python
-schema = {
-    "age": {"type": int, "min": 0, "max": 150},
-    "email": {"type": str, "pattern": r"^[\w\.-]+@[\w\.-]+\.\w+$"},
-    "status": {"enum": ["active", "inactive", "pending"]},
-    "balance": {"type": float, "min": 0},
+contract = statguardian.DataContract.from_dsl("""
+dataset events {
+    schema { id: int, not_null }
+    anomalies {
+        detect_outliers(id, method="iqr")
+        @blocking: detect_duplicates(id)
+    }
 }
-
-result = validate(transactions, schema)
-if not result.is_valid:
-    for violation in result.violations:
-        print(f"Row {violation['row']}: {violation['message']}")
-```
-
-**Drift & Anomaly Detection**
-```python
-# Detect schema changes
-result = validate(new_data, schema)
-if result.has_drift:
-    print(f"New columns: {result.new_fields}")
-    print(f"Missing columns: {result.missing_fields}")
-
-# Detect anomalies
-if result.anomalies:
-    print(f"Outlier rows: {result.anomaly_rows}")
-```
-
-**Multi-Framework Validation**
-```python
-import pandas as pd
-import polars as pl
-
-# Pandas
-df_pd = pd.read_csv("data.csv")
-result_pd = validate(df_pd, schema)
-
-# Polars (identical code)
-df_pl = pl.read_csv("data.csv")
-result_pl = validate(df_pl, schema)
-
-# Both return same validation results
+""")
+report = statguardian.execute(contract, df)
 ```
 
 ## API Reference
 
-**Core Functions**
+**Core**
 
-- `validate(data, schema) -> ValidationResult`
-  - Validates data against schema
-  - Returns detailed violations report
-  - Supports Pandas, Polars, DuckDB
+- `DataContract.from_dsl(dsl_string)` / `DataContract.from_file(path)` — compile a contract
+- `execute(contract, df, reference=None) -> ValidationReport` — validate a Pandas/Polars DataFrame
+- `execute_file(contract, path, reference_path=None)` — validate Parquet/CSV/JSON/Avro/ORC/Arrow IPC files
+- `execute_delta(contract, path, ...)`, `execute_iceberg(contract, path, ...)` — lakehouse table validation
+- `execute_sql`, `execute_spark`, `execute_cloud` — SQL, PySpark, and object-storage sources
 
-- `ValidationResult`
-  - `.is_valid`: Boolean flag
-  - `.violations`: List of violations
-  - `.has_drift`: Boolean (schema changed)
-  - `.anomalies`: List of anomaly indices
-  - `.statistics`: Profiling stats (count, mean, std, etc.)
+**ValidationReport**
 
-**Schema Constraints**
+- `.passed`, `.health_score`, `.grade`, `.violation_count`
+- `.violations()`, `.drift_results()`, `.column_profiles()`
+- `.summary()`, `.to_json()`, `.to_prometheus()`
 
-- Type: `"int"`, `"float"`, `"str"`, `"bool"`, `"datetime"`
-- Numeric: `min`, `max`, `mean`, `std`
-- Categorical: `enum` (allowed values)
-- String: `pattern` (regex)
-- Nullability: `not_null` (True/False)
-- Custom: `custom_fn(value) -> bool`
+Full CLI usage: [docs/CLI.md](docs/CLI.md). DSL syntax: see `examples/*.sg`.
 
 ## Installation
 
 ```bash
 pip install statguardian
-# or with uv
-uv pip install statguardian
-
-# Verify installation
-statguardian --version
 ```
 
 For development:
@@ -247,10 +180,18 @@ pytest
 
 ## Documentation
 
-- [API Reference](docs/api.md)
+- [CLI Reference](docs/CLI.md)
+- [Security Audit](docs/SECURITY_AUDIT.md)
+- [Roadmap](docs/ROADMAP.md)
 - [Examples](examples/)
 - [Contributing](CONTRIBUTING.md)
 
+## Known Issues
+
+- Performance numbers are not yet published as a reproducible, checked-in benchmark result — `docs/bench/benchmark.py` exists but its output has never been committed. Treat any speed claims (including from this project) as unverified until you've run the benchmark yourself.
+- `docs/ROADMAP.md`, `docs/ROADMAP_HONEST.md`, and `docs/ROADMAP_INTEGRATED.md` currently overlap and are not kept in sync — some content in `ROADMAP_HONEST.md` predates features (e.g. Iceberg support) that have since shipped. Treat `docs/SECURITY_AUDIT.md` as the current source of truth for security status; the roadmap docs need consolidation.
+- SQL connector extras (`connectorx`, `psycopg2-binary`, cloud warehouse drivers) use floating minimum versions rather than pinned versions — see `docs/SECURITY_AUDIT.md` for the rationale and tradeoffs.
+
 ## License
 
-MIT License - See LICENSE
+Proprietary — free to use with attribution. See [LICENSE](LICENSE).
