@@ -22,6 +22,10 @@ use std::path::Path;
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 struct IcebergMetadata {
+    // Parsed for schema completeness / future format-specific branching;
+    // v1 and v2 manifests are currently read through the same code path
+    // since the fields this reader consumes are present in both.
+    #[allow(dead_code)]
     format_version: u32,
     current_snapshot_id: Option<i64>,
     snapshots: Option<Vec<IcebergSnapshot>>,

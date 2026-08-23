@@ -73,6 +73,16 @@ impl SqlReader {
     ///
     /// This is a synchronous wrapper — it creates an internal Tokio runtime.
     pub fn read(query: &str, connection_url: &str) -> IoResult<DataFrame> {
+        // `query` is only read inside the per-backend branches below, which
+        // are feature-gated; when none of `sql-postgres` / `sql-mysql` /
+        // `sql-sqlite` are enabled it would otherwise be unused.
+        #[cfg(not(any(
+            feature = "sql-postgres",
+            feature = "sql-mysql",
+            feature = "sql-sqlite"
+        )))]
+        let _ = query;
+
         match SqlBackend::from_url(connection_url) {
             SqlBackend::PythonLayer(scheme) => Err(IoError::UnsupportedFormat(format!(
                 "'{scheme}' is not supported in the Rust SQL layer. \
@@ -189,15 +199,17 @@ fn build_runtime() -> IoResult<tokio::runtime::Runtime> {
     feature = "sql-mysql",
     feature = "sql-sqlite"
 ))]
-async fn fetch_to_dataframe<'e, DB, E>(executor: E, query: &str) -> Result<DataFrame, sqlx::Error>
+async fn fetch_to_dataframe<'c, DB, E>(executor: E, query: &str) -> Result<DataFrame, sqlx::Error>
 where
     DB: sqlx::Database,
-    E: sqlx::Executor<'e, Database = DB> + Copy,
+    E: sqlx::Executor<'c, Database = DB> + Copy,
     for<'r> sqlx::query::Query<'r, DB, DB::Arguments<'r>>: sqlx::Execute<'r, DB>,
+    for<'q> <DB as sqlx::Database>::Arguments<'q>: sqlx::IntoArguments<'q, DB>,
     for<'r> String: sqlx::Decode<'r, DB> + sqlx::Type<DB>,
-    for<'r> DB::Arguments<'r>: sqlx::IntoArguments<'r, DB>,
     usize: sqlx::ColumnIndex<DB::Row>,
 {
+    // Import trait-only (`as _`) so the `Column` trait's methods resolve
+    // without its name shadowing `polars::prelude::Column` used below.
     use sqlx::{Column as _, Row};
 
     let rows: Vec<DB::Row> = sqlx::query(query).fetch_all(executor).await?;
@@ -225,12 +237,8 @@ where
         .map(|(name, vals)| Series::new((*name).into(), vals).into_column())
         .collect();
 
-    DataFrame::new(series).map_err(|e| {
-        sqlx::Error::Decode(Box::new(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            e.to_string(),
-        )))
-    })
+    DataFrame::new(series)
+        .map_err(|e| sqlx::Error::Decode(Box::new(std::io::Error::other(e.to_string()))))
 }
 
 #[cfg(test)]

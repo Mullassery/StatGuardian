@@ -45,7 +45,6 @@
 /// // Create version
 /// let version = LineageVersion::new("warehouse1".to_string(), 1, graph);
 /// ```
-
 pub mod model;
 pub mod storage;
 

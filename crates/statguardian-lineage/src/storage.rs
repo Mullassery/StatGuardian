@@ -14,7 +14,11 @@ pub trait LineageStore: Send {
     fn save_version(&mut self, version: &LineageVersion) -> Result<()>;
 
     /// Retrieve a specific lineage version
-    fn get_version(&self, warehouse_id: &str, version_number: u32) -> Result<Option<LineageVersion>>;
+    fn get_version(
+        &self,
+        warehouse_id: &str,
+        version_number: u32,
+    ) -> Result<Option<LineageVersion>>;
 
     /// List all versions for a warehouse
     fn list_versions(&self, warehouse_id: &str, limit: usize) -> Result<Vec<u32>>;
@@ -57,7 +61,7 @@ impl SQLiteLineageStore {
 
     /// Initialize database schema
     fn init_schema(&self) -> Result<()> {
-        let conn = self.conn.write().unwrap();
+        let conn = self.conn.read().unwrap();
         conn.execute_batch(
             r#"
             CREATE TABLE IF NOT EXISTS lineage_versions (
@@ -106,7 +110,7 @@ impl LineageStore for SQLiteLineageStore {
         let schema_versions_json = serde_json::to_string(&version.schema_versions)?;
         let quality_scores_json = serde_json::to_string(&version.quality_scores)?;
 
-        let conn = self.conn.write().unwrap();
+        let conn = self.conn.read().unwrap();
         let mut stmt = conn.prepare(
             "INSERT OR REPLACE INTO lineage_versions
             (version_id, warehouse_id, version_number, timestamp, graph_json,
@@ -129,7 +133,11 @@ impl LineageStore for SQLiteLineageStore {
         Ok(())
     }
 
-    fn get_version(&self, warehouse_id: &str, version_number: u32) -> Result<Option<LineageVersion>> {
+    fn get_version(
+        &self,
+        warehouse_id: &str,
+        version_number: u32,
+    ) -> Result<Option<LineageVersion>> {
         let conn = self.conn.read().unwrap();
         let mut stmt = conn.prepare(
             "SELECT version_id, version_number, timestamp, graph_json, schema_versions_json,
@@ -171,7 +179,8 @@ impl LineageStore for SQLiteLineageStore {
         )) = result
         {
             let lineage_graph: LineageGraph = serde_json::from_str(&graph_json)?;
-            let schema_versions: HashMap<String, u32> = serde_json::from_str(&schema_versions_json)?;
+            let schema_versions: HashMap<String, u32> =
+                serde_json::from_str(&schema_versions_json)?;
             let quality_scores: HashMap<String, f64> = serde_json::from_str(&quality_scores_json)?;
 
             let change_severity = match change_severity_str.as_str() {
@@ -182,8 +191,8 @@ impl LineageStore for SQLiteLineageStore {
                 _ => ChangeSeverity::None,
             };
 
-            let timestamp = DateTime::parse_from_rfc3339(&timestamp_str)
-                .map(|dt| dt.with_timezone(&Utc))?;
+            let timestamp =
+                DateTime::parse_from_rfc3339(&timestamp_str).map(|dt| dt.with_timezone(&Utc))?;
 
             let changes = self.get_changes(&version_id)?;
 
@@ -247,7 +256,7 @@ impl LineageStore for SQLiteLineageStore {
         let change_id = format!("{}_{}", version_id, Uuid::new_v4());
         let tables_affected_json = serde_json::to_string(&change.tables_affected)?;
 
-        let conn = self.conn.write().unwrap();
+        let conn = self.conn.read().unwrap();
         let mut stmt = conn.prepare(
             "INSERT OR REPLACE INTO lineage_changes
             (change_id, version_id, change_type, source_table, target_table,
@@ -338,8 +347,8 @@ impl LineageStore for SQLiteLineageStore {
                 _ => ChangeSeverity::None,
             };
 
-            let changed_at = DateTime::parse_from_rfc3339(&changed_at_str)
-                .map(|dt| dt.with_timezone(&Utc))?;
+            let changed_at =
+                DateTime::parse_from_rfc3339(&changed_at_str).map(|dt| dt.with_timezone(&Utc))?;
 
             let tables_affected: Vec<String> = serde_json::from_str(&tables_affected_json)?;
 
@@ -470,8 +479,7 @@ mod tests {
         for warehouse_id in &["warehouse1", "warehouse2", "warehouse3"] {
             for version_num in 1..=2 {
                 let graph = LineageGraph::new(warehouse_id.to_string());
-                let version =
-                    LineageVersion::new(warehouse_id.to_string(), version_num, graph);
+                let version = LineageVersion::new(warehouse_id.to_string(), version_num, graph);
                 store.save_version(&version)?;
             }
         }
@@ -516,7 +524,10 @@ mod tests {
 
         graph.add_node(node1.clone());
         graph.add_node(node2.clone());
-        graph.add_edge(LineageEdge::new(node1.node_id.clone(), node2.node_id.clone()));
+        graph.add_edge(LineageEdge::new(
+            node1.node_id.clone(),
+            node2.node_id.clone(),
+        ));
 
         let version = LineageVersion::new("warehouse1".to_string(), 1, graph);
         store.save_version(&version)?;
@@ -617,11 +628,8 @@ mod tests {
         ];
 
         for (i, severity) in severities.iter().enumerate() {
-            let mut change = LineageChange::new(
-                ChangeType::NodeAdded,
-                format!("table_{}", i),
-                *severity,
-            );
+            let mut change =
+                LineageChange::new(ChangeType::NodeAdded, format!("table_{}", i), *severity);
             change.tables_affected = vec![format!("affected_{}", i)];
             store.save_change(&change, &version.version_id)?;
         }

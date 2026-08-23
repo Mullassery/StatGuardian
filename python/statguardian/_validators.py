@@ -7,6 +7,7 @@ for checks that require arbitrary Python logic.
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 # Global registry: column_name (or "*" for all columns) → list of entries
@@ -66,7 +67,8 @@ def run_custom_validators(df, *, raise_on_error: bool = False) -> List[dict]:
 
     Returns a list of violation dicts compatible with StatGuard's report
     format.  Pass the result to ``statguardian.merge_violations(report, extra)``
-    to include them in an existing ValidationReport.
+    to combine them with an existing ``ValidationReport`` into a
+    ``MergedReport``.
 
     Args:
         df:             Polars DataFrame to validate.
@@ -141,3 +143,71 @@ def clear_validators(column: str = None) -> None:
 def list_validators() -> Dict[str, List[str]]:
     """Return a summary of all registered validators as {column: [names]}."""
     return {col: [v["name"] for v in vs] for col, vs in _REGISTRY.items()}
+
+
+@dataclass
+class MergedReport:
+    """
+    A `ValidationReport` combined with extra violations from
+    `run_custom_validators()`.
+
+    `statguardian.ValidationReport` is a Rust-backed object with no
+    mutable/"add violation" API, so this does not modify `report` in
+    place — it's a read-only Python-side view over the union of both
+    violation sets, with `passed` recomputed the same way the Rust engine
+    computes it: a report fails if *any* violation (native or custom) has
+    `severity == "blocking"`.
+    """
+    id: str
+    dataset: str
+    row_count: int
+    passed: bool
+    violations: List[dict] = field(default_factory=list)
+    native_violation_count: int = 0
+    custom_violation_count: int = 0
+
+    def summary(self) -> str:
+        status = "PASS" if self.passed else "FAIL"
+        return (
+            f"[{status}] {self.dataset}: {len(self.violations)} violation(s) "
+            f"({self.native_violation_count} native + {self.custom_violation_count} custom), "
+            f"{self.row_count} row(s)"
+        )
+
+
+def merge_violations(report, extra_violations: List[dict]) -> MergedReport:
+    """
+    Combine a `ValidationReport` with extra violations from
+    `run_custom_validators()` into a single `MergedReport`.
+
+    Args:
+        report:           A `statguardian.ValidationReport` returned by
+                           `execute()` / `execute_file()` / etc.
+        extra_violations: The list of violation dicts returned by
+                           `run_custom_validators(df)`.
+
+    Returns:
+        A `MergedReport` exposing the combined violation list and a
+        `passed` flag that is False if the native report failed *or* any
+        extra violation has `severity == "blocking"`.
+
+    Example::
+
+        report = statguardian.execute(contract, df)
+        extra = statguardian.run_custom_validators(df)
+        merged = statguardian.merge_violations(report, extra)
+        print(merged.summary())
+    """
+    native_violations = list(report.violations())
+    all_violations = native_violations + list(extra_violations)
+    extra_has_blocking = any(v.get("severity") == "blocking" for v in extra_violations)
+
+    return MergedReport(
+        id=report.id,
+        dataset=report.dataset,
+        row_count=report.row_count,
+        passed=bool(report.passed) and not extra_has_blocking,
+        violations=all_violations,
+        native_violation_count=len(native_violations),
+        custom_violation_count=len(extra_violations),
+    )

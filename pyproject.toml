@@ -56,8 +56,64 @@ classifiers     = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies    = [
-    "polars==0.19.12",
-    "python-frontmatter>=1.0.0",
+    # This range is chosen for two reasons, both verified empirically by
+    # building the extension (maturin develop) and running it against real
+    # polars installs, not guessed from version numbers:
+    #
+    # 1. Lower bound: pure-Python helpers (e.g. _pii.py's
+    #    `col.dtype != pl.String`) use APIs not present in old polars.
+    #
+    # 2. Upper bound: the compiled Rust extension uses pyo3-polars 0.18,
+    #    which passes `compat_level` as a plain int when converting
+    #    DataFrames across the Python/Rust boundary. Polars's own
+    #    `Series.to_arrow()` requires `compat_level` to be a `CompatLevel`
+    #    object (raising `TypeError` otherwise), and PyPI's polars 1.32.3
+    #    tightened that check — silently breaking pyo3-polars 0.18's int
+    #    argument. This is *not* a 1.33-only problem as an earlier revision
+    #    of this comment claimed: 1.32.3 itself already fails with
+    #    `TypeError: argument 'df': compat_level has invalid type: 'int'`
+    #    on any `execute()` call touching a string column, verified by
+    #    actually running `execute()` against that install, not just
+    #    importing it.
+    #    Confirmed working: 1.6.0/1.9.0/1.12.0/1.20.0/1.30.0/1.32.0/1.32.2.
+    #    Confirmed broken:   1.32.3/1.33.0/1.34.0/1.35.0/1.40.0/1.43.2.
+    #    (1.32.1 also works but is yanked from PyPI, so it's unreachable
+    #    for a fresh install regardless.)
+    #    (Earlier revisions of this file pinned `polars==0.19.12`, which
+    #    predates `pl.String` and also conflicted with the `cloud`/`all`
+    #    extras below, which required `polars>=0.44` — a Rust-crate
+    #    version number that was mistakenly copied in as if it were a
+    #    PyPI version; PyPI's polars has no 0.4x series at all, it jumps
+    #    from 0.20.x straight to 1.0.0.)
+    "polars>=1.6,<1.32.3",
+    # Required, not optional: with pyo3-polars 0.18 (see above), every
+    # `execute()` call — including on a purely numeric DataFrame with no
+    # string columns — round-trips through Python's `Series.to_arrow()`,
+    # which imports `pyarrow` unconditionally. Without it installed,
+    # `execute()` fails with `ModuleNotFoundError: No module named
+    # 'pyarrow'` even though pyarrow was previously only pulled in by the
+    # `pandas`/`spark`/`all` extras. Verified against a clean venv with only
+    # this package + a bare `polars` install: `execute()` fails without
+    # pyarrow present, on both string and pure-numeric contracts.
+    #
+    # Lower bound: pyarrow 14.0.1 and 15.2.0 both fail decoding the
+    # DataFrame that comes back from the polars range above — polars 1.x
+    # represents string columns using Arrow's newer "string view" layout,
+    # and older pyarrow doesn't recognize its C Data Interface format code
+    # (`ArrowInvalid: Invalid or unsupported format string: 'vu'` on
+    # 14.0.1, `KeyError: 39` on 15.2.0 — an unrecognized Arrow type id).
+    # 16.1.0 and 17.0.0 both work. Verified by actually calling `execute()`
+    # against each installed version, not inferred from changelogs.
+    "pyarrow>=16.0",
+    # Upper bound: python-frontmatter 1.2.0+ imports `TypeGuard` directly
+    # from `typing` (frontmatter/util.py), which only exists on Python
+    # 3.10+; on 3.8/3.9 — both of which this package still declares support
+    # for via `requires-python` and the classifiers above — that raises
+    # `ImportError: cannot import name 'TypeGuard' from 'typing'` as soon as
+    # `statguardian.okf_contracts` (or anything importing it) is imported.
+    # Verified by actually importing `frontmatter` under Python 3.9: fails
+    # at 1.2.0, works at 1.1.0.
+    "python-frontmatter>=1.0.0,<1.2.0",
 ]
 
 [project.optional-dependencies]
@@ -68,7 +124,10 @@ dev = [
 ]
 
 # Data frame conversion
-pandas = ["pandas==2.1.0", "pyarrow==14.0.1"]
+# pyarrow is a base dependency now (see the comment there) — not repeated
+# here since pinning it differently per-extra would make `pip install
+# "statguardian[pandas]"` unsatisfiable against the base requirement.
+pandas = ["pandas==2.1.0"]
 
 # SQL databases (PostgreSQL, MySQL, SQLite, BigQuery, Snowflake, etc.)
 # Note: psycopg2 adds LGPL-2.1 dependency for PostgreSQL support
@@ -93,10 +152,13 @@ sql = [
 dbt = ["pyyaml>=6.0", "sqlalchemy==2.0.23", "connectorx>=0.3"]
 
 # Cloud storage (S3, GCS, Azure)
-cloud = ["polars[aws,gcp,azure]>=0.44"]
+# Version range matches the base `polars` dependency above — see the
+# comment there for why (must stay compatible with the compiled
+# extension's pyo3-polars 0.18).
+cloud = ["polars[aws,gcp,azure]>=1.6,<1.32.3"]
 
 # Apache Spark
-spark = ["pyspark>=3.0", "pyarrow==14.0.1"]
+spark = ["pyspark>=3.0"]  # pyarrow is a base dependency, see above
 
 # Streaming (planned)
 kafka = ["confluent-kafka>=2.0"]  # Roadmap
@@ -108,7 +170,7 @@ airflow = ["apache-airflow>=2.0"]  # Roadmap
 # All optional extras
 all = [
     "pandas==2.1.0",
-    "pyarrow==14.0.1",
+    # pyarrow intentionally omitted — it's a base dependency (see above)
     "connectorx>=0.3",
     "psycopg2-binary>=2.9",
     "pymysql>=1.0",
@@ -122,7 +184,7 @@ all = [
     "duckdb>=0.8",
     "trino>=0.20",
     "pyspark>=3.0",
-    "polars[aws,gcp,azure]>=0.44",
+    "polars[aws,gcp,azure]>=1.6,<1.32.3",
 ]
 
 [project.urls]

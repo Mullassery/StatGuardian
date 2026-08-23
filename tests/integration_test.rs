@@ -198,13 +198,15 @@ fn test_health_score_degrades_with_violations() {
     );
 }
 
+/// NOTE: this test does *not* exercise `Engine::execute_streaming` /
+/// `StreamingBatcher` — it only checks that running the batch executor
+/// twice on two halves of a DataFrame gives consistent results. The actual
+/// file-backed streaming path (`StreamingBatcher`, genuinely incremental
+/// reads) is covered by `tests/test_streaming.rs` and by the unit tests in
+/// `crates/statguardian-io/src/lib.rs`.
 #[test]
-fn test_streaming_execution() {
+fn test_batch_executor_consistent_across_manual_splits() {
     let engine = engine_from_dsl(FULL_DSL);
-    // Streaming is file-based; test via the file API if a temp file is available.
-    // Here we just verify the batch executor produces consistent results
-    // by splitting the clean df in half and executing each part.
-
     let df = make_clean_df();
     let batch1 = df.slice(0, 3);
     let batch2 = df.slice(3, 2);

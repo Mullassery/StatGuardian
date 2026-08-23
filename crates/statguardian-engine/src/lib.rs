@@ -44,7 +44,7 @@ impl Engine {
         path: &str,
         batch_size: usize,
     ) -> Result<Vec<ValidationReport>, statguardian_io::IoError> {
-        let mut batcher = statguardian_io::StreamingBatcher::new(path, batch_size);
+        let mut batcher = statguardian_io::StreamingBatcher::new(path, batch_size)?;
         let mut reports = Vec::new();
 
         while let Some(batch) = batcher.next_batch()? {

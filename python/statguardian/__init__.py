@@ -83,6 +83,8 @@ from ._validators import (
     run_custom_validators,
     clear_validators,
     list_validators,
+    merge_violations,
+    MergedReport,
 )
 
 # Parallel multi-file validation
@@ -158,6 +160,8 @@ __all__ = [
     "run_custom_validators",
     "clear_validators",
     "list_validators",
+    "merge_violations",
+    "MergedReport",
     # Parallel multi-file
     "execute_files",
     "execute_files_stream",

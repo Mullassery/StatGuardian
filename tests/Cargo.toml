@@ -20,8 +20,14 @@ path = "test_validators.rs"
 name = "test_security"
 path = "test_security.rs"
 
+[[test]]
+name = "test_streaming"
+path = "test_streaming.rs"
+
 [dev-dependencies]
 statguardian-core    = { path = "../crates/statguardian-core" }
 statguardian-engine  = { path = "../crates/statguardian-engine" }
+statguardian-io      = { path = "../crates/statguardian-io" }
 polars            = { workspace = true }
 serde_json        = { workspace = true }
+tempfile          = "3"

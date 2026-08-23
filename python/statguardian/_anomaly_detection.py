@@ -1,13 +1,14 @@
 """
-ML-based anomaly detection for data quality metrics.
+Statistical anomaly detection for data quality metrics.
 
-Uses statistical methods to detect anomalies in data quality checks,
-reducing false positives by ~70% vs rule-based approaches.
+Uses EWMA (exponential weighted moving average) and seasonal/time-aware
+baselines to flag anomalous metric values, instead of relying solely on
+fixed static thresholds.
 """
 
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 import statistics
 
 
@@ -137,8 +138,14 @@ class AdaptiveThresholdDetector:
 
     def __init__(self, min_observations: int = 7):
         self.min_observations = min_observations
-        self.hourly_history: Dict[int, List[float]] = {h: [] for h in range(24)}
-        self.daily_history: Dict[str, List[float]] = {}  # Mon-Sun patterns
+        # (timestamp, value) pairs, bucketed by hour-of-day, for
+        # business-hours-vs-off-hours comparisons.
+        self.hourly_history: Dict[int, List[Tuple[datetime, float]]] = {h: [] for h in range(24)}
+        # (timestamp, value) pairs per metric, for day-of-week comparisons.
+        # Storing the real timestamp (not just the value) is required to
+        # correctly reconstruct "same day of week" later — see
+        # `detect_seasonal_anomaly`.
+        self.daily_history: Dict[str, List[Tuple[datetime, float]]] = {}
 
     def add_observation(self, metric_name: str, value: float, timestamp: Optional[datetime] = None):
         """Record observation with time context for seasonal analysis."""
@@ -146,19 +153,27 @@ class AdaptiveThresholdDetector:
             timestamp = datetime.now()
 
         hour = timestamp.hour
-        day_name = timestamp.strftime("%A")
 
         if metric_name not in self.daily_history:
             self.daily_history[metric_name] = []
 
-        self.daily_history[metric_name].append(value)
+        self.daily_history[metric_name].append((timestamp, value))
         # Keep last 30 days
         if len(self.daily_history[metric_name]) > 30:
             self.daily_history[metric_name] = self.daily_history[metric_name][-30:]
 
+        self.hourly_history[hour].append((timestamp, value))
+        # Keep last 500 observations per hour bucket, bounded memory.
+        if len(self.hourly_history[hour]) > 500:
+            self.hourly_history[hour] = self.hourly_history[hour][-500:]
+
     def detect_seasonal_anomaly(self, metric_name: str, current_value: float,
                                timestamp: Optional[datetime] = None) -> AnomalyResult:
-        """Detect anomalies considering time-of-day and day-of-week patterns."""
+        """Detect anomalies considering day-of-week patterns.
+
+        For time-of-day (business hours vs off-hours) comparisons, see
+        `detect_hourly_anomaly`.
+        """
         if timestamp is None:
             timestamp = datetime.now()
 
@@ -174,14 +189,17 @@ class AdaptiveThresholdDetector:
             )
 
         history = self.daily_history[metric_name]
-        mean = statistics.mean(history)
-        stdev = statistics.stdev(history) if len(history) > 1 else 0
+        values = [v for _, v in history]
+        mean = statistics.mean(values)
+        stdev = statistics.stdev(values) if len(values) > 1 else 0
 
-        # Simple seasonal adjustment: compare against same day-of-week
+        # Simple seasonal adjustment: compare against same day-of-week,
+        # using each observation's *actual recorded* timestamp (not an
+        # assumption that observations arrive exactly one per day in
+        # strict chronological order).
         day_name = timestamp.strftime("%A")
         same_day_values = [
-            history[i] for i in range(len(history))
-            if (datetime.now() - timedelta(days=i)).strftime("%A") == day_name
+            v for ts, v in history if ts.strftime("%A") == day_name
         ]
 
         if same_day_values:
@@ -207,6 +225,53 @@ class AdaptiveThresholdDetector:
             is_anomaly=is_anomaly,
             confidence=min(1.0, z_score / 5.0),
             reason=f"Seasonal analysis: {day_name} pattern (σ={z_score:.1f})"
+        )
+
+    def detect_hourly_anomaly(self, current_value: float,
+                               timestamp: Optional[datetime] = None) -> AnomalyResult:
+        """Detect anomalies by comparing against the same hour-of-day bucket.
+
+        This is what backs the "business hours vs off-hours" comparison
+        mentioned in the class docstring: values recorded around 14:00 are
+        only compared against other observations also recorded in the
+        14:00 hour, across all metrics fed through `add_observation`.
+        """
+        if timestamp is None:
+            timestamp = datetime.now()
+        hour = timestamp.hour
+
+        bucket = self.hourly_history.get(hour, [])
+        values = [v for _, v in bucket]
+
+        if len(values) < self.min_observations:
+            return AnomalyResult(
+                metric_name=f"hour_{hour}",
+                current_value=current_value,
+                predicted_value=current_value,
+                deviation=0.0,
+                is_anomaly=False,
+                confidence=0.0,
+                reason=f"Insufficient data for hour {hour}"
+            )
+
+        hourly_mean = statistics.mean(values)
+        hourly_stdev = statistics.stdev(values) if len(values) > 1 else 0
+
+        if hourly_stdev == 0:
+            is_anomaly = current_value != hourly_mean
+            z_score = 0
+        else:
+            z_score = abs(current_value - hourly_mean) / hourly_stdev
+            is_anomaly = z_score > 2.5
+
+        return AnomalyResult(
+            metric_name=f"hour_{hour}",
+            current_value=current_value,
+            predicted_value=hourly_mean,
+            deviation=abs(current_value - hourly_mean),
+            is_anomaly=is_anomaly,
+            confidence=min(1.0, z_score / 5.0),
+            reason=f"Hourly analysis: hour {hour} pattern (σ={z_score:.1f})"
         )
 
 

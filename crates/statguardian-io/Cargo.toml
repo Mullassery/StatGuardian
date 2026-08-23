@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-description = "Data ingestion (Parquet, CSV, JSON, Arrow, Avro, ORC, Delta Lake, Iceberg, S3, GCS, Azure, SQL)"
+description = "Data ingestion (Parquet, CSV, JSON, Arrow, Avro, Delta Lake, Iceberg, S3, GCS, Azure, SQL)"
 
 [dev-dependencies]
 tempfile = "3"
@@ -43,6 +43,10 @@ serde          = { workspace = true }
 serde_json     = { workspace = true }
 thiserror      = { workspace = true }
 anyhow         = { workspace = true }
+
+# Used only to drive Polars' `async fn next_batches` on the Parquet batched
+# reader from synchronous code — no full Tokio runtime needed for this.
+futures = { version = "0.3", default-features = false, features = ["std", "executor"] }
 
 # SQL: pure-Rust, MIT/Apache-2.0 — no ODBC/JDBC
 sqlx  = { version = "0.8", default-features = false, features = ["runtime-tokio-rustls", "macros"], optional = true }

@@ -159,7 +159,7 @@ impl PyValidationReport {
             .violations
             .iter()
             .map(|v| {
-                let d = PyDict::new(py);
+                let d = PyDict::new_bound(py);
                 d.set_item("column", &v.column)?;
                 d.set_item("check", &v.check)?;
                 d.set_item("message", &v.message)?;
@@ -177,7 +177,7 @@ impl PyValidationReport {
             .drift_results
             .iter()
             .map(|r| {
-                let d = PyDict::new(py);
+                let d = PyDict::new_bound(py);
                 d.set_item("column", &r.column)?;
                 d.set_item("stat", &r.stat)?;
                 d.set_item("reference_value", r.reference_value)?;
@@ -198,7 +198,7 @@ impl PyValidationReport {
             .column_profiles
             .iter()
             .map(|p| {
-                let d = PyDict::new(py);
+                let d = PyDict::new_bound(py);
                 d.set_item("name", &p.name)?;
                 d.set_item("dtype", &p.dtype)?;
                 d.set_item("row_count", p.row_count)?;
@@ -418,7 +418,7 @@ fn list_iceberg_snapshots(table_path: &str, py: Python<'_>) -> PyResult<Vec<PyOb
     snapshots
         .iter()
         .map(|s| {
-            let d = PyDict::new(py);
+            let d = PyDict::new_bound(py);
             d.set_item("snapshot_id", s.snapshot_id)?;
             d.set_item("timestamp_ms", s.timestamp_ms)?;
             d.set_item("parent_snapshot_id", s.parent_snapshot_id)?;

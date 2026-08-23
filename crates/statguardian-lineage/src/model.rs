@@ -94,10 +94,7 @@ impl LineageNode {
 
     /// Full qualified name for this table
     pub fn qualified_name(&self) -> String {
-        format!(
-            "{}.{}.{}",
-            self.database, self.schema_name, self.table_name
-        )
+        format!("{}.{}.{}", self.database, self.schema_name, self.table_name)
     }
 
     /// Unique key for caching/lookup
@@ -283,11 +280,7 @@ pub struct LineageVersion {
 }
 
 impl LineageVersion {
-    pub fn new(
-        warehouse_id: String,
-        version_number: u32,
-        lineage_graph: LineageGraph,
-    ) -> Self {
+    pub fn new(warehouse_id: String, version_number: u32, lineage_graph: LineageGraph) -> Self {
         Self {
             version_id: format!("{}__v{}", warehouse_id, version_number),
             lineage_graph,
@@ -337,11 +330,7 @@ pub struct LineageChange {
 }
 
 impl LineageChange {
-    pub fn new(
-        change_type: ChangeType,
-        source_table: String,
-        severity: ChangeSeverity,
-    ) -> Self {
+    pub fn new(change_type: ChangeType, source_table: String, severity: ChangeSeverity) -> Self {
         Self {
             change_type,
             source_table,
@@ -798,11 +787,7 @@ mod tests {
             "table".to_string(),
         );
 
-        node.columns = vec![
-            "id".to_string(),
-            "name".to_string(),
-            "email".to_string(),
-        ];
+        node.columns = vec!["id".to_string(), "name".to_string(), "email".to_string()];
         node.row_count = Some(1_000_000);
 
         assert_eq!(node.columns.len(), 3);
