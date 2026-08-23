@@ -68,7 +68,7 @@ dev = [
 ]
 
 # Data frame conversion
-pandas = ["pandas==2.1.0", "pyarrow==14.0.1"]
+pandas = ["pandas==2.3.3", "pyarrow==14.0.1"]
 
 # SQL databases (PostgreSQL, MySQL, SQLite, BigQuery, Snowflake, etc.)
 # Note: psycopg2 adds LGPL-2.1 dependency for PostgreSQL support
@@ -107,7 +107,7 @@ airflow = ["apache-airflow>=2.0"]  # Roadmap
 
 # All optional extras
 all = [
-    "pandas==2.1.0",
+    "pandas==2.3.3",
     "pyarrow==14.0.1",
     "connectorx>=0.3",
     "psycopg2-binary>=2.9",
