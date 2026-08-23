@@ -95,7 +95,7 @@ for d in report.drift_results():
 - Duplicate detection
 
 **Framework Support**
-- Pandas DataFrames
+- Pandas DataFrames (convert with `pl.from_pandas(df)` before calling `execute()` — see Known Issues)
 - Polars DataFrames (native)
 - Delta Lake tables (time-travel validation)
 - Apache Iceberg tables (snapshot validation)
@@ -188,6 +188,7 @@ pytest
 
 ## Known Issues
 
+- `execute()` accepts a Polars DataFrame, not a raw pandas DataFrame. Passing a pandas DataFrame directly raises an unhelpful `AttributeError` (verified against the current build) rather than converting automatically — call `pl.from_pandas(df)` first. The `pandas` extra is used by the SQL/Spark/GPU connectors internally, which already do this conversion for you.
 - Performance numbers are not yet published as a reproducible, checked-in benchmark result — `docs/bench/benchmark.py` exists but its output has never been committed. Treat any speed claims (including from this project) as unverified until you've run the benchmark yourself.
 - `docs/ROADMAP.md`, `docs/ROADMAP_HONEST.md`, and `docs/ROADMAP_INTEGRATED.md` currently overlap and are not kept in sync — some content in `ROADMAP_HONEST.md` predates features (e.g. Iceberg support) that have since shipped. Treat `docs/SECURITY_AUDIT.md` as the current source of truth for security status; the roadmap docs need consolidation.
 - SQL connector extras (`connectorx`, `psycopg2-binary`, cloud warehouse drivers) use floating minimum versions rather than pinned versions — see `docs/SECURITY_AUDIT.md` for the rationale and tradeoffs.
