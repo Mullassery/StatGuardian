@@ -146,6 +146,19 @@ dataset events {
 report = statguardian.execute(contract, df)
 ```
 
+**Custom Python validators + merging with a contract report**
+```python
+@statguardian.validator(column="amount", severity="blocking")
+def amount_is_sane(values):
+    bad_rows = [i for i, v in enumerate(values) if v > 1_000_000]
+    return (bad_rows, "amount over 1,000,000") if bad_rows else None
+
+report = statguardian.execute(contract, df)
+extra = statguardian.run_custom_validators(df)
+merged = statguardian.merge_violations(report, extra)
+print(merged.summary())
+```
+
 ## API Reference
 
 **Core**
@@ -161,6 +174,12 @@ report = statguardian.execute(contract, df)
 - `.passed`, `.health_score`, `.grade`, `.violation_count`
 - `.violations()`, `.drift_results()`, `.column_profiles()`
 - `.summary()`, `.to_json()`, `.to_prometheus()`
+
+**Custom validators**
+
+- `validator(column=...)` — register a Python function as a custom check
+- `run_custom_validators(df)` — run registered validators, returns violation dicts
+- `merge_violations(report, extra_violations) -> MergedReport` — combine a `ValidationReport` with custom-validator violations into one pass/fail result
 
 Full CLI usage: [docs/CLI.md](docs/CLI.md). DSL syntax: see `examples/*.sg`.
 
