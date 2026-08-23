@@ -89,6 +89,9 @@ sql = [
     "sqlalchemy==2.0.23",           # SQLAlchemy dialect support
 ]
 
+# dbt integration (statguardian dbt validate) — see integrations/dbt-statguardian/
+dbt = ["pyyaml>=6.0", "sqlalchemy==2.0.23", "connectorx>=0.3"]
+
 # Cloud storage (S3, GCS, Azure)
 cloud = ["polars[aws,gcp,azure]>=0.44"]
 
@@ -110,6 +113,7 @@ all = [
     "psycopg2-binary>=2.9",
     "pymysql>=1.0",
     "sqlalchemy==2.0.23",
+    "pyyaml>=6.0",
     "google-cloud-bigquery>=3.0",
     "snowflake-connector-python>=3.0",
     "amazon-redshift-python-driver>=1.0",

@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: stg_statguardian__run_results
+    description: One row per model/seed/snapshot per dbt invocation, captured by the `statguardian.on_run_end()` hook.
+    columns:
+      - name: unique_id
+        description: dbt unique_id of the node (e.g. model.my_project.orders).
+      - name: status
+        description: dbt result status (success, error, skipped, ...).
+
+  - name: stg_statguardian__test_results
+    description: One row per dbt test per invocation, captured by the `statguardian.on_run_end()` hook.
+    columns:
+      - name: unique_id
+        description: dbt unique_id of the test node.
+      - name: model_unique_id
+        description: unique_id of the model the test runs against.
+
+  - name: stg_statguardian__contract_validations
+    description: >
+      One row per StatGuard contract check, written by `statguardian dbt
+      validate --write-results` (the companion Python CLI) — not by dbt
+      itself, since dbt cannot invoke the StatGuard engine directly.
+    columns:
+      - name: unique_id
+        description: dbt unique_id of the validated model.
+      - name: passed
+        description: Whether the contract passed on this validation run.
+      - name: health_score
+        description: StatGuard health score (0.0-1.0) for this run.
+
+  - name: statguardian_contract_summary
+    description: Latest contract validation result per model, joined with the model's last dbt build time.
+    columns:
+      - name: unique_id
+        tests:
+          - unique
+      - name: passed
+        description: Whether the most recent contract validation passed.

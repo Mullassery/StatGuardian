@@ -1,0 +1,12 @@
+dataset orders {
+    schema {
+        order_id:    string, not_null, unique
+        customer_id: string, not_null
+        amount:      float,  positive
+        status:      string, not_null, enum=["pending","paid","cancelled","refunded"]
+    }
+
+    quality {
+        @blocking: completeness(order_id) > 0.999
+    }
+}

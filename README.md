@@ -164,6 +164,20 @@ report = statguardian.execute(contract, df)
 
 Full CLI usage: [docs/CLI.md](docs/CLI.md). DSL syntax: see `examples/*.sg`.
 
+## dbt Integration
+
+Run StatGuard contracts against your dbt models as part of `dbt build`,
+and surface pass/fail as a native dbt test — see
+[integrations/dbt-statguardian](integrations/dbt-statguardian) and
+[docs/DBT_INTEGRATION.md](docs/DBT_INTEGRATION.md).
+
+```bash
+pip install "statguardian[dbt]"
+dbt build
+statguardian dbt validate --project-dir . --write-results
+dbt test
+```
+
 ## Installation
 
 ```bash
@@ -181,6 +195,7 @@ pytest
 ## Documentation
 
 - [CLI Reference](docs/CLI.md)
+- [dbt Integration](docs/DBT_INTEGRATION.md)
 - [Security Audit](docs/SECURITY_AUDIT.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Examples](examples/)

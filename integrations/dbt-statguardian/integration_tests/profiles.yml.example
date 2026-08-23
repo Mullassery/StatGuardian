@@ -1,0 +1,8 @@
+# Copy to ~/.dbt/profiles.yml (or set DBT_PROFILES_DIR to this directory)
+# for running the integration tests locally.
+statguardian_integration_tests:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "statguardian_integration_tests.duckdb"

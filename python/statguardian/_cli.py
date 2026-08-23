@@ -75,12 +75,50 @@ def main() -> None:
         help="Path to .sg DSL contract file"
     )
 
+    # statguardian dbt
+    dbt = sub.add_parser(
+        "dbt",
+        help="Validate dbt models against StatGuard contracts",
+        description="Companion CLI for integrations/dbt-statguardian/. Reads a compiled "
+                     "dbt project's manifest.json and runs StatGuard contracts against "
+                     "models tagged with meta.statguardian_contract."
+    )
+    dbt_sub = dbt.add_subparsers(dest="dbt_command")
+
+    dbt_validate = dbt_sub.add_parser(
+        "validate",
+        help="Run StatGuard contracts against contracted dbt models",
+    )
+    dbt_validate.add_argument("--project-dir", default=".", metavar="PATH",
+                               help="dbt project directory (default: current directory)")
+    dbt_validate.add_argument("--profiles-dir", default=None, metavar="PATH",
+                               help="Directory containing profiles.yml (default: $DBT_PROFILES_DIR or ~/.dbt)")
+    dbt_validate.add_argument("--profile", default=None,
+                               help="Profile name (default: read from dbt_project.yml)")
+    dbt_validate.add_argument("--target", default=None,
+                               help="Target name (default: profile's default target)")
+    dbt_validate.add_argument("--write-results", action="store_true",
+                               help="Write results into <schema>_statguardian.contract_validations "
+                                    "so dbt's statguardian.contract_passed test can see them")
+    dbt_validate.add_argument("--results-schema", default=None,
+                               help="Override the schema results are written to "
+                                    "(default: <target schema>_statguardian)")
+    dbt_validate.add_argument("--fail-on-warning", action="store_true",
+                               help="Exit non-zero if any violation found, not just contract failures")
+
     args = parser.parse_args()
 
     if args.command == "check":
         _cmd_check(args)
     elif args.command == "validate":
         _cmd_validate(args)
+    elif args.command == "dbt":
+        if args.dbt_command == "validate":
+            from statguardian._dbt import cmd_dbt_validate
+            cmd_dbt_validate(args)
+        else:
+            dbt.print_help()
+            sys.exit(1)
     else:
         parser.print_help()
         sys.exit(1)

@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: orders
+    config:
+      meta:
+        statguardian_contract: "contracts/orders.sg"
+    tests:
+      - statguardian.contract_passed
+      - statguardian.contract_recently_validated:
+          arguments:
+            max_age_hours: 24

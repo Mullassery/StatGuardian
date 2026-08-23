@@ -1,0 +1,7 @@
+target/
+dbt_packages/
+package-lock.yml
+logs/
+*.duckdb
+.user.yml
+integration_tests/profiles.yml

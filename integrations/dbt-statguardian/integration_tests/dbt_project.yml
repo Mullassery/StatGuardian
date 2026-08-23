@@ -1,0 +1,14 @@
+name: statguardian_integration_tests
+version: "1.0.0"
+config-version: 2
+profile: statguardian_integration_tests
+
+model-paths: ["models"]
+
+on-run-start:
+  - "{{ statguardian.on_run_start() }}"
+on-run-end:
+  - "{{ statguardian.on_run_end() }}"
+
+vars:
+  statguardian_schema: "statguardian_test"
