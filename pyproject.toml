@@ -68,7 +68,7 @@ dev = [
 ]
 
 # Data frame conversion
-pandas = ["pandas==2.1.0", "pyarrow==14.0.1"]
+pandas = ["pandas==2.1.0", "pyarrow==25.0.0"]
 
 # SQL databases (PostgreSQL, MySQL, SQLite, BigQuery, Snowflake, etc.)
 # Note: psycopg2 adds LGPL-2.1 dependency for PostgreSQL support
@@ -96,7 +96,7 @@ dbt = ["pyyaml>=6.0", "sqlalchemy==2.0.23", "connectorx>=0.3"]
 cloud = ["polars[aws,gcp,azure]>=0.44"]
 
 # Apache Spark
-spark = ["pyspark>=3.0", "pyarrow==14.0.1"]
+spark = ["pyspark>=3.0", "pyarrow==25.0.0"]
 
 # Streaming (planned)
 kafka = ["confluent-kafka>=2.0"]  # Roadmap
@@ -108,7 +108,7 @@ airflow = ["apache-airflow>=2.0"]  # Roadmap
 # All optional extras
 all = [
     "pandas==2.1.0",
-    "pyarrow==14.0.1",
+    "pyarrow==25.0.0",
     "connectorx>=0.3",
     "psycopg2-binary>=2.9",
     "pymysql>=1.0",
