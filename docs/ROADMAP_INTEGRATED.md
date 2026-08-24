@@ -105,6 +105,7 @@ Response Quality
    - Quality metrics as OTEL spans
    - Integration with Datadog, Grafana, Honeycomb
    - Trace-based quality scoring
+   - External critique confirmed this gap in current code: the only metrics surface today is a hand-rolled Prometheus text exporter (`crates/statguardian-metrics/src/report.rs` `to_prometheus()`, string-built, piped to a Pushgateway per `docs/CLI.md`) — no `opentelemetry` crate dependency anywhere. When this lands, deprecate/wrap `to_prometheus()` rather than maintaining it long-term as a second, duplicate metrics path. (Alert-threshold tuning is not a gap — every rule already carries a configurable `threshold`/`severity` in the DSL, `ast.rs`.)
 
 2. **Quality Lineage** (audit trail)
    - Track which quality checks passed/failed
