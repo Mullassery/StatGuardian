@@ -42,6 +42,26 @@ since it's shared across all SQL extras.
 for known CVEs — now covered by `cargo audit` in CI (Rust side) and should be
 paired with a `pip-audit` run before each release (manual, not yet automated).
 
+**Update, 2026-09-11 — `cargo audit` in CI is currently failing, unaddressed.**
+The safety net above is running but not being kept green: `cargo audit`
+against the current `Cargo.lock` reports real advisories in transitive
+dependencies, including two **HIGH severity (7.5)** findings in `quick-xml`
+0.36.2 (`RUSTSEC-2026-0195`, memory-exhaustion DoS via unbounded namespace-
+declaration allocation; `RUSTSEC-2026-0194`, quadratic runtime on duplicate-
+attribute checks — fix: upgrade to >=0.41.0), plus lower-severity/unfixed
+findings in `pyo3` 0.21.2 (buffer-overflow risk, `RUSTSEC-2025-0020`; missing
+`Sync` bound, `RUSTSEC-2026-0177` — fixes need pyo3 >=0.24.1/>=0.29.0, both
+likely-breaking major bumps for this crate's PyO3 bindings), `rsa` 0.9.10
+(timing side-channel, `RUSTSEC-2023-0071`, no fixed upgrade available yet),
+`rustls-webpki` 0.101.7 (three advisories, fixes need >=0.103.x), `memmap2`
+0.7.1 and `fast-float` 0.2.0 (unsound, no fixed release for fast-float), and
+a yanked `chacha20` 0.10.1. None have been remediated in this pass — `cargo
+update` alone doesn't reach them (they're pinned by direct-dependency semver
+ranges), and several fixes require major-version bumps risking breaking
+changes to this crate's own API, which is a bigger, separate piece of work
+than this audit pass. Status of item 2 above should be read as "CI-monitored,
+not currently clean," not "closed."
+
 ### 3. Environment Variable Secrets
 **Location:** `python/statguardian/_connectors.py`, `docs/SECURITY.md`
 **Status:** Closed — guidance exists.
