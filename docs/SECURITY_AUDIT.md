@@ -42,25 +42,59 @@ since it's shared across all SQL extras.
 for known CVEs — now covered by `cargo audit` in CI (Rust side) and should be
 paired with a `pip-audit` run before each release (manual, not yet automated).
 
-**Update, 2026-09-11 — `cargo audit` in CI is currently failing, unaddressed.**
-The safety net above is running but not being kept green: `cargo audit`
-against the current `Cargo.lock` reports real advisories in transitive
-dependencies, including two **HIGH severity (7.5)** findings in `quick-xml`
-0.36.2 (`RUSTSEC-2026-0195`, memory-exhaustion DoS via unbounded namespace-
-declaration allocation; `RUSTSEC-2026-0194`, quadratic runtime on duplicate-
-attribute checks — fix: upgrade to >=0.41.0), plus lower-severity/unfixed
-findings in `pyo3` 0.21.2 (buffer-overflow risk, `RUSTSEC-2025-0020`; missing
-`Sync` bound, `RUSTSEC-2026-0177` — fixes need pyo3 >=0.24.1/>=0.29.0, both
-likely-breaking major bumps for this crate's PyO3 bindings), `rsa` 0.9.10
-(timing side-channel, `RUSTSEC-2023-0071`, no fixed upgrade available yet),
-`rustls-webpki` 0.101.7 (three advisories, fixes need >=0.103.x), `memmap2`
-0.7.1 and `fast-float` 0.2.0 (unsound, no fixed release for fast-float), and
-a yanked `chacha20` 0.10.1. None have been remediated in this pass — `cargo
-update` alone doesn't reach them (they're pinned by direct-dependency semver
-ranges), and several fixes require major-version bumps risking breaking
-changes to this crate's own API, which is a bigger, separate piece of work
-than this audit pass. Status of item 2 above should be read as "CI-monitored,
-not currently clean," not "closed."
+**Update, 2026-09-11 — `cargo audit` in CI was failing, unaddressed.**
+The safety net above was running but not being kept green: `cargo audit`
+against `Cargo.lock` at the time reported 10 real advisories (plus 6
+warnings) in transitive dependencies, including two **HIGH severity (7.5)**
+findings in `quick-xml` 0.36.2, plus findings in `pyo3` 0.21.2, `rsa` 0.9.10,
+`rustls-webpki` 0.101.7, `sqlx` 0.8.0 itself, `memmap2` 0.7.1, `fast-float`
+0.2.0, a yanked `chacha20` 0.10.1, and unmaintained `paste`/`rustls-pemfile`.
+
+**Update, 2026-09-13 — 5 of 10 vulnerabilities + 3 of 6 warnings fixed.**
+Upgraded `sqlx` 0.8→0.9 (fixes its own advisory outright, and — more
+importantly — made the `mysql-rsa` feature opt-in separately from the base
+`mysql` feature; since this crate never needed the RSA-based legacy MySQL
+auth plugin, upgrading eliminated the vulnerable `rsa` crate — Marvin Attack
+timing side-channel, `RUSTSEC-2023-0071`, no fixed upgrade ever existed —
+from the dependency graph entirely, not just patched around it). That pulled
+a patched `rustls-webpki` 0.103.15 (fixing all 3 of its advisories) and
+dropped the unmaintained `paste` crate. Separately bumped `rusqlite` 0.31→
+0.37 (required to resolve a native-library-linkage conflict between
+`sqlx-sqlite` 0.9's and `rusqlite`'s `libsqlite3-sys` version ranges — both
+link the system `sqlite3` library, so Cargo requires exactly one version)
+and `chacha20` 0.10.1→0.10.2 (0.10.1 was yanked). `sqlx` 0.9's breaking API
+change to `Database::Arguments` (dropped its lifetime parameter) and its new
+`AssertSqlSafe` opt-in for non-`'static` query strings both required small,
+verified source changes in `statguardian-io/src/sql.rs` — the latter is a
+correct use, not a safety regression: these functions' whole contract is
+"run the caller-supplied SQL," the same trust boundary that existed before.
+
+**Remaining, not fixed — needs dedicated follow-up, not a quick fix:**
+`pyo3` 0.21.2 (2 advisories: `RUSTSEC-2025-0020` buffer-overflow risk needs
+>=0.24.1; `RUSTSEC-2026-0177` missing `Sync` bound needs >=0.29.0),
+`quick-xml` 0.36.2 (2 **HIGH (7.5)** advisories, needs >=0.41.0), `fast-float`
+0.2.0 (segfault risk + separately-tracked unsound warning, no fixed release
+exists), `memmap2` 0.7.1 (unsound warning), and `rustls-pemfile` 2.2.0
+(unmaintained warning). All five of the vulnerabilities trace back to one
+root cause: `pyo3-polars` 0.18.0 pins `pyo3 ^0.21` and `polars ^0.44.0`
+exactly, and quick-xml/fast-float/memmap2 are pulled in transitively through
+that same pinned `polars` 0.44.x. **Attempted the full upgrade** (`polars`
+0.44→0.55, `pyo3-polars` 0.18→0.28, `pyo3` 0.21→0.29 — the versions needed to
+clear every remaining advisory at once) and hit substantial, real API
+breakage: `DataFrame::new`'s signature changed (now takes an explicit
+`height: usize` alongside columns), `DataFrame::get_columns()` was renamed,
+`Series` was replaced by a new `Column` type in several APIs,
+`LazyFrame::scan_parquet`/`LazyCsvReader::new`/`LazyJsonLineReader::new`/
+`LazyFrame::scan_ipc` all changed their path argument type and `scan_ipc`'s
+whole signature, and `CsvReader`/`ParquetReader`'s `.batched()` method was
+removed/restructured — spanning `statguardian-io/src/{sql,cloud,lib}.rs` and
+`statguardian-stats/src/profiler.rs`. This is genuine, non-mechanical
+migration work (correctly handling the `Series`→`Column` change alone touches
+null-handling semantics) that deserves its own dedicated pass with full test
+coverage, not a rushed patch during a dependency-audit sweep — reverted
+rather than risk silently-wrong data-loading behavior. Status of item 2
+should be read as "significantly improved, CI-monitored, not yet fully
+clean" — not "closed."
 
 ### 3. Environment Variable Secrets
 **Location:** `python/statguardian/_connectors.py`, `docs/SECURITY.md`
