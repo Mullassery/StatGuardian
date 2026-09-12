@@ -49,5 +49,5 @@ anyhow         = { workspace = true }
 futures = { version = "0.3", default-features = false, features = ["std", "executor"] }
 
 # SQL: pure-Rust, MIT/Apache-2.0 — no ODBC/JDBC
-sqlx  = { version = "0.8", default-features = false, features = ["runtime-tokio-rustls", "macros"], optional = true }
+sqlx  = { version = "0.9", default-features = false, features = ["runtime-tokio", "tls-rustls", "macros"], optional = true }
 tokio = { version = "1", features = ["rt-multi-thread", "macros"], optional = true }

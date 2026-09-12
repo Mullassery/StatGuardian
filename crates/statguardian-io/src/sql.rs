@@ -203,8 +203,8 @@ async fn fetch_to_dataframe<'c, DB, E>(executor: E, query: &str) -> Result<DataF
 where
     DB: sqlx::Database,
     E: sqlx::Executor<'c, Database = DB> + Copy,
-    for<'r> sqlx::query::Query<'r, DB, DB::Arguments<'r>>: sqlx::Execute<'r, DB>,
-    for<'q> <DB as sqlx::Database>::Arguments<'q>: sqlx::IntoArguments<'q, DB>,
+    for<'r> sqlx::query::Query<'r, DB, DB::Arguments>: sqlx::Execute<'r, DB>,
+    DB::Arguments: sqlx::IntoArguments<DB>,
     for<'r> String: sqlx::Decode<'r, DB> + sqlx::Type<DB>,
     usize: sqlx::ColumnIndex<DB::Row>,
 {
@@ -212,7 +212,13 @@ where
     // without its name shadowing `polars::prelude::Column` used below.
     use sqlx::{Column as _, Row};
 
-    let rows: Vec<DB::Row> = sqlx::query(query).fetch_all(executor).await?;
+    // The caller supplies the full SQL statement to run (this function's whole purpose,
+    // same trust boundary as any "execute this SQL" API) - not a dynamically concatenated
+    // fragment - so AssertSqlSafe is the correct, intended way to satisfy sqlx 0.9's new
+    // opt-in for non-'static query strings, not a weakening of any safety guarantee.
+    let rows: Vec<DB::Row> = sqlx::query(sqlx::AssertSqlSafe(query))
+        .fetch_all(executor)
+        .await?;
     if rows.is_empty() {
         return Ok(DataFrame::default());
     }

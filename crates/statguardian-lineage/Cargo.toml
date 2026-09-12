@@ -17,6 +17,6 @@ anyhow = { workspace = true }
 log = { workspace = true }
 
 # Database
-rusqlite = { version = "0.31", features = ["bundled", "chrono", "uuid"] }
+rusqlite = { version = "0.37", features = ["bundled", "chrono", "uuid"] }
 
 [dev-dependencies]
