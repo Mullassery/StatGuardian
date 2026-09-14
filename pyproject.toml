@@ -145,11 +145,11 @@ sql = [
     "connectorx>=0.3",
     "psycopg2-binary>=2.9",      # PostgreSQL — LGPL-2.1
     "pymysql>=1.0",
-    "sqlalchemy==2.0.23",           # SQLAlchemy dialect support
+    "sqlalchemy==2.0.52",           # SQLAlchemy dialect support
 ]
 
 # dbt integration (statguardian dbt validate) — see integrations/dbt-statguardian/
-dbt = ["pyyaml>=6.0", "sqlalchemy==2.0.23", "connectorx>=0.3"]
+dbt = ["pyyaml>=6.0", "sqlalchemy==2.0.52", "connectorx>=0.3"]
 
 # Cloud storage (S3, GCS, Azure)
 # Version range matches the base `polars` dependency above — see the
@@ -174,7 +174,7 @@ all = [
     "connectorx>=0.3",
     "psycopg2-binary>=2.9",
     "pymysql>=1.0",
-    "sqlalchemy==2.0.23",
+    "sqlalchemy==2.0.52",
     "pyyaml>=6.0",
     "google-cloud-bigquery>=3.0",
     "snowflake-connector-python>=3.0",
