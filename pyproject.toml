@@ -85,7 +85,7 @@ dependencies    = [
     #    version number that was mistakenly copied in as if it were a
     #    PyPI version; PyPI's polars has no 0.4x series at all, it jumps
     #    from 0.20.x straight to 1.0.0.)
-    "polars>=1.6,<1.32.3",
+    "polars>=1.6,<1.44.3",
     # Required, not optional: with pyo3-polars 0.18 (see above), every
     # `execute()` call — including on a purely numeric DataFrame with no
     # string columns — round-trips through Python's `Series.to_arrow()`,
@@ -155,7 +155,7 @@ dbt = ["pyyaml>=6.0", "sqlalchemy==2.0.23", "connectorx>=0.3"]
 # Version range matches the base `polars` dependency above — see the
 # comment there for why (must stay compatible with the compiled
 # extension's pyo3-polars 0.18).
-cloud = ["polars[aws,gcp,azure]>=1.6,<1.32.3"]
+cloud = ["polars[aws,gcp,azure]>=1.6,<1.44.3"]
 
 # Apache Spark
 spark = ["pyspark>=3.0"]  # pyarrow is a base dependency, see above
@@ -184,7 +184,7 @@ all = [
     "duckdb>=0.8",
     "trino>=0.20",
     "pyspark>=3.0",
-    "polars[aws,gcp,azure]>=1.6,<1.32.3",
+    "polars[aws,gcp,azure]>=1.6,<1.44.3",
 ]
 
 [project.urls]
