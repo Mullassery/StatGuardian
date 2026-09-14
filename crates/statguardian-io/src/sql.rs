@@ -237,13 +237,14 @@ where
         }
     }
 
+    let height = rows.len();
     let series: Vec<Column> = col_names
         .iter()
         .zip(columns)
         .map(|(name, vals)| Series::new((*name).into(), vals).into_column())
         .collect();
 
-    DataFrame::new(series)
+    DataFrame::new(height, series)
         .map_err(|e| sqlx::Error::Decode(Box::new(std::io::Error::other(e.to_string()))))
 }
 

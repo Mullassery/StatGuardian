@@ -8,11 +8,17 @@
 /// an N-batch stream, and no bound on memory (every batch held the whole
 /// file's DataFrame in memory, not just its own rows).
 ///
-/// The fix makes `StreamingBatcher` open the CSV/Parquet source exactly
-/// once (via Polars' native mmap-backed batched readers) and advance a
-/// cursor forward through that single mapping. These tests prove that
-/// end-to-end through the public `Engine::execute_streaming` API, not just
-/// at the `statguardian-io` unit level:
+/// The original fix made `StreamingBatcher` open the CSV/Parquet source
+/// exactly once via Polars' native mmap-backed batched readers
+/// (`OwnedBatchedCsvReader` / `BatchedParquetReader`) and advance a cursor
+/// forward through that single mapping — genuinely bounded per-batch memory.
+/// Polars 0.55 removed that public pull-based batched-reader API entirely
+/// (see `statguardian-io/src/lib.rs`'s `StreamingBatcher` doc comment), so
+/// `StreamingBatcher` now falls back to reading the file once, caching the
+/// whole `DataFrame`, and slicing per batch — still exactly one read for the
+/// whole session (not once per batch), but no longer bounded-memory. These
+/// tests prove, end-to-end through the public `Engine::execute_streaming`
+/// API, not just at the `statguardian-io` unit level:
 ///
 ///   1. Streaming a file in batches produces the same total row count and
 ///      the same violations as processing it as one whole file.
@@ -23,8 +29,9 @@
 ///      the fix it should cost a small constant-factor overhead on top of
 ///      one read, comfortably under that.
 ///   3. Individual batches stay small (bounded by `batch_size`) even late
-///      in a large file — i.e. memory per batch does not grow as more of
-///      the file has already been streamed through.
+///      in a large file — i.e. no single batch DataFrame balloons to the
+///      whole file's row count, even though the underlying cache does hold
+///      the whole file now.
 use statguardian_core::parse_and_compile;
 use statguardian_engine::Engine;
 use statguardian_io::{DataReader, StreamingBatcher};
@@ -95,8 +102,9 @@ fn execute_streaming_batches_are_bounded_by_batch_size_throughout_the_file() {
     let batch_size = 1_000usize;
     let mut batcher = StreamingBatcher::new(path_str, batch_size).unwrap();
     assert!(
-        batcher.is_bounded_memory(),
-        "CSV should use the genuinely incremental path"
+        !batcher.is_bounded_memory(),
+        "Polars 0.55 has no public incremental CSV reader; StreamingBatcher \
+         must report the honest materialized-fallback state"
     );
 
     let mut n_batches = 0usize;

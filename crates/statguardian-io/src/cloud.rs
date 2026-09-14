@@ -84,7 +84,7 @@ impl CloudReader {
 
     /// Read Parquet from cloud (supports glob patterns and partitioned datasets).
     pub fn read_parquet(uri: &str) -> IoResult<DataFrame> {
-        LazyFrame::scan_parquet(uri, ScanArgsParquet::default())
+        LazyFrame::scan_parquet(uri.into(), ScanArgsParquet::default())
             .map_err(|e| IoError::ReadError {
                 path: uri.to_string(),
                 msg: e.to_string(),
@@ -95,7 +95,7 @@ impl CloudReader {
 
     /// Read CSV from cloud.
     pub fn read_csv(uri: &str) -> IoResult<DataFrame> {
-        LazyCsvReader::new(uri)
+        LazyCsvReader::new(uri.into())
             .with_infer_schema_length(Some(1000))
             .finish()
             .map_err(|e| IoError::ReadError {
@@ -108,7 +108,7 @@ impl CloudReader {
 
     /// Read newline-delimited JSON (NDJSON) from cloud.
     pub fn read_ndjson(uri: &str) -> IoResult<DataFrame> {
-        LazyJsonLineReader::new(uri)
+        LazyJsonLineReader::new(uri.into())
             .finish()
             .map_err(|e| IoError::ReadError {
                 path: uri.to_string(),
@@ -120,7 +120,7 @@ impl CloudReader {
 
     /// Read Arrow IPC from cloud.
     pub fn read_ipc(uri: &str) -> IoResult<DataFrame> {
-        LazyFrame::scan_ipc(uri, ScanArgsIpc::default())
+        LazyFrame::scan_ipc(uri.into(), IpcScanOptions::default(), UnifiedScanArgs::default())
             .map_err(|e| IoError::ReadError {
                 path: uri.to_string(),
                 msg: e.to_string(),

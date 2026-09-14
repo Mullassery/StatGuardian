@@ -76,6 +76,11 @@ mod tests {
     use super::*;
     use polars::prelude::*;
     use statguardian_core::parse_and_compile;
+    // `polars::prelude` gained its own `Engine` enum (query-execution engine
+    // selector); this crate's `Engine` struct predates that and is the one
+    // these tests mean — a non-glob import wins over the two glob imports
+    // above and resolves the ambiguity.
+    use super::Engine;
 
     fn make_users_df() -> DataFrame {
         df!(

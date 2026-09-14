@@ -8,7 +8,6 @@ pub use delta::DeltaReader;
 pub use iceberg::{IcebergDataFile, IcebergReader, SnapshotInfo};
 pub use sql::{SqlBackend, SqlReader};
 
-use polars::io::mmap::MmapBytesReader;
 use polars::prelude::*;
 use std::path::Path;
 use thiserror::Error;
@@ -112,10 +111,10 @@ impl DataReader {
     }
 
     pub fn read_csv(path: &str) -> IoResult<DataFrame> {
+        let file = open(path)?;
         CsvReadOptions::default()
             .with_infer_schema_length(Some(1000))
-            .try_into_reader_with_file_path(Some(path.into()))
-            .map_err(IoError::Polars)?
+            .into_reader_with_file_handle(file)
             .finish()
             .map_err(IoError::Polars)
     }
@@ -163,152 +162,72 @@ impl DataReader {
 /// Streaming-friendly record batcher — yields DataFrames of up to
 /// `batch_size` rows at a time.
 ///
-/// # Genuinely incremental for CSV and Parquet
+/// # No incremental reader available (Polars 0.55)
 ///
-/// For CSV and Parquet — StatGuard's two primary large-file formats — this
-/// performs real single-pass, bounded-memory reads: the file is opened and
-/// memory-mapped **exactly once**, in [`StreamingBatcher::new`], using
-/// Polars' native batched readers (`OwnedBatchedCsvReader` /
-/// `BatchedParquetReader`). Each call to [`next_batch`](Self::next_batch)
-/// advances a cursor forward through that single mapping and materializes
-/// only the current batch's rows — the file is never re-opened, re-read, or
-/// re-parsed from the start on subsequent calls, and resident memory scales
-/// with `batch_size`, not with file size. See
-/// `statguardian-io/tests/streaming_is_incremental.rs` for a test that
-/// counts actual `read`/`open` syscalls against the source file and asserts
-/// there is exactly one open, plus a large-file test that bounds peak batch
-/// memory independent of total file size.
+/// Polars removed its public pull-based batched readers (the old
+/// `OwnedBatchedCsvReader` / `BatchedParquetReader` API) from `polars-io`
+/// once its internal streaming query engine took over chunked execution;
+/// there is no longer a public, stable API in this dependency stack for
+/// reading a CSV or Parquet file incrementally row-group-by-row-group from a
+/// single held-open handle. Reimplementing that from scratch (raw CSV/Parquet
+/// chunk parsing) is out of scope for this dependency upgrade.
 ///
-/// # Fallback for other formats
-///
-/// Formats without a native incremental/batched reader available in this
-/// crate's dependency stack (plain JSON arrays, Arrow IPC, Avro, ORC, Delta,
-/// Iceberg, SQL query results, cloud URIs) fall back to reading the file
-/// **once**, on the first call to `next_batch()`, caching the resulting
-/// `DataFrame` and slicing it per batch thereafter. This is not
-/// bounded-memory, but — unlike the previous implementation — it reads the
-/// underlying source exactly once for the whole batching session rather than
-/// once per batch. Use [`StreamingBatcher::is_bounded_memory`] to check
-/// which mode is active for a given file.
+/// As a result **every format, including CSV and Parquet, now goes through
+/// the same materialize-once-then-slice fallback**: the source file is read
+/// in full exactly once (on the first call to `next_batch()`), cached as a
+/// single `DataFrame`, and sliced per batch thereafter. This still reads the
+/// underlying source exactly once for the whole batching session (never once
+/// per batch, which was the original bug this type was written to fix), but
+/// it is **not** bounded-memory — peak memory now scales with total file
+/// size, not `batch_size`. See [`StreamingBatcher::is_bounded_memory`],
+/// which now always returns `false`, and `docs/SECURITY_AUDIT.md` for the
+/// tracked follow-up to restore genuine incremental reads (e.g. via
+/// `polars-parquet`'s lower-level row-group API directly, or a
+/// hand-rolled chunked CSV reader).
 pub struct StreamingBatcher {
-    source: BatchSource,
+    path: String,
     batch_size: usize,
-}
-
-enum BatchSource {
-    /// Real incremental CSV reads via Polars' mmap-backed batched reader.
-    Csv(Box<OwnedBatchedCsvReader>),
-    /// Real incremental Parquet reads via Polars' row-group batched reader.
-    Parquet(Box<BatchedParquetReader>),
-    /// Single whole-file read, cached, then sliced per batch. Used for
-    /// formats with no incremental reader available.
-    Materialized {
-        path: String,
-        cached: Option<DataFrame>,
-        offset: usize,
-    },
+    cached: Option<DataFrame>,
+    offset: usize,
 }
 
 impl StreamingBatcher {
-    /// Opens `path` for batched reading. For CSV and Parquet this opens and
-    /// memory-maps the file immediately (once); other formats defer the
-    /// (single) full read until the first `next_batch()` call.
+    /// Opens `path` for batched reading. The full file is not read until the
+    /// first call to `next_batch()`.
     pub fn new(path: impl Into<String>, batch_size: usize) -> IoResult<Self> {
-        let path = path.into();
-        let batch_size = batch_size.max(1);
-
-        let ext = Path::new(&path)
-            .extension()
-            .and_then(|e| e.to_str())
-            .map(|e| e.to_ascii_lowercase());
-
-        let source = match ext.as_deref() {
-            Some("csv") | Some("tsv") => {
-                let file = open(&path)?;
-                let boxed: Box<dyn MmapBytesReader> = Box::new(file);
-                let reader = CsvReadOptions::default()
-                    .with_infer_schema_length(Some(1000))
-                    .with_chunk_size(batch_size)
-                    .into_reader_with_file_handle(boxed);
-                let batched = reader.batched(None).map_err(IoError::Polars)?;
-                BatchSource::Csv(Box::new(batched))
-            }
-            Some("parquet") => {
-                let file = open(&path)?;
-                let batched = ParquetReader::new(file)
-                    .batched(batch_size)
-                    .map_err(IoError::Polars)?;
-                BatchSource::Parquet(Box::new(batched))
-            }
-            _ => BatchSource::Materialized {
-                path,
-                cached: None,
-                offset: 0,
-            },
-        };
-
-        Ok(Self { source, batch_size })
+        Ok(Self {
+            path: path.into(),
+            batch_size: batch_size.max(1),
+            cached: None,
+            offset: 0,
+        })
     }
 
     /// Returns the next batch of up to `batch_size` rows, or `None` once the
     /// source is exhausted.
     pub fn next_batch(&mut self) -> IoResult<Option<DataFrame>> {
-        match &mut self.source {
-            BatchSource::Csv(reader) => {
-                let batches = reader.next_batches(1).map_err(IoError::Polars)?;
-                match batches {
-                    None => Ok(None),
-                    Some(chunks) if chunks.is_empty() => Ok(None),
-                    Some(mut chunks) => {
-                        let mut df = chunks.remove(0);
-                        for extra in chunks {
-                            df.vstack_mut(&extra).map_err(IoError::Polars)?;
-                        }
-                        Ok(Some(df))
-                    }
-                }
-            }
-            BatchSource::Parquet(reader) => {
-                let batches =
-                    futures::executor::block_on(reader.next_batches(1)).map_err(IoError::Polars)?;
-                match batches {
-                    None => Ok(None),
-                    Some(chunks) if chunks.is_empty() => Ok(None),
-                    Some(mut chunks) => {
-                        let mut df = chunks.remove(0);
-                        for extra in chunks {
-                            df.vstack_mut(&extra).map_err(IoError::Polars)?;
-                        }
-                        Ok(Some(df))
-                    }
-                }
-            }
-            BatchSource::Materialized {
-                path,
-                cached,
-                offset,
-            } => {
-                if cached.is_none() {
-                    *cached = Some(DataReader::read_file(path)?);
-                }
-                let df = cached.as_ref().unwrap();
-                let n = df.height();
-                if *offset >= n {
-                    return Ok(None);
-                }
-                let end = (*offset + self.batch_size).min(n);
-                let batch = df.slice(*offset as i64, end - *offset);
-                *offset = end;
-                Ok(Some(batch))
-            }
+        if self.cached.is_none() {
+            self.cached = Some(DataReader::read_file(&self.path)?);
         }
+        let df = self.cached.as_ref().unwrap();
+        let n = df.height();
+        if self.offset >= n {
+            return Ok(None);
+        }
+        let end = (self.offset + self.batch_size).min(n);
+        let batch = df.slice(self.offset as i64, end - self.offset);
+        self.offset = end;
+        Ok(Some(batch))
     }
 
-    /// True if this file is being read via a genuinely incremental,
-    /// bounded-memory path (CSV, Parquet); false if it falls back to a
-    /// single whole-file read cached in memory.
+    /// Always `false`: Polars 0.55 exposes no public incremental/bounded-
+    /// memory reader for any format in this crate's dependency stack, so
+    /// every format falls back to the materialize-once-then-slice path.
+    /// Kept as a method (rather than removed) so callers that branch on it
+    /// don't need to change, and so its `false` return is a visible, honest
+    /// signal rather than a silent behavior change.
     pub fn is_bounded_memory(&self) -> bool {
-        matches!(self.source, BatchSource::Csv(_) | BatchSource::Parquet(_))
+        false
     }
 }
 
@@ -347,6 +266,7 @@ impl RowBuffer {
     pub fn flush(&mut self) -> IoResult<DataFrame> {
         let schema = self.schema.as_ref().cloned().unwrap_or_default();
         let rows = std::mem::take(&mut self.buffer);
+        let height = rows.len();
 
         let columns: Vec<Column> = schema
             .iter()
@@ -358,7 +278,7 @@ impl RowBuffer {
             })
             .collect();
 
-        DataFrame::new(columns).map_err(IoError::Polars)
+        DataFrame::new(height, columns).map_err(IoError::Polars)
     }
 
     pub fn buffered_count(&self) -> usize {
@@ -402,8 +322,8 @@ mod tests {
 
         let mut batcher = StreamingBatcher::new(path.to_str().unwrap(), 100).unwrap();
         assert!(
-            batcher.is_bounded_memory(),
-            "CSV must use the incremental, bounded-memory path"
+            !batcher.is_bounded_memory(),
+            "Polars 0.55 has no public incremental CSV reader; must use the materialized fallback"
         );
 
         let mut total = 0usize;
@@ -452,8 +372,8 @@ mod tests {
         OPEN_CALLS.with(|c| c.set(0));
         let mut batcher = StreamingBatcher::new(path.to_str().unwrap(), 100).unwrap();
         assert!(
-            batcher.is_bounded_memory(),
-            "Parquet must use the incremental, bounded-memory path"
+            !batcher.is_bounded_memory(),
+            "Polars 0.55 has no public incremental Parquet reader; must use the materialized fallback"
         );
 
         let mut total = 0usize;

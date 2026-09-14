@@ -154,12 +154,12 @@ impl PyValidationReport {
     }
 
     /// Violations as a list of dicts (column, check, message, severity).
-    fn violations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn violations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         self.inner
             .violations
             .iter()
             .map(|v| {
-                let d = PyDict::new_bound(py);
+                let d = PyDict::new(py);
                 d.set_item("column", &v.column)?;
                 d.set_item("check", &v.check)?;
                 d.set_item("message", &v.message)?;
@@ -172,12 +172,12 @@ impl PyValidationReport {
     }
 
     /// Drift results as a list of dicts.
-    fn drift_results(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn drift_results(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         self.inner
             .drift_results
             .iter()
             .map(|r| {
-                let d = PyDict::new_bound(py);
+                let d = PyDict::new(py);
                 d.set_item("column", &r.column)?;
                 d.set_item("stat", &r.stat)?;
                 d.set_item("reference_value", r.reference_value)?;
@@ -193,12 +193,12 @@ impl PyValidationReport {
     }
 
     /// Column profiles as a list of dicts.
-    fn column_profiles(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn column_profiles(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         self.inner
             .column_profiles
             .iter()
             .map(|p| {
-                let d = PyDict::new_bound(py);
+                let d = PyDict::new(py);
                 d.set_item("name", &p.name)?;
                 d.set_item("dtype", &p.dtype)?;
                 d.set_item("row_count", p.row_count)?;
@@ -411,14 +411,14 @@ fn execute_iceberg(
 /// Returns a list of dicts with keys: snapshot_id, timestamp_ms,
 /// parent_snapshot_id, operation.
 #[pyfunction]
-fn list_iceberg_snapshots(table_path: &str, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+fn list_iceberg_snapshots(table_path: &str, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
     let snapshots = statguardian_io::IcebergReader::list_snapshots(table_path)
         .map_err(|e| PyRuntimeError::new_err(format!("Iceberg error: {e}")))?;
 
     snapshots
         .iter()
         .map(|s| {
-            let d = PyDict::new_bound(py);
+            let d = PyDict::new(py);
             d.set_item("snapshot_id", s.snapshot_id)?;
             d.set_item("timestamp_ms", s.timestamp_ms)?;
             d.set_item("parent_snapshot_id", s.parent_snapshot_id)?;

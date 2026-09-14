@@ -39,7 +39,7 @@ impl Profiler {
         let row_count = df.height();
         let column_count = df.width();
 
-        let columns: Vec<ColumnProfile> = df.get_columns().par_iter().map(profile_column).collect();
+        let columns: Vec<ColumnProfile> = df.columns().par_iter().map(profile_column).collect();
 
         DatasetProfile {
             row_count,

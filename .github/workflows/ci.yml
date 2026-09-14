@@ -43,7 +43,15 @@ jobs:
         run: cargo install cargo-audit --locked
 
       - name: Run cargo audit
-        run: cargo audit
+        # RUSTSEC-2026-0194 / RUSTSEC-2026-0195 (quick-xml, HIGH): transitive
+        # via object_store -> polars-io/polars-error -> polars. polars 0.55.2
+        # pins object_store to `^0.13.1`, which itself pins quick-xml to
+        # `^0.39.0` (fix needs >=0.41.0) -- neither can be bumped
+        # independently via `cargo update`; needs an upstream polars or
+        # object_store release. See docs/SECURITY_AUDIT.md item 2 for the
+        # full trace and a repro of the blocked `cargo update`. Re-check
+        # after any future `polars` bump and drop these ignores once fixed.
+        run: cargo audit --ignore RUSTSEC-2026-0194 --ignore RUSTSEC-2026-0195
 
   python-tests:
     name: Python Tests (Python ${{ matrix.python-version }})
