@@ -33,11 +33,30 @@ jobs:
           workspaces: |
             crates
 
+      # `--exclude statguardian` on the three steps below: `statguardian` is
+      # the pyo3 `cdylib`/`extension-module` crate, built and installed via
+      # maturin (see the `python-tests` job, which already builds it through
+      # `pip install -e .` and exercises it through `pytest`). Including it
+      # in a plain `cargo build`/`test`/`audit --all-features` at the
+      # workspace root unifies `polars`'s "python" feature (pulled in
+      # unconditionally by `pyo3-polars`'s `polars-error` dependency) across
+      # every workspace member for this target -- which then makes every
+      # OTHER crate's test binaries (e.g. `tests/test_streaming.rs`) contain
+      # references to real Python C-API symbols that only an
+      # extension-module cdylib resolves via dlopen at runtime, not a plain
+      # linked executable. A plain `cargo build --workspace` binary can't
+      # resolve those symbols and fails at link time (confirmed: this is
+      # exactly what broke when polars/pyo3-polars were upgraded past the
+      # versions where this feature unification happened to be benign).
+      # Scoping these three steps to the non-Python-bindings crates is the
+      # correct boundary, not a workaround -- `statguardian`'s Rust code is
+      # still fully compiled and exercised, just through the real
+      # maturin/pytest path in the `python-tests` job below.
       - name: Build Rust
-        run: cargo build --release --all-features
+        run: cargo build --release --all-features --workspace --exclude statguardian
 
       - name: Test Rust
-        run: cargo test --release --all-features
+        run: cargo test --release --all-features --workspace --exclude statguardian
 
       - name: Install cargo-audit
         run: cargo install cargo-audit --locked
@@ -51,6 +70,10 @@ jobs:
         # object_store release. See docs/SECURITY_AUDIT.md item 2 for the
         # full trace and a repro of the blocked `cargo update`. Re-check
         # after any future `polars` bump and drop these ignores once fixed.
+        #
+        # cargo-audit scans Cargo.lock directly, not compiled output, so it
+        # still covers `statguardian`'s dependencies too -- no --exclude
+        # needed here.
         run: cargo audit --ignore RUSTSEC-2026-0194 --ignore RUSTSEC-2026-0195
 
   python-tests:
