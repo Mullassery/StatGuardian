@@ -1,4 +1,4 @@
-/// Unit tests for statguard-core parser
+/// Unit tests for the statguardian-core parser
 /// Tests DSL parsing, AST generation, validation rules, and error handling
 use statguardian_core::parse_and_compile;
 

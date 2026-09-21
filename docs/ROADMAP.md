@@ -1,5 +1,16 @@
 # StatGuardian Roadmap
 
+> **This document contains unverified aspirational claims.** Auditing this
+> file against the actual codebase (2026-09) found that the "v2.1 — Workflow
+> Integration" section below marks a REST API and n8n/Power Automate/
+> Temporal/Airflow integrations as **shipped (✅) when no such code exists
+> anywhere in this repository** — corrected inline below. For an audited,
+> honest status of what is actually built and tested, see
+> [`docs/ROADMAP_HONEST.md`](ROADMAP_HONEST.md) and
+> [`docs/SECURITY_AUDIT.md`](SECURITY_AUDIT.md). Everything else in this file
+> beyond that one section is unverified forward-looking planning, not a
+> record of what's shipped.
+
 **Current Version:** v2.1.0
 
 ## Vision
@@ -20,11 +31,17 @@ StatGuardian provides Rust-native data quality, drift detection, and anomaly det
 - Schema evolution tracking
 - HTML report generation
 
-✅ **v2.1 (July 2026)** — Workflow Integration
-- CLI: `statguardian validate`, `detect-drift`, `detect-anomalies`, `check-schema`
-- REST API (Port 8008) for automation
-- n8n, Power Automate, Temporal, Airflow integration
-- Quality gate automation
+**v2.1 — Workflow Integration (status corrected 2026-09, was previously marked ✅ complete)**
+- ✅ CLI: `statguardian validate`, `dbt validate`, `check` (confirmed in `python/statguardian/_cli.py`)
+- ❌ **REST API (Port 8008) — does not exist.** No HTTP server, no web framework
+  dependency, no port-8008 reference anywhere in this codebase. This was
+  fabricated in a prior version of this document.
+- ❌ **n8n, Power Automate, Temporal, Airflow, UiPath integration — do not
+  exist.** No code, no dependency, no documentation for any of these tools
+  anywhere in this repository. Also fabricated.
+- Quality gate automation exists only in the form of the CLI's process exit
+  code and the dbt integration (`integrations/dbt-statguardian`) — there is
+  no separate "quality gate" feature beyond that.
 
 ## In Progress
 
@@ -59,9 +76,15 @@ change history) shipped ahead of schedule — see `statguardian.get_lineage_grap
 
 ## Integration Points
 
-- **Data Platforms:** Snowflake, BigQuery, Redshift, PostgreSQL, Delta, Iceberg
-- **Workflow Tools:** n8n, Power Automate, Temporal, Airflow, UiPath
-- **Frameworks:** Pandas, Polars, PySpark, DuckDB
+Aspirational — none of the items in this section are implemented today
+except where noted.
+
+- **Data Platforms:** Snowflake, BigQuery, Redshift, PostgreSQL (via `execute_sql`,
+  implemented), Delta and Iceberg (implemented, native table readers)
+- **Workflow Tools:** n8n, Power Automate, Temporal, Airflow, UiPath — none
+  implemented; not started
+- **Frameworks:** Pandas, Polars (both implemented), PySpark (`execute_spark`,
+  implemented), DuckDB (implemented, via `execute_sql()`'s `sql-duckdb` extra)
 
 ## Priority Features
 
@@ -79,4 +102,4 @@ change history) shipped ahead of schedule — see `statguardian.get_lineage_grap
 ## Community
 
 Contribute:
-https://github.com/Mullassery/StatGuardian/issues
+https://github.com/Mullassery/statguardian/issues

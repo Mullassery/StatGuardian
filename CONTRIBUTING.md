@@ -18,10 +18,12 @@ the conventions we follow, and the review process.
 
 ```bash
 git clone https://github.com/Mullassery/statguardian.git
-cd statguard
+cd statguardian
 
-# Build and test the Rust crates
-cargo test --workspace --exclude statguard
+# Build and test the Rust crates (statguardian is the pyo3 extension-module
+# crate, exercised via the maturin/pytest path below instead — see the
+# `rust-build` job comment in .github/workflows/ci.yml for why)
+cargo test --workspace --exclude statguardian
 
 # Build the Python extension (development mode)
 maturin develop --release
@@ -33,7 +35,15 @@ pytest tests/
 
 ## Project structure
 
-See [AGENTS.md](AGENTS.md) for a complete layout and key abstractions.
+- `crates/statguardian-core` — AST and `.sg` DSL parsing (pest grammar) and compilation
+- `crates/statguardian-engine` — query execution planner and operator pipeline
+- `crates/statguardian-validators` — schema validation, quality rules, anomaly detection
+- `crates/statguardian-stats` — statistical drift detection (PSI, KS test)
+- `crates/statguardian-io` — file/table format readers (Parquet, CSV, JSON, Avro, Delta, Iceberg, SQL, cloud)
+- `crates/statguardian-lineage` — data lineage tracking
+- `crates/statguardian-metrics` — report generation and scoring
+- `crates/statguardian-py` — PyO3 FFI layer exposing the Rust engine to Python
+- `python/statguardian/` — the Python package (CLI, dbt integration, thin wrappers around the compiled extension)
 
 ## Making changes
 
@@ -43,7 +53,7 @@ See [AGENTS.md](AGENTS.md) for a complete layout and key abstractions.
 2. Write or update tests (`#[cfg(test)]` in the same file, or `tests/integration_test.rs`).
 3. Run `cargo clippy --workspace` and fix any warnings.
 4. Run `cargo fmt --all`.
-5. Run `cargo test --workspace --exclude statguard`.
+5. Run `cargo test --workspace --exclude statguardian`.
 
 ### Python bindings
 
@@ -70,12 +80,12 @@ After editing:
 
 ## Pull request checklist
 
-- [ ] `cargo test --workspace --exclude statguard` passes (currently 30 tests)
+- [ ] `cargo test --workspace --exclude statguardian` passes
 - [ ] `cargo clippy --workspace` has no warnings
 - [ ] `cargo fmt --all --check` passes
 - [ ] New feature has at least one new test
 - [ ] CHANGELOG.md updated under `[Unreleased]`
-- [ ] If a new file format was added: `AGENTS.md` IO layout and `README.md` format table updated
+- [ ] If a new file format was added: this file's "Project structure" section and `README.md`'s format table updated
 
 ## Reporting bugs
 
@@ -88,4 +98,4 @@ Open an issue at <https://github.com/Mullassery/statguardian/issues> with:
 ## License
 
 By contributing you agree that your changes will be licensed under the
-[Proprietary License](LICENSE).
+[Apache License 2.0](LICENSE).

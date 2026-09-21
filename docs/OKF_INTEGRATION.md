@@ -402,5 +402,5 @@ pytest tests/test_okf_contracts.py -v
 ## References
 
 - **Google OKF Spec:** https://github.com/GoogleCloudPlatform/knowledge-catalog
-- **StatGuardian Docs:** https://github.com/Mullassery/Statguardian
+- **StatGuardian Docs:** https://github.com/Mullassery/statguardian
 - **Integration with PyStreamMCP:** See PyStreamMCP/OKF_INTEGRATION.md

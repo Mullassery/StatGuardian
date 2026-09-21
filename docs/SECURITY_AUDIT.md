@@ -69,38 +69,120 @@ verified source changes in `statguardian-io/src/sql.rs` — the latter is a
 correct use, not a safety regression: these functions' whole contract is
 "run the caller-supplied SQL," the same trust boundary that existed before.
 
-**Remaining, not fixed — needs dedicated follow-up, not a quick fix:**
-`pyo3` 0.21.2 (2 advisories: `RUSTSEC-2025-0020` buffer-overflow risk needs
->=0.24.1; `RUSTSEC-2026-0177` missing `Sync` bound needs >=0.29.0),
-`quick-xml` 0.36.2 (2 **HIGH (7.5)** advisories, needs >=0.41.0), `fast-float`
-0.2.0 (segfault risk + separately-tracked unsound warning, no fixed release
-exists), `memmap2` 0.7.1 (unsound warning), and `rustls-pemfile` 2.2.0
-(unmaintained warning). All five of the vulnerabilities trace back to one
-root cause: `pyo3-polars` 0.18.0 pins `pyo3 ^0.21` and `polars ^0.44.0`
-exactly, and quick-xml/fast-float/memmap2 are pulled in transitively through
-that same pinned `polars` 0.44.x. **Attempted the full upgrade** (`polars`
-0.44→0.55, `pyo3-polars` 0.18→0.28, `pyo3` 0.21→0.29 — the versions needed to
-clear every remaining advisory at once) and hit substantial, real API
-breakage: `DataFrame::new`'s signature changed (now takes an explicit
-`height: usize` alongside columns), `DataFrame::get_columns()` was renamed,
-`Series` was replaced by a new `Column` type in several APIs,
-`LazyFrame::scan_parquet`/`LazyCsvReader::new`/`LazyJsonLineReader::new`/
-`LazyFrame::scan_ipc` all changed their path argument type and `scan_ipc`'s
-whole signature, and `CsvReader`/`ParquetReader`'s `.batched()` method was
-removed/restructured — spanning `statguardian-io/src/{sql,cloud,lib}.rs` and
-`statguardian-stats/src/profiler.rs`. This is genuine, non-mechanical
-migration work (correctly handling the `Series`→`Column` change alone touches
-null-handling semantics) that deserves its own dedicated pass with full test
-coverage, not a rushed patch during a dependency-audit sweep — reverted
-rather than risk silently-wrong data-loading behavior. Status of item 2
-should be read as "significantly improved, CI-monitored, not yet fully
-clean" — not "closed."
+**Update, 2026-09-14 — pyo3/polars migration completed. 3 of the remaining 5
+vulnerabilities fixed; 2 are now blocked on an upstream release, not on
+anything in this codebase.**
+
+Completed the full upgrade this entry's previous version described as
+reverted: `polars` 0.44→0.55, `pyo3-polars` 0.18→0.28, `pyo3` 0.21→0.29.
+This closes both `pyo3` advisories (`RUSTSEC-2025-0020`, `RUSTSEC-2026-0177`)
+outright, and — as a side effect of the `polars` bump — also cleared
+`fast-float` 0.2.0 (segfault risk) and the `memmap2` 0.7.1 / `rustls-pemfile`
+2.2.0 unmaintained warnings; none of those three appear in the dependency
+tree at the new version anymore.
+
+The real migration work, for the record: `DataFrame::new` now takes an
+explicit `height: usize` alongside its columns; `DataFrame::get_columns()`
+was renamed to `.columns()`; `LazyFrame::scan_parquet` /
+`LazyCsvReader::new` / `LazyJsonLineReader::new` / `LazyFrame::scan_ipc` all
+changed their path argument type to `PlRefPath` (fixed with `.into()`) and
+`scan_ipc` gained a third `UnifiedScanArgs` argument; and — the one without a
+mechanical fix — **Polars removed its public pull-based batched-reader API
+entirely** (`OwnedBatchedCsvReader` / `BatchedParquetReader`, and
+`CsvReader`/`ParquetReader::batched()`). There is no longer any public,
+stable way in this dependency stack to read a CSV or Parquet file
+incrementally, row-group-by-row-group, from a single held-open handle.
+`StreamingBatcher` (`statguardian-io/src/lib.rs`) now falls back to the same
+materialize-once-then-slice strategy previously used only for formats
+without a native incremental reader (plain JSON, etc.): the source file is
+still read exactly once for the whole batching session (never once per
+batch — the bug this type exists to prevent), but peak memory now scales
+with total file size rather than `batch_size`. `StreamingBatcher::
+is_bounded_memory()` now always returns `false`, honestly, for every format.
+**This is a real regression in this codebase, not just closed-out
+paperwork** — tracked as its own open item below (§2b), separate from the
+CVE remediation.
+
+Separately, building `statguardian-py` (the crate that actually links
+`pyo3-polars`) surfaced a second issue that isn't in RustSec at all: with
+`pyo3-polars`'s `derive` feature enabled, `polars-plan`'s `python` feature
+transitively enables `polars-core`'s `object` dtype — and `polars-ops`
+0.55.2's `unique_counts` has a non-exhaustive `match` over `DataType` that
+doesn't handle `DataType::Object(_)`, so the crate fails to compile whenever
+`object` is on. This is a bug in `polars-ops` 0.55.2 itself
+(`polars-ops-0.55.2/src/series/ops/unique.rs:45`), not something fixable
+from this repo. Worked around it, not patched around it: `statguardian-py`
+only ever used `pyo3_polars::PyDataFrame`, which lives in `pyo3-polars`'s
+`types` module and was never gated on the `derive` feature in the first
+place — dropping `derive` from this crate's `pyo3-polars` feature list
+(see `Cargo.toml`) removes the `object` dependency chain entirely and avoids
+the bug without giving up anything statguardian-py actually uses.
+
+**Remaining, not fixed — genuinely blocked on an upstream release, not a
+gap in this codebase:** `quick-xml` 0.39.4, 2 **HIGH (7.5)** advisories
+(`RUSTSEC-2026-0194`, `RUSTSEC-2026-0195`), needs >=0.41.0. `quick-xml` is a
+transitive dependency of `object_store` (via `polars-io`/`polars-error`),
+which is itself a transitive dependency of `polars` — nothing in this
+workspace depends on either directly. `polars` 0.55.2 pins
+`object_store = "^0.13.1"`, and `object_store` 0.13.2 in turn pins
+`quick-xml = "^0.39.0"` — both are exact-enough Cargo caret requirements
+that neither can be bumped independently via `cargo update -p <crate>
+--precise <version>` (confirmed: `cargo update -p quick-xml --precise
+0.41.0` fails to resolve, citing this exact chain). Closing this requires
+either a `polars` release that bumps its `object_store` requirement to
+>=0.14, or an `object_store` 0.13.x patch that widens its own `quick-xml`
+requirement past `^0.39.0` — neither is available as of 2026-09-14. Tracked
+here; re-run `cargo audit` after any future `polars` bump to check whether
+this has cleared upstream.
+
+A new low-severity warning appeared as a side effect of the `polars` bump:
+`bincode` 2.0.1 (`RUSTSEC-2025-0141`, unmaintained) is now a transitive
+dependency via `polars-utils`. Warning only, not a vulnerability; no action
+needed unless it graduates to an advisory.
+
+Status of item 2: **2 of the original 10 vulnerabilities remain, both
+confirmed blocked on an upstream release** — this is the closest to "closed"
+this item can get without a `polars`/`object_store` release doing the rest.
+
+### 2b. `StreamingBatcher` bounded-memory regression (NEW — introduced by the polars 0.55 upgrade above)
+**Location:** `crates/statguardian-io/src/lib.rs`
+**Severity:** Low (correctness/performance, not a security issue) — noted
+here because it's a direct consequence of the security-driven dependency
+upgrade above and belongs next to that history, not because it's itself a
+vulnerability.
+
+**Status:** Open — needs a dedicated pass, not a quick fix.
+
+Before the polars 0.55 upgrade, `StreamingBatcher` read CSV and Parquet
+files genuinely incrementally (via Polars' now-removed batched-reader API),
+bounding peak memory to roughly `batch_size` regardless of total file size.
+That primitive no longer has a public replacement in Polars' stable API (see
+above). `StreamingBatcher` now reads the whole file once and slices it in
+memory — correct (same row counts, same single-open-per-session guarantee,
+covered by `crates/statguardian-io/src/lib.rs`'s own test module and
+`tests/test_streaming.rs`) but no longer bounded-memory: a very large
+CSV/Parquet file streamed in small batches will now hold the entire
+decoded `DataFrame` in memory for the duration of the batching session.
+
+**Options for restoring genuine incremental reads**, not yet attempted:
+1. Read raw Parquet row groups directly via `polars-parquet`'s lower-level
+   API (below the removed `polars-io` convenience layer) and convert each
+   row group to a `DataFrame` independently.
+2. Hand-roll a chunked CSV reader (read N lines at a time from a
+   `BufReader`, parse each chunk with `CsvReadOptions` against an in-memory
+   buffer) — loses some of Polars' CSV-parsing edge-case handling unless
+   done carefully.
+3. Wait for Polars to reintroduce a public streaming-read primitive designed
+   around its new streaming execution engine, and adopt that.
+
+Any of these is real, non-trivial engineering — deliberately not rushed
+alongside the CVE remediation above.
 
 ### 3. Environment Variable Secrets
-**Location:** `python/statguardian/_connectors.py`, `docs/SECURITY.md`
+**Location:** `python/statguardian/_connectors.py`, `SECURITY.md`
 **Status:** Closed — guidance exists.
 
-`execute_cloud()` docs and `docs/SECURITY.md` already recommend IAM roles /
+`execute_cloud()` docs and `SECURITY.md` already recommend IAM roles /
 Workload Identity / Managed Identity over long-lived credentials, and
 `.env.example` + `.gitignore` prevent accidental secret commits. Secrets are
 never logged (verified — no logging calls include connection strings or
@@ -157,7 +239,7 @@ Fixed two categories of `except: pass` that discarded errors with no trace:
 PR to `main`.
 
 ### 8. Documentation: No Security Deployment Guide
-**Status:** Partially closed. `docs/SECURITY.md` covers reporting process and
+**Status:** Partially closed. `SECURITY.md` covers reporting process and
 basic practices; `_connectors.py` docstrings cover IAM-role/Workload-Identity
 guidance per cloud provider. Still open: a single consolidated deployment
 security page (least-privilege DB user setup, query audit logging) — tracked
@@ -170,7 +252,7 @@ as a documentation nice-to-have, not a code risk.
 | Issue | Severity | Status |
 |-------|----------|--------|
 | SQL injection review | CRITICAL | Closed — false positive, no vulnerable code found |
-| Pin dependencies | HIGH | Closed — core deps pinned, extras intentionally floating |
+| Pin dependencies | HIGH | 2 of 10 `cargo audit` findings remain, blocked upstream (§2) |
 | Rust unsafe block audit | MEDIUM | Closed — zero unsafe blocks; cargo audit now in CI |
 | Secrets handling guide | HIGH | Closed — IAM/Workload Identity guidance in place |
 | DSL input validation | MEDIUM | Closed — Rust size limit + Python validator now wired in |

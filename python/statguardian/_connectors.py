@@ -1,12 +1,12 @@
 """
-StatGuard connector helpers — SQL databases, cloud warehouses, and Spark.
+statguardian connector helpers — SQL databases, cloud warehouses, and Spark.
 
 All connectors use OSI-approved open-source licenses only (MIT, Apache-2.0,
 BSD, LGPL-2.1 with exceptions). No proprietary ODBC/JDBC drivers included.
 
 OPEN-SOURCE DRIVER LICENSES
 ----------------------------
-Core (statguard):
+Core (statguardian):
   polars                   — MIT
   pyarrow                  — Apache-2.0
   pyspark                  — Apache-2.0

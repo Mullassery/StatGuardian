@@ -2,7 +2,7 @@
 
 A Rust-native data quality engine with a declarative contract DSL: schema validation, drift detection, and anomaly detection for Pandas and Polars.
 
-[![Tests](https://img.shields.io/github/actions/workflow/status/Mullassery/StatGuardian/tests.yml?label=tests)](https://github.com/Mullassery/StatGuardian/actions)
+[![Tests](https://img.shields.io/github/actions/workflow/status/Mullassery/statguardian/ci.yml?label=tests)](https://github.com/Mullassery/statguardian/actions)
 [![PyPI](https://img.shields.io/pypi/v/statguardian)](https://pypi.org/project/statguardian/)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue)](https://www.python.org/downloads/)
 
@@ -205,8 +205,8 @@ pip install statguardian
 
 For development:
 ```bash
-git clone https://github.com/Mullassery/StatGuardian
-cd StatGuardian
+git clone https://github.com/Mullassery/statguardian
+cd statguardian
 pip install -e ".[dev]"
 pytest
 ```
@@ -216,16 +216,32 @@ pytest
 - [CLI Reference](docs/CLI.md)
 - [dbt Integration](docs/DBT_INTEGRATION.md)
 - [Security Audit](docs/SECURITY_AUDIT.md)
-- [Roadmap](docs/ROADMAP.md)
+- [Honest Roadmap](docs/ROADMAP_HONEST.md) — what's actually built, tested, and broken; start here, not `docs/ROADMAP.md`
 - [Examples](examples/)
 - [Contributing](CONTRIBUTING.md)
+- [Code of Conduct](docs/CODE_OF_CONDUCT.md)
+- [Changelog](CHANGELOG.md)
 
 ## Known Issues
 
+- **HIGH, found 2026-09-21 — `regex=`, `enum=[...]`, and anomaly-detection
+  `method=` DSL constraints do not work.** Confirmed by actually running
+  `statguardian validate` against a real contract and a real Parquet file:
+  `enum=[...]` and `regex=` constraints report **every** value as a
+  violation, including values that are legitimately valid, and
+  `detect_outliers(col, method="iqr"|"zscore")` silently reports **zero**
+  outliers regardless of the actual data, with no error either way. Root
+  cause and exact file:line detail in
+  [`docs/ROADMAP_HONEST.md`](docs/ROADMAP_HONEST.md#known-regressions-and-open-engineering-work).
+  This affects the exact examples in this README's own "30-Second Start" and
+  "Schema validation" sections above — treat those `.sg` snippets as
+  illustrating DSL syntax only, not as constraints that currently work
+  correctly.
 - `execute()` accepts a Polars DataFrame, not a raw pandas DataFrame. Passing a pandas DataFrame directly raises an unhelpful `AttributeError` (verified against the current build) rather than converting automatically — call `pl.from_pandas(df)` first. The `pandas` extra is used by the SQL/Spark/GPU connectors internally, which already do this conversion for you.
 - Performance numbers are not yet published as a reproducible, checked-in benchmark result — `docs/bench/benchmark.py` exists but its output has never been committed. Treat any speed claims (including from this project) as unverified until you've run the benchmark yourself.
-- `docs/ROADMAP.md`, `docs/ROADMAP_HONEST.md`, and `docs/ROADMAP_INTEGRATED.md` currently overlap and are not kept in sync — some content in `ROADMAP_HONEST.md` predates features (e.g. Iceberg support) that have since shipped. Treat `docs/SECURITY_AUDIT.md` as the current source of truth for security status; the roadmap docs need consolidation.
-- **CI's `cargo audit` step is still failing, but significantly improved (2026-09-13): 5 of 10 vulnerabilities and 3 of 6 warnings fixed** (sqlx 0.8→0.9 eliminated the vulnerable `rsa` crate entirely and fixed 3 `rustls-webpki` advisories; rusqlite/chacha20 bumps fixed the rest). The remaining 5 (2 in `pyo3`, 2 HIGH-severity in `quick-xml`, `fast-float`) all trace back to `pyo3-polars` 0.18.0 pinning `pyo3 ^0.21`/`polars ^0.44.0` — the fix requires bumping `polars` 0.44→0.55 and `pyo3-polars` 0.18→0.28, which was attempted and found to need genuine, non-mechanical API migration (`DataFrame::new`'s signature changed, `Series`→`Column` type migration, `LazyFrame` scan APIs restructured) — see `docs/SECURITY_AUDIT.md`'s 2026-09-13 update for the full list and why this needs its own dedicated pass rather than a rushed patch.
+- `docs/ROADMAP.md`, `docs/ROADMAP_HONEST.md`, and `docs/ROADMAP_INTEGRATED.md` overlap and are not kept in sync. `docs/ROADMAP_HONEST.md` was rewritten 2026-09-21 against the actual codebase and is current as of that date; `docs/ROADMAP.md` and `docs/ROADMAP_INTEGRATED.md` still contain fabricated "shipped" claims (a REST API, n8n/Power Automate/Temporal/Airflow integrations, Slack/PagerDuty alerting, JSON-lines audit logging — none of which exist in this codebase) and now carry disclaimers pointing back to `ROADMAP_HONEST.md`. A full consolidation into one document has not been done. Treat `docs/SECURITY_AUDIT.md` as the current source of truth for security status specifically.
+- **`cargo audit`: down to 2 remaining findings (from 10), both confirmed blocked on an upstream release, not on anything in this codebase (2026-09-14).** Completed the `polars` 0.44→0.55 / `pyo3-polars` 0.18→0.28 / `pyo3` 0.21→0.29 migration this section previously described as reverted — this closed both `pyo3` advisories outright and, as a side effect of the `polars` bump, also cleared `fast-float` and the `memmap2`/`rustls-pemfile` warnings. The 2 that remain (`RUSTSEC-2026-0194`/`RUSTSEC-2026-0195`, HIGH-severity `quick-xml`) are transitive via `object_store` (itself transitive via `polars`); `polars` 0.55.2 pins `object_store` to a range that itself pins `quick-xml` below the fixed version, and neither can be bumped independently with `cargo update` (confirmed by trying) — see `docs/SECURITY_AUDIT.md` item 2 for the full dependency trace. CI's `cargo audit` step explicitly ignores just these two IDs, with a comment pointing back here, so CI stays green without hiding the finding.
+- **New, introduced by that same migration: `StreamingBatcher` is no longer bounded-memory.** Polars 0.55 removed its public incremental/batched CSV and Parquet readers entirely — there's no longer a stable API in this dependency stack for reading either format row-group-by-row-group from a single held-open handle. `StreamingBatcher` now reads the whole file once and slices it in memory: still exactly one read for the whole batching session (not once per batch, the bug it was originally written to fix), and all existing tests pass, but peak memory now scales with total file size instead of `batch_size` for very large files. Tracked as its own open item in `docs/SECURITY_AUDIT.md` (§2b) — restoring genuine incremental reads needs either `polars-parquet`'s lower-level row-group API or a hand-rolled chunked CSV reader, deliberately not rushed alongside the CVE fix above.
 - SQL connector extras (`connectorx`, `psycopg2-binary`, cloud warehouse drivers) use floating minimum versions rather than pinned versions — see `docs/SECURITY_AUDIT.md` for the rationale and tradeoffs.
 
 ## License

@@ -1,5 +1,15 @@
 # StatGuardian Roadmap (v2.1 → v3.0+)
 
+> **Speculative planning document, not a record of shipped features.**
+> Auditing this file against the codebase (2026-09) found the "v2.1.0 —
+> CURRENT" section below falsely marks "Audit logging (JSON-lines format)"
+> and "Slack/PagerDuty alerts" as shipped (✅) — no such code exists anywhere
+> in this repository; corrected inline below. Everything from "v2.2.0" onward
+> (openanchor integration, RAG/LLM quality gates, etc.) is unimplemented
+> forward-looking speculation, not in progress. For audited, honest status,
+> see [`docs/ROADMAP_HONEST.md`](ROADMAP_HONEST.md) and
+> [`docs/SECURITY_AUDIT.md`](SECURITY_AUDIT.md).
+
 **Data Quality Engine for AI-Ready Pipelines**
 
 Vision: Become the universal data quality layer that prevents silent failures in data pipelines and ensures LLM input/output quality.
@@ -27,10 +37,10 @@ StatGuardian validates data at critical boundaries:
 - ✅ Schema validation (Pandera-like DSL)
 - ✅ Data expectations & rules engine
 - ✅ Statistical drift detection
-- ✅ Anomaly detection (isolation forest, z-score)
-- ✅ Audit logging (JSON-lines format)
-- ✅ Slack/PagerDuty alerts
-- ✅ 59+ tests
+- ✅ Anomaly detection (isolation forest, z-score — `python/statguardian/_anomaly_detection.py`)
+- ❌ Audit logging (JSON-lines format) — **fabricated claim, no such code exists**
+- ❌ Slack/PagerDuty alerts — **fabricated claim, no such code exists**
+- Test count: see current `cargo test --workspace` / `pytest` output rather than this figure, which is not kept in sync
 
 ---
 

@@ -34,7 +34,15 @@ env/
 
 # Rust
 target/
-Cargo.lock
+# Note: Cargo.lock is intentionally committed (workspace produces a CLI/library
+# with reproducible-build requirements) — do not add it back here.
+
+# Compiled Python extension (built locally via `maturin develop`/`pip install -e .`).
+# NOTE: python/statguardian/_statguardian.abi3.so is already tracked in git from
+# before this line was added (see docs/ROADMAP_HONEST.md's Technical Debt summary,
+# item 6) — this only prevents a *new* local rebuild's binary from being
+# re-added by accident; it does not untrack the existing committed file.
+*.abi3.so
 
 # Temp files
 *.tmp

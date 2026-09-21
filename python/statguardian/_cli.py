@@ -1,5 +1,5 @@
 """
-statguard CLI — validate data files against contracts from the terminal.
+statguardian CLI — validate data files against contracts from the terminal.
 
 Supports local files, Delta Lake, and Apache Iceberg tables.
 For cloud storage (S3/GCS/Azure), SQL databases, and Spark, use the Python API.
@@ -11,18 +11,25 @@ Usage:
 Supported file formats:
     Parquet, CSV, JSON, Avro, ORC, Arrow IPC, Delta Lake (_delta_log/), Iceberg (metadata/)
 
-For more information: statguard --help
+For more information: statguardian --help
 Full documentation: https://github.com/Mullassery/statguardian/blob/main/docs/CLI.md
 """
 
 import argparse
 import sys
 
+from . import __version__
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        prog="statguard",
-        description="StatGuard data quality engine",
+        prog="statguardian",
+        description="statguardian data quality engine",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"statguardian {__version__}",
     )
     sub = parser.add_subparsers(dest="command")
 

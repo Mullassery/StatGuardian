@@ -120,13 +120,17 @@ impl CloudReader {
 
     /// Read Arrow IPC from cloud.
     pub fn read_ipc(uri: &str) -> IoResult<DataFrame> {
-        LazyFrame::scan_ipc(uri.into(), IpcScanOptions::default(), UnifiedScanArgs::default())
-            .map_err(|e| IoError::ReadError {
-                path: uri.to_string(),
-                msg: e.to_string(),
-            })?
-            .collect()
-            .map_err(IoError::Polars)
+        LazyFrame::scan_ipc(
+            uri.into(),
+            IpcScanOptions::default(),
+            UnifiedScanArgs::default(),
+        )
+        .map_err(|e| IoError::ReadError {
+            path: uri.to_string(),
+            msg: e.to_string(),
+        })?
+        .collect()
+        .map_err(IoError::Polars)
     }
 }
 

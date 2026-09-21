@@ -18,7 +18,7 @@ use crate::{IoError, IoResult};
 /// `connectorx` (MIT) or `polars.read_database_uri()`:
 ///
 /// ```python
-/// report = statguard.execute_sql(
+/// report = statguardian.execute_sql(
 ///     contract,
 ///     connection="bigquery://project/dataset",
 ///     query="SELECT * FROM events WHERE date = '2026-06-15'",
@@ -86,7 +86,7 @@ impl SqlReader {
         match SqlBackend::from_url(connection_url) {
             SqlBackend::PythonLayer(scheme) => Err(IoError::UnsupportedFormat(format!(
                 "'{scheme}' is not supported in the Rust SQL layer. \
-                 Use statguard.execute_sql() in Python with connectorx installed."
+                 Use statguardian.execute_sql() in Python with connectorx installed."
             ))),
             SqlBackend::Postgres => {
                 #[cfg(feature = "sql-postgres")]

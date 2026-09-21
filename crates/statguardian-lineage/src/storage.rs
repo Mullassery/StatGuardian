@@ -620,7 +620,7 @@ mod tests {
         store.save_version(&version)?;
 
         // Test all severity levels
-        let severities = vec![
+        let severities = [
             ChangeSeverity::None,
             ChangeSeverity::Low,
             ChangeSeverity::Medium,

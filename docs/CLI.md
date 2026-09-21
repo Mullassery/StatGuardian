@@ -1,16 +1,16 @@
 # statguardian CLI Reference
 
-The `statguard` command-line tool validates data files and DSL contracts from the terminal.
+The `statguardian` command-line tool validates data files and DSL contracts from the terminal.
 
 ---
 
 ## Installation
 
-The CLI is included with the base `statguard` package:
+The CLI is included with the base `statguardian` package:
 
 ```bash
 pip install statguardian
-statguard --version
+statguardian --version
 ```
 
 For cloud storage support (S3, GCS, Azure):
@@ -152,7 +152,7 @@ statguardian validate --contract orders.sg --file data.parquet --format json | j
 # Monitoring system, Grafana, etc.)
 
 ```bash
-statguardian validate --contract orders.sg --file data.parquet --format prometheus | curl --data-binary @- http://localhost:9091/metrics/job/statguard
+statguardian validate --contract orders.sg --file data.parquet --format prometheus | curl --data-binary @- http://localhost:9091/metrics/job/statguardian
 ```
 
 #### CI/CD pipeline gate (fail on any warning)
@@ -261,10 +261,10 @@ validate_orders = BashOperator(
 # /usr/local/bin/validate_data_daily.sh
 
 DATE=$(date +%Y-%m-%d)
-LOG_FILE="/var/log/statguard/${DATE}.log"
+LOG_FILE="/var/log/statguardian/${DATE}.log"
 
 statguardian validate \
-  --contract /etc/statguard/orders.sg \
+  --contract /etc/statguardian/orders.sg \
   --file /data/orders/${DATE}.parquet \
   --reference /data/orders/$(date -d yesterday +%Y-%m-%d).parquet \
   --format json \
@@ -312,14 +312,14 @@ report = statguardian.execute_spark(contract, spark_df)
 
 ## Troubleshooting
 
-### `statguard: command not found`
+### `statguardian: command not found`
 
 statguardian is not installed or not in PATH. Install it:
 
 ```bash
 pip install statguardian
 # Verify:
-which statguard
+which statguardian
 ```
 
 ### `Error: contract file not found`

@@ -1,5 +1,5 @@
 // StatGuard DSL example: basic user data contract
-// Run with: statguard validate --contract basic_validation.sg --file users.parquet
+// Run with: statguardian validate --contract basic_validation.sg --file users.parquet
 
 dataset users {
     schema {

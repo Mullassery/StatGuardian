@@ -5,7 +5,7 @@ build-backend = "maturin"
 [project]
 name            = "statguardian"
 version         = "2.6.0"
-description     = "Fast, declarative data quality framework. Schema validation, data drift detection, anomaly detection, outlier handling. 13x faster than pandera. Supports Pandas, Polars, DuckDB. Automated data contract enforcement for data pipelines."
+description     = "Rust-native data quality engine with a declarative contract DSL: schema validation, drift detection, and anomaly detection for Pandas and Polars."
 authors         = [{ name = "Georgi Mammen Mullassery", email = "mullassery@gmail.com" }]
 maintainers = [{ name = "Georgi Mammen Mullassery", email = "mullassery@gmail.com" }]
 
@@ -188,13 +188,13 @@ all = [
 ]
 
 [project.urls]
-Homepage      = "https://github.com/Mullassery/Statguardian"
-Repository    = "https://github.com/Mullassery/Statguardian"
-Documentation = "https://github.com/Mullassery/Statguardian#readme"
-"Bug Tracker" = "https://github.com/Mullassery/Statguardian/issues"
-Changelog     = "https://github.com/Mullassery/Statguardian/releases"
-"Source Code" = "https://github.com/Mullassery/Statguardian/tree/main"
-Discussions   = "https://github.com/Mullassery/Statguardian/discussions"
+Homepage      = "https://github.com/Mullassery/statguardian"
+Repository    = "https://github.com/Mullassery/statguardian"
+Documentation = "https://github.com/Mullassery/statguardian#readme"
+"Bug Tracker" = "https://github.com/Mullassery/statguardian/issues"
+Changelog     = "https://github.com/Mullassery/statguardian/releases"
+"Source Code" = "https://github.com/Mullassery/statguardian/tree/main"
+Discussions   = "https://github.com/Mullassery/statguardian/discussions"
 
 [project.scripts]
 statguardian = "statguardian._cli:main"

@@ -1,10 +1,10 @@
 # statguardian Open Source Licenses
 
-statguardian is licensed under the **Proprietary License**. This document details the licenses of all included and optional dependencies.
+statguardian is licensed under the **Apache License 2.0**. This document details the licenses of all included and optional dependencies.
 
 ## Core Project License
 
-- **statguardian** — Proprietary License (see [LICENSE](LICENSE))
+- **statguardian** — Apache License 2.0 (see [LICENSE](LICENSE))
 
 ---
 
@@ -15,8 +15,8 @@ All dependencies included in the default build use MIT, Apache-2.0, or BSD licen
 | Package | Version | License | Category |
 |---------|---------|---------|----------|
 | **Data Processing** |
-| polars | 0.44+ | MIT | core |
-| pyo3-polars | 0.15+ | MIT | Python bindings |
+| polars | 0.55 | MIT | core |
+| pyo3-polars | 0.28 | MIT | Python bindings |
 | **Parsing & Compilation** |
 | pest | 2.7+ | MIT/Apache-2.0 dual | core |
 | **Serialization** |
@@ -34,7 +34,7 @@ All dependencies included in the default build use MIT, Apache-2.0, or BSD licen
 | uuid | 1.6+ | MIT/Apache-2.0 dual | core |
 | log | 0.4+ | MIT/Apache-2.0 dual | core |
 | env_logger | 0.11+ | MIT/Apache-2.0 dual | core |
-| pyo3 | 0.21+ | MIT/Apache-2.0 dual | core |
+| pyo3 | 0.29 | MIT/Apache-2.0 dual | core |
 | tempfile | 3+ | MIT/Apache-2.0 dual | dev-only |
 | **Testing** |
 | pretty_assertions | 1.4+ | MIT/Apache-2.0 dual | dev-only |
@@ -118,7 +118,7 @@ The following are **NOT included** and cannot be added due to proprietary licens
 
 ## Compliance Summary
 
-✅ **statguardian Core**: MIT (permissive, no restrictions)
+✅ **statguardian Core**: Apache License 2.0 (permissive, no restrictions)
 
 ⚠️ **With psycopg2** (PostgreSQL): LGPL-2.1 with exceptions
    - Binary distributions must include source/download instructions

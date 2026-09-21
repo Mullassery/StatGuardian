@@ -1,5 +1,5 @@
 /// Integration tests — exercise the full pipeline from DSL string to report.
-/// These tests run against the statguard-engine crate.
+/// These tests run against the statguardian-engine crate.
 use polars::prelude::*;
 use statguardian_core::parse_and_compile;
 use statguardian_engine::Engine;
