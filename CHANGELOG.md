@@ -10,6 +10,20 @@ actual commit messages and diffs, not invented.
 
 ## [Unreleased]
 
+### Fixed
+- `docs/LICENSES.md:7` — `[LICENSE](LICENSE)` resolved to the nonexistent
+  `docs/LICENSE`; corrected to `../LICENSE`.
+- `docs/CLI.md:352` and `docs/DBT_INTEGRATION.md:63` — both linked to
+  `../README.md#dsl-reference`, an anchor that has never existed in
+  `README.md`; repointed to `examples/*.sg` and the README itself.
+- `.github/CI_ERRORS.md` — removed. Orphaned template file with unresolved
+  `$REPO_NAME`/`#$repo` placeholders and links to `CI_ERRORS_REPORT.md` and
+  `TROUBLESHOOTING.md`, neither of which exists anywhere in this repo;
+  nothing else referenced this file.
+- `crates/statguardian-io/src/cloud.rs:163` — `clippy::single_match` warning
+  in `test_format_inference_from_uri`; rewrote as `if let`. Test-only,
+  behavior unchanged.
+
 ### Changed
 - `cargo audit`: 3 of the remaining 5 vulnerabilities from the 2026-09-13
   remediation pass fixed by completing the `polars` 0.44→0.55 / `pyo3-polars`

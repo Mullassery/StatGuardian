@@ -349,7 +349,7 @@ The contract file has a syntax error. Check the DSL syntax:
 statguardian check --contract contract.sg
 ```
 
-See [DSL Reference](../README.md#dsl-reference) for grammar.
+See [`examples/*.sg`](../examples/) for DSL syntax examples, or the main [README](../README.md).
 
 ### Exit code 2 (execution error)
 

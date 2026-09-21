@@ -160,9 +160,8 @@ mod tests {
     fn test_format_inference_from_uri() {
         let uri = "s3://test-bucket/data.parquet";
         let result = CloudReader::read(uri);
-        match result {
-            Err(IoError::UnsupportedFormat(_)) => panic!("should not be UnsupportedFormat"),
-            _ => {}
+        if let Err(IoError::UnsupportedFormat(_)) = result {
+            panic!("should not be UnsupportedFormat")
         }
     }
 }

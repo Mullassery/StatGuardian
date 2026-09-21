@@ -4,7 +4,7 @@ statguardian is licensed under the **Apache License 2.0**. This document details
 
 ## Core Project License
 
-- **statguardian** — Apache License 2.0 (see [LICENSE](LICENSE))
+- **statguardian** — Apache License 2.0 (see [LICENSE](../LICENSE))
 
 ---
 

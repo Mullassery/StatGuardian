@@ -235,6 +235,19 @@ by whether it needs its own dedicated follow-up session.
    DuckDB was a first-class DataFrame framework rather than one of several
    SQL backends behind `execute_sql()`. Corrected during this audit to match
    the honest description used in `README.md`.
+9. **Fixed 2026-09-21 (quick-fix pass following this audit):** a handful of
+   small, independently-found issues, none requiring a dedicated session —
+   `docs/LICENSES.md:7`'s `[LICENSE](LICENSE)` link resolved to a
+   nonexistent `docs/LICENSE` (now `../LICENSE`); `docs/CLI.md:352` and
+   `docs/DBT_INTEGRATION.md:63` both linked to `../README.md#dsl-reference`,
+   an anchor that has never existed in `README.md` (repointed to
+   `examples/*.sg`/the README itself); `.github/CI_ERRORS.md` was an
+   orphaned template with unresolved `$REPO_NAME`/`#$repo` placeholders and
+   links to two files that don't exist anywhere in this repo, referenced by
+   nothing else, so it was deleted; and one `clippy::single_match` warning
+   in a `statguardian-io` test (`crates/statguardian-io/src/cloud.rs:163`)
+   was fixed. See `CHANGELOG.md` `[Unreleased]` → `Fixed` for the full list.
+   Full test suite (Rust + `pytest`) re-verified green after these changes.
 
 ## Not planned
 

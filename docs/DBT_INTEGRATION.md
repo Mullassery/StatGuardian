@@ -60,7 +60,7 @@ models:
 ```
 
 `statguardian_contract` is a path to a `.sg` DSL file, relative to the dbt
-project root — see the main [README](../README.md#dsl-reference) or
+project root — see the main [README](../README.md) or
 `examples/*.sg` for contract syntax.
 
 ## Run
