@@ -43,6 +43,23 @@ print(f"Passed: {report.passed}")
 
 A reproducible benchmark comparing StatGuardian against other validation libraries is tracked in `docs/bench/benchmark.py` — run it against your own workload rather than relying on any library's marketing numbers, including ours.
 
+## vs pandera
+
+pandera is the closest OSS equivalent (declarative schema validation for pandas/polars DataFrames). We benchmarked both against **live, real-world data** — 200,000 rows pulled fresh from the [NYC 311 Service Requests API](https://data.cityofnewyork.us/resource/erm2-nwe9.json) (Socrata), not synthetic/fabricated rows — with an equivalent 7-column contract (not-null, uniqueness, enum, regex, and numeric-range checks) applied to both.
+
+| | StatGuardian 2.5.0 | pandera 0.26.1 |
+|---|---|---|
+| Engine | Rust-native, Polars | Python, pandas (columnar/vectorized) |
+| Median time (200K rows, 7 checks, best-of-7) | **32.3ms** | 275.9ms |
+| Speedup | **8.5x** | 1x (baseline) |
+| Violations caught on real data (injected: dup key, invalid borough, invalid status, out-of-range lat) | 4/4 | 4/4 |
+
+Methodology: real data has genuine nulls (borough, zip, lat/lon are missing on 0.3–3.6% of live rows) and real categorical noise (e.g. `"Unspecified"` as a legitimate borough value) — we did not synthesize clean or adversarial rows. Both libraries were pointed at the same DataFrame content and validated the same rules. Correctness was cross-checked separately with known-bad injected rows (duplicate key, invalid enum values, out-of-range coordinate) — both libraries flagged all 4 injected violations, so the speed difference is not coming from skipped checks. Reproduce with `docs/bench/nyc311_vs_pandera.py` (fetches live data at run time, so exact timings will vary with API latency and the day's dataset).
+
+One behavioral difference worth knowing: `report.passed` reflects only checks marked `@blocking` in the `.sg` contract — a contract with enum/regex/range violations but no `@blocking` checks can still report `passed=True` with a non-zero violation count and a letter-grade score. This is intentional (severity tiers), but is easy to misread as "no violations found" if you don't add `@blocking` to the rules you actually want to gate on. pandera's `lazy=True` mode, by contrast, always raises/reports on any check failure.
+
+**Honesty note:** the GitHub repo description and older docs cited "13x faster than pandera" as an unverified, unsourced number (already flagged in `docs/ROADMAP_HONEST.md`). The measured number above — 8.5x — is workload-specific (7 checks, 200K rows, this dataset's null/cardinality distribution) and should not be read as a universal multiplier; run `docs/bench/benchmark.py` or the script above against your own data before relying on either number.
+
 ## Real-World Use Cases
 
 **E-commerce order validation**

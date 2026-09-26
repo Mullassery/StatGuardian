@@ -49,3 +49,5 @@ target/
 *.log
 temp/
 tmp/
+docs/bench/_nyc311_200k_cache.json
+results.json
