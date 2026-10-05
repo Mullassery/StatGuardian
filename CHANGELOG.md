@@ -10,7 +10,29 @@ actual commit messages and diffs, not invented.
 
 ## [Unreleased]
 
+## [2.6.1] - 2026-10-05
+
 ### Fixed
+- **DSL parser quote-stripping bug** (`crates/statguardian-core/src/parser/mod.rs`):
+  `regex=`, `enum=[...]`, and anomaly named args (`method=`, `pattern=`) read
+  a `string_literal` pair's raw `as_str()` text directly, which includes the
+  surrounding `"` characters (the grammar rule is atomic). Every
+  regex/enum-constrained value was always reported as a violation, and
+  `detect_outliers(..., method="iqr"|"zscore")` always reported zero
+  outliers — for every user, always, with no error surfaced. Found and
+  left unfixed in the 2026-09-21 audit (see `docs/ROADMAP_HONEST.md`);
+  fixed here via a shared `unquote()` helper applied at all broken call
+  sites, with 3 new regression tests asserting actual unquoted values.
+- **`stream { window= watermark= emit= }` block parsing no-op** (same file)
+  — newly found while fixing the above: `parse_stream()` matched
+  `opt.as_rule()` against `Rule::stream_window`/etc. directly, but the
+  grammar wraps each alternative in an intermediate `stream_option` pair,
+  so the match always fell through and `StreamConfig` fields were always
+  `None` regardless of input. Fixed by unwrapping the extra pest layer;
+  added a regression test. Note: these fields are still not consumed by
+  the engine downstream — see `TECHNICAL_DEBT.md` TD-0003.
+- `clippy::useless_vec` warning in `statguardian-lineage`'s test module
+  (`storage.rs:623`).
 - `docs/LICENSES.md:7` — `[LICENSE](LICENSE)` resolved to the nonexistent
   `docs/LICENSE`; corrected to `../LICENSE`.
 - `docs/CLI.md:352` and `docs/DBT_INTEGRATION.md:63` — both linked to
@@ -23,6 +45,11 @@ actual commit messages and diffs, not invented.
 - `crates/statguardian-io/src/cloud.rs:163` — `clippy::single_match` warning
   in `test_format_inference_from_uri`; rewrote as `if let`. Test-only,
   behavior unchanged.
+
+### Added
+- `TECHNICAL_DEBT.md` and `AUDIT.md` — consolidated technical-debt register
+  and audit report (cross-referencing `docs/SECURITY_AUDIT.md` and
+  `docs/ROADMAP_HONEST.md` rather than duplicating them).
 
 ### Changed
 - `cargo audit`: 3 of the remaining 5 vulnerabilities from the 2026-09-13

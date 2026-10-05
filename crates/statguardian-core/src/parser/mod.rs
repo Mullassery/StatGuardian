@@ -12,6 +12,18 @@ const MAX_INPUT_SIZE: usize = 10 * 1024 * 1024; // 10MB input limit
 #[grammar = "src/parser/grammar.pest"]
 pub struct ContractParser;
 
+/// `string_literal` is atomic (`@` in the grammar) so `Pair::as_str()` on it
+/// returns the literal text *including* the surrounding double quotes.
+/// Every call site that reads a `string_literal` pair's text as a value
+/// (rather than re-parsing it) must strip exactly one leading/trailing `"`,
+/// or the quotes end up embedded in the value itself.
+fn unquote(raw: &str) -> String {
+    raw.strip_prefix('"')
+        .and_then(|s| s.strip_suffix('"'))
+        .unwrap_or(raw)
+        .to_string()
+}
+
 pub fn parse(input: &str) -> CoreResult<Vec<DataContract>> {
     // Check input size to prevent ReDoS vulnerabilities
     if input.len() > MAX_INPUT_SIZE {
@@ -120,9 +132,7 @@ fn parse_constraint(pair: pest::iterators::Pair<Rule>) -> CoreResult<Constraint>
         Rule::coerce_constraint => Constraint::Coerce,
         Rule::regex_constraint => {
             let s = inner.into_inner().next().unwrap().as_str();
-            Constraint::Regex {
-                pattern: s.to_string(),
-            }
+            Constraint::Regex { pattern: unquote(s) }
         }
         Rule::between_constraint => {
             let mut nums = inner.into_inner();
@@ -157,7 +167,7 @@ fn parse_constraint(pair: pest::iterators::Pair<Rule>) -> CoreResult<Constraint>
             Constraint::Len { min, max }
         }
         Rule::enum_constraint => {
-            let values = inner.into_inner().map(|p| p.as_str().to_string()).collect();
+            let values = inner.into_inner().map(|p| unquote(p.as_str())).collect();
             Constraint::Enum { values }
         }
         Rule::foreign_key => {
@@ -250,16 +260,7 @@ fn parse_literal_value(pair: pest::iterators::Pair<Rule>) -> CoreResult<LiteralV
     let inner = pair.into_inner().next().unwrap();
     Ok(match inner.as_rule() {
         Rule::number => LiteralValue::Number(inner.as_str().parse::<f64>().unwrap()),
-        Rule::string_literal => {
-            // string_literal is atomic (`@`) so as_str() includes the surrounding
-            // quotes — strip exactly one leading/trailing `"`.
-            let raw = inner.as_str();
-            let unquoted = raw
-                .strip_prefix('"')
-                .and_then(|s| s.strip_suffix('"'))
-                .unwrap_or(raw);
-            LiteralValue::Str(unquoted.to_string())
-        }
+        Rule::string_literal => LiteralValue::Str(unquote(inner.as_str())),
         Rule::boolean => LiteralValue::Bool(inner.as_str() == "true"),
         other => {
             return Err(CoreError::Unsupported(format!(
@@ -385,7 +386,7 @@ fn parse_anomaly_rule(pair: pest::iterators::Pair<Rule>) -> CoreResult<AnomalyRu
         if arg.as_rule() == Rule::named_arg {
             let mut parts = arg.into_inner();
             let k = parts.next().unwrap().as_str().to_string();
-            let v = parts.next().unwrap().as_str().to_string();
+            let v = unquote(parts.next().unwrap().as_str());
             args.insert(k, v);
         }
     }
@@ -417,16 +418,20 @@ fn parse_anomaly_fn(pair: pest::iterators::Pair<Rule>) -> CoreResult<AnomalyFn> 
 
 fn parse_stream(pair: pest::iterators::Pair<Rule>) -> CoreResult<StreamConfig> {
     let mut cfg = StreamConfig::default();
-    for opt in pair.into_inner() {
+    // Each item here is a `stream_option` pair (the grammar's alternation
+    // wrapper), not directly a `stream_window`/`stream_watermark`/
+    // `stream_emit` pair — unwrap one more level to reach the real rule.
+    for wrapper in pair.into_inner() {
+        let opt = wrapper.into_inner().next().unwrap();
         match opt.as_rule() {
             Rule::stream_window => {
-                cfg.window = Some(opt.into_inner().next().unwrap().as_str().to_string())
+                cfg.window = Some(unquote(opt.into_inner().next().unwrap().as_str()))
             }
             Rule::stream_watermark => {
-                cfg.watermark = Some(opt.into_inner().next().unwrap().as_str().to_string())
+                cfg.watermark = Some(unquote(opt.into_inner().next().unwrap().as_str()))
             }
             Rule::stream_emit => {
-                cfg.emit = Some(opt.into_inner().next().unwrap().as_str().to_string())
+                cfg.emit = Some(unquote(opt.into_inner().next().unwrap().as_str()))
             }
             _ => {}
         }
@@ -534,5 +539,75 @@ dataset orders {
         let quality = &contracts[0].quality_rules;
         assert_eq!(quality[0].severity, Severity::Error);
         assert_eq!(quality[1].severity, Severity::Warning);
+    }
+
+    // Regression tests for a quote-stripping bug: `string_literal` is an
+    // atomic pest rule, so `Pair::as_str()` on it includes the surrounding
+    // `"` characters. `regex=`, `enum=[...]`, and anomaly named args
+    // (e.g. `method="iqr"`) each read a `string_literal` pair's raw text
+    // directly instead of going through `parse_literal_value`'s unquoting,
+    // so the stored value was literally `"^[^@]+@[^@]+\.[^@]+$"` (quotes
+    // included) instead of `^[^@]+@[^@]+\.[^@]+$` — which meant the regex,
+    // enum, and method constraints never matched anything, for anyone,
+    // always. See docs/ROADMAP_HONEST.md "Known regressions" for the
+    // original (unfixed) write-up of this bug.
+    #[test]
+    fn test_regex_constraint_pattern_is_unquoted() {
+        let contracts = parse(SAMPLE_DSL).unwrap();
+        let email_field = &contracts[0].schema[1];
+        let pattern = email_field
+            .constraints
+            .iter()
+            .find_map(|c| match c {
+                Constraint::Regex { pattern } => Some(pattern.clone()),
+                _ => None,
+            })
+            .expect("email field should have a Regex constraint");
+        assert_eq!(pattern, r"^[^@]+@[^@]+\.[^@]+$");
+        assert!(!pattern.starts_with('"') && !pattern.ends_with('"'));
+    }
+
+    #[test]
+    fn test_enum_constraint_values_are_unquoted() {
+        let contracts = parse(CROSS_COL_DSL).unwrap();
+        let status_field = &contracts[0].schema[2];
+        let values = status_field
+            .constraints
+            .iter()
+            .find_map(|c| match c {
+                Constraint::Enum { values } => Some(values.clone()),
+                _ => None,
+            })
+            .expect("status field should have an Enum constraint");
+        assert_eq!(values, vec!["pending", "paid", "cancelled"]);
+        assert!(values.iter().all(|v| !v.contains('"')));
+    }
+
+    #[test]
+    fn test_anomaly_named_arg_is_unquoted() {
+        let contracts = parse(SAMPLE_DSL).unwrap();
+        let outlier_rule = &contracts[0].anomaly_rules[0];
+        assert_eq!(outlier_rule.args.get("method").map(String::as_str), Some("iqr"));
+    }
+
+    #[test]
+    fn test_stream_config_values_are_unquoted() {
+        let dsl = r#"
+dataset events {
+    schema {
+        ts: datetime, not_null
+    }
+    stream {
+        window="5m"
+        watermark="30s"
+        emit="on_watermark"
+    }
+}
+"#;
+        let contracts = parse(dsl).unwrap();
+        let stream = contracts[0].stream_config.as_ref().expect("stream config");
+        assert_eq!(stream.window.as_deref(), Some("5m"));
+        assert_eq!(stream.watermark.as_deref(), Some("30s"));
+        assert_eq!(stream.emit.as_deref(), Some("on_watermark"));
     }
 }

@@ -78,8 +78,10 @@ Verified by reading the source, not by trusting prior roadmap claims.
 
 ## Known regressions and open engineering work
 
-- **HIGH — `regex=`, `enum=[...]`, and anomaly `method=` DSL constraints are
-  silently broken: they never match anything, for every user, always.**
+- **FIXED 2026-10-05 (see `TECHNICAL_DEBT.md` TD-0001/TD-0002, `CHANGELOG.md`
+  [2.6.1]) — `regex=`, `enum=[...]`, and anomaly `method=` DSL constraints
+  were silently broken: they never matched anything, for every user,
+  always.**
   Found by actually running `statguardian validate` against a real `.sg`
   contract and a real Parquet file during this audit (2026-09-21) — not
   previously documented anywhere. Root cause: pest's `string_literal` rule
@@ -125,22 +127,32 @@ Verified by reading the source, not by trusting prior roadmap claims.
     path (`compiler/mod.rs:144`) and is almost certainly broken the same
     way, though not separately verified live.
 
-  **Impact:** this breaks three separately-advertised, headline DSL
-  features — `enum=`, `regex=`, and anomaly-detection `method=` — including
-  the exact examples used in this project's own README ("30-Second Start"
-  uses `enum=["pending","paid","cancelled"]`; "Schema validation" uses
+  **Impact (as it stood before the 2026-10-05 fix):** this broke three
+  separately-advertised, headline DSL features — `enum=`, `regex=`, and
+  anomaly-detection `method=` — including the exact examples used in this
+  project's own README ("30-Second Start" uses
+  `enum=["pending","paid","cancelled"]`; "Schema validation" uses
   `regex="^[^@]+@[^@]+\.[^@]+$"`). Anyone following the README quickstart
-  literally gets either guaranteed false-positive violations on every row
-  (`enum=`/`regex=`) or anomaly detection that silently never fires
+  literally got either guaranteed false-positive violations on every row
+  (`enum=`/`regex=`) or anomaly detection that silently never fired
   (`method=`), with no error or warning either way. None of the 118 passing
-  Rust tests or the Python test suite caught this — there is a real
-  test-coverage gap: nothing exercises `enum=`/`regex=`/`method=` end-to-end
-  against data expected to both pass and fail one of these checks. Not
-  fixed here — the correct fix (mirror `parse_literal_value`'s quote-strip
-  at the three broken call sites) is small, but doing it properly needs
-  regression tests added for all three constructs plus a full
-  clippy/fmt/test cycle, which deserves a dedicated, focused session rather
-  than a fix folded into a docs pass.
+  Rust tests or the Python test suite caught this — the test-coverage gap
+  was that nothing exercised `enum=`/`regex=`/`method=` end-to-end against
+  data expected to both pass and fail one of these checks.
+
+  **Fixed 2026-10-05**: a shared `unquote()` helper was added in
+  `crates/statguardian-core/src/parser/mod.rs` and applied at all three
+  broken call sites (plus `parse_literal_value`'s existing correct one was
+  refactored to use it too). Four new regression tests were added, three
+  for this bug and one (`test_stream_config_values_are_unquoted`) that
+  caught a second, independent, previously-undiscovered bug in the same
+  area — `parse_stream()` never actually read `window=`/`watermark=`/
+  `emit=` values at all (a pest rule-nesting mismatch, unrelated to
+  quoting), also fixed in the same pass. See `TECHNICAL_DEBT.md`
+  TD-0001/TD-0002 and `CHANGELOG.md` [2.6.1] for full detail. Note:
+  `window=`/`watermark=`/`emit=` now parse correctly but are still not
+  consumed by the engine downstream — tracked as TD-0003, not a regression
+  from this fix, pre-existing.
 
 - **`StreamingBatcher` bounded-memory regression** (introduced 2026-09-14 by
   the required `polars` 0.44→0.55 security upgrade) — Polars removed its
@@ -178,14 +190,9 @@ by whether it needs its own dedicated follow-up session.
 
 **Needs a dedicated session:**
 
-1. **DSL parser quote-stripping bug** (`enum=`, `regex=`, anomaly `method=`/
-   `pattern=` all silently non-functional) — see the top item under "Known
-   regressions" above. HIGH priority: breaks advertised, headline features
-   silently, with no error surfaced to users. Fix locations:
-   `crates/statguardian-core/src/parser/mod.rs` lines ~121-126 (regex),
-   ~159-162 (enum), ~386-389 (named args) — mirror the correct pattern
-   already used in `parse_literal_value()` (~line 253). Needs new regression
-   tests for all three constructs, not just the parser fix itself.
+1. ~~**DSL parser quote-stripping bug**~~ — **FIXED 2026-10-05**, see
+   `TECHNICAL_DEBT.md` TD-0001/TD-0002 and the top item under "Known
+   regressions" above.
 2. **`StreamingBatcher` bounded-memory regression**
    (`crates/statguardian-io/src/lib.rs`) — see "Known regressions" above and
    `SECURITY_AUDIT.md` §2b. Needs either a hand-rolled chunked CSV reader or
