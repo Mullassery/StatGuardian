@@ -81,7 +81,12 @@ impl BatchExecutor {
 // ── Helper: get Series from a DataFrame column by name ────────────────────────
 
 fn get_series(df: &DataFrame, name: &str) -> Option<Series> {
-    df.column(name).ok().and_then(|c| c.as_series().cloned())
+    // `as_series()` is `None` for scalar-backed columns (e.g. a single-row
+    // DataFrame). Use the materialized form so DAG checks never silently skip
+    // a small final batch.
+    df.column(name)
+        .ok()
+        .map(|c| c.as_materialized_series().clone())
 }
 
 // ── DAG node execution ────────────────────────────────────────────────────────

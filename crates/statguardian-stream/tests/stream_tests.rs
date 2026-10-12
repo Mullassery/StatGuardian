@@ -116,21 +116,30 @@ fn findings_are_stable_and_sorted_across_batches() {
 
     assert_eq!(report.records_validated, 5);
     assert!(report.batches >= 3, "expected multiple batches");
-    eprintln!(
-        "DEBUG batches={} findings={:?}",
-        report.batches,
-        report
-            .findings
-            .iter()
-            .map(|f| (f.record, f.batch, f.check.clone()))
-            .collect::<Vec<_>>()
+
+    // The raw findings list must already be in deterministic
+    // (record, column, check, batch) order.
+    assert!(
+        report.findings.windows(2).all(|w| {
+            let key = |f: &statguardian_stream::StreamFinding| {
+                (f.record, f.column.clone(), f.check.clone(), f.batch)
+            };
+            key(&w[0]) <= key(&w[1])
+        }),
+        "findings must be emitted in stable sorted order"
     );
-    let records: Vec<u64> = report.findings.iter().filter_map(|f| f.record).collect();
-    assert_eq!(records, vec![0, 1, 2, 3, 4]);
-    // Sorted by (record, ...) deterministically.
-    let mut sorted = records.clone();
-    sorted.sort_unstable();
-    assert_eq!(records, sorted);
+
+    // Every record must be validated, including the final single-record
+    // leftover batch. Each record trips both the `between` schema constraint
+    // and the `range_check` DAG node.
+    let mut records: Vec<u64> = report.findings.iter().filter_map(|f| f.record).collect();
+    records.sort_unstable();
+    records.dedup();
+    assert_eq!(
+        records,
+        vec![0, 1, 2, 3, 4],
+        "the final 1-record micro-batch must not be silently skipped"
+    );
 }
 
 #[test]
@@ -284,48 +293,3 @@ fn report_json_and_prometheus_are_well_formed() {
     assert!(report.summary().starts_with("[StreamGuard] PASS"));
 }
 
-#[test]
-fn debug_single_row_engine() {
-    use statguardian_engine::Engine;
-    let dsl = r#"dataset events { schema { id: int, between(0, 0) } }"#;
-    let (contract, dag) = parse_and_compile(dsl).unwrap().into_iter().next().unwrap();
-    let eng = Engine::new(contract, dag);
-    let one = polars::prelude::df!("id" => &[5i64]).unwrap();
-    let r1 = eng.execute(&one, None);
-    eprintln!("1-row checks: {:?}", r1.violations.iter().map(|v| (&v.column, &v.check, &v.row_indices)).collect::<Vec<_>>());
-    let two = polars::prelude::df!("id" => &[5i64, 6]).unwrap();
-    let r2 = eng.execute(&two, None);
-    eprintln!("2-row checks: {:?}", r2.violations.iter().map(|v| (&v.column, &v.check, &v.row_indices)).collect::<Vec<_>>());
-}
-
-#[test]
-fn debug_single_row_shapes() {
-    use polars::prelude::*;
-    use statguardian_engine::Engine;
-    let dsl = r#"dataset events { schema { id: int, between(0, 0) } }"#;
-    let (contract, dag) = parse_and_compile(dsl).unwrap().into_iter().next().unwrap();
-    let eng = Engine::new(contract, dag);
-    for n in 1..=3usize {
-        let vals: Vec<i64> = (0..n as i64).map(|i| 5 + i).collect();
-        let df = df!("id" => vals).unwrap();
-        let r = eng.execute(&df, None);
-        eprintln!("n={n} height={} checks={:?}", df.height(),
-            r.violations.iter().map(|v| (&v.check, &v.row_indices)).collect::<Vec<_>>());
-    }
-}
-
-#[test]
-fn debug_single_row_root_cause() {
-    use polars::prelude::*;
-    use statguardian_validators::SchemaValidator;
-    let dsl = r#"dataset events { schema { id: int, between(0, 0) } }"#;
-    let (contract, _dag) = parse_and_compile(dsl).unwrap().into_iter().next().unwrap();
-    let df = df!("id" => [5i64]).unwrap();
-    let s = df.column("id").unwrap().as_series().unwrap().clone();
-    eprintln!("dtype={:?} len={} nulls={}", s.dtype(), s.len(), s.null_count());
-    let casted = s.cast(&DataType::Float64).unwrap();
-    let ca = casted.f64().unwrap();
-    eprintln!("ca.len={} ca.get(0)={:?}", ca.len(), ca.get(0));
-    let sv = SchemaValidator::validate(&df, &contract.schema);
-    eprintln!("schema_violations={:?}", sv.iter().map(|v| (&v.column, &v.check, &v.row_indices)).collect::<Vec<_>>());
-}

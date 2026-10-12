@@ -28,7 +28,7 @@ fn evaluate_rule(df: &DataFrame, rule: &QualityRule) -> Vec<Violation> {
     let series = match df
         .column(&rule.column)
         .ok()
-        .and_then(|c| c.as_series().cloned())
+        .map(|c| c.as_materialized_series().clone())
     {
         Some(s) => s,
         None => {
@@ -107,7 +107,7 @@ fn evaluate_cross_column_rule(df: &DataFrame, rule: &CrossColumnRule) -> Vec<Vio
     let when_series = match df
         .column(&rule.when_column)
         .ok()
-        .and_then(|c| c.as_series().cloned())
+        .map(|c| c.as_materialized_series().clone())
     {
         Some(s) => s,
         None => {
@@ -123,7 +123,7 @@ fn evaluate_cross_column_rule(df: &DataFrame, rule: &CrossColumnRule) -> Vec<Vio
     let assert_series = match df
         .column(&rule.assert_column)
         .ok()
-        .and_then(|c| c.as_series().cloned())
+        .map(|c| c.as_materialized_series().clone())
     {
         Some(s) => s,
         None => {

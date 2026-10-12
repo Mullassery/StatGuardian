@@ -19,14 +19,17 @@ impl SchemaValidator {
                     ));
                 }
                 Ok(col) => {
-                    if let Some(series) = col.as_series() {
-                        violations.extend(check_type(series, field));
-                        violations.extend(check_constraints(
-                            series,
-                            &field.constraints,
-                            &field.name,
-                        ));
-                    }
+                    // `as_series()` returns `None` for scalar-backed columns
+                    // (e.g. a single-row DataFrame, which occurs for the final
+                    // leftover micro-batch of a stream). Materialize instead so
+                    // such columns are never silently skipped.
+                    let series = col.as_materialized_series();
+                    violations.extend(check_type(series, field));
+                    violations.extend(check_constraints(
+                        series,
+                        &field.constraints,
+                        &field.name,
+                    ));
                 }
             }
         }
