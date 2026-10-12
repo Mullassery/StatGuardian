@@ -1,0 +1,20 @@
+[package]
+name        = "statguardian-stream"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Optional incremental NDJSON stream validation, sanitization, and agent-runtime observability for StatGuardian"
+
+[dependencies]
+statguardian-core      = { path = "../statguardian-core" }
+statguardian-engine    = { path = "../statguardian-engine" }
+statguardian-metrics   = { path = "../statguardian-metrics" }
+statguardian-validators = { path = "../statguardian-validators" }
+polars     = { workspace = true }
+serde      = { workspace = true }
+serde_json = { workspace = true }
+thiserror  = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"

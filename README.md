@@ -1,6 +1,6 @@
 # StatGuardian
 
-[![Grapify](https://img.shields.io/badge/Grapify-Code%20Scan-purple)](https://grapify.ai)
+[![Graphify](https://img.shields.io/badge/Graphify-knowledge%20graph-blue)](https://github.com/Graphify-Labs/graphify)
 
 A Rust-native data quality engine with a declarative contract DSL: schema validation, drift detection, and anomaly detection for Pandas and Polars.
 

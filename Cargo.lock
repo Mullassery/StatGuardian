@@ -3629,6 +3629,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "statguardian-stream"
+version = "2.6.3"
+dependencies = [
+ "polars",
+ "serde",
+ "serde_json",
+ "statguardian-core",
+ "statguardian-engine",
+ "statguardian-metrics",
+ "statguardian-validators",
+ "tempfile",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "statguardian-validators"
 version = "2.6.3"
 dependencies = [
