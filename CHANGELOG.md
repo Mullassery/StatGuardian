@@ -10,6 +10,19 @@ actual commit messages and diffs, not invented.
 
 ## [Unreleased]
 
+## [2.6.3] - 2026-10-12
+
+### Fixed
+- **Re-release superseding the accidental 2.6.2.** A 2.6.2 build was published
+  to PyPI by mistake from a stale checkout that predated the 2.6.1 parser fix:
+  it contained the `unquote()` fix for `regex=`/`enum=`/string literals/anomaly
+  named args but **not** the `stream { window= watermark= emit= }` nesting fix,
+  so 2.6.2 would have regressed stream-block parsing to a silent no-op. 2.6.3
+  is built from the canonical 2.6.1 source and is functionally identical to
+  2.6.1 (no code changes); it exists only to supersede 2.6.2 for installers.
+  Since 2.6.3 > 2.6.2, resolvers (pip, uv) will select 2.6.3 by default; the
+  2.6.2 release should be treated as withdrawn.
+
 ## [2.6.1] - 2026-10-05
 
 ### Fixed
