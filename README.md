@@ -118,6 +118,19 @@ Note: When validating a Pandas DataFrame, convert it to Polars first (e.g., `pl.
 
 Contributions are welcome. Please review [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on development setup, code style, and testing.
 
+## Related projects
+
+Part of the Mullassery open-source family:
+
+- [PyDependencyCheck](https://github.com/Mullassery/PyDependencyCheck) — dependency intelligence and supply-chain integrity
+- [PyDBTGuard](https://github.com/Mullassery/PyDBTGuard) — dbt manifest analysis (risky tests, blast radius, cost)
+- [PyAirflowTester](https://github.com/Mullassery/PyAirflowTester) — Airflow and dbt reliability platform
+- [StatGuardian](https://github.com/Mullassery/StatGuardian) — declarative data-quality framework
+- [PySynthData](https://github.com/Mullassery/PySynthData) — synthetic data generation for ML
+- [PyReverseETL](https://github.com/Mullassery/PyReverseETL) — quality-validated reverse ETL
+- [PyWeatherEnriched](https://github.com/Mullassery/PyWeatherEnriched) — weather-enriched feature engineering
+- [Browse all projects](https://github.com/Mullassery?tab=repositories)
+
 ## License
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
