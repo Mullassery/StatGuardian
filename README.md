@@ -2,6 +2,29 @@
 
 A Rust-native data quality engine with a declarative contract DSL for schema validation, drift detection, and anomaly detection for Pandas and Polars DataFrames.
 
+> **Not to be confused with pipeline validators like [PyDBTGuard](https://github.com/Mullassery/PyDBTGuard) or [PyBeamGuard](https://github.com/Mullassery/PyBeamGuard):** those check pipeline definitions before they run; StatGuardian checks the quality of the *data* at runtime.
+
+## Which project do I need?
+
+Part of the Mullassery open-source family. These tools have similar names — here is the short version of who does what:
+
+| If you need to… | Use |
+| --- | --- |
+| Build a repository's dependency graph and match it against vulnerability advisories (Python, Rust, Node, containers) | [PyDeepMesh](https://github.com/Mullassery/PyDeepMesh) |
+| Understand *why* a Python dependency exists, who added it, and whether it is actually used | [PyDependencyCheck](https://github.com/Mullassery/PyDependencyCheck) |
+| Statically analyze a **dbt** project (risky tests, test blast radius, cost) | [PyDBTGuard](https://github.com/Mullassery/PyDBTGuard) |
+| Statically analyze **Apache Beam / Dataflow** pipelines (cost, hot keys, reliability) | [PyBeamGuard](https://github.com/Mullassery/PyBeamGuard) |
+| Validate **Airflow** DAGs and dbt runs | [PyAirflowTester](https://github.com/Mullassery/PyAirflowTester) |
+| Simulate cascading-failure **blast radius** across infrastructure, data pipelines, and AI systems | [PyBlastRadius](https://github.com/Mullassery/PyBlastRadius) |
+| Check the **quality of the data itself** at runtime (schema, drift, anomalies) | [StatGuardian](https://github.com/Mullassery/StatGuardian) |
+| Discover **devices, services, and vulnerabilities on a network** | [PyNetworkIntel](https://github.com/Mullassery/PyNetworkIntel) |
+| Discover and score **API security** risk (real traffic, agent/MCP, Cedar policy) | [PyAPICheck](https://github.com/Mullassery/PyAPICheck) |
+| Trace and root-cause **AI agent** failures | [PyAgentHound](https://github.com/Mullassery/PyAgentHound) |
+| Diagnose **RAG retrieval** failures | [PyVectorHound](https://github.com/Mullassery/PyVectorHound) |
+| Orchestrate **local, dependency-aware tasks** (DAG scheduler + content-addressed cache) | [PyTaskWireCheck](https://github.com/Mullassery/PyTaskWireCheck) |
+
+[Browse all projects →](https://github.com/Mullassery?tab=repositories)
+
 ## What it is
 
 StatGuardian validates data at runtime against versionable contracts written in a declarative `.sg` DSL. It catches schema violations, statistical drift, and anomalies before they reach downstream consumers. The core validation and statistics logic run in Rust while providing a Python API for integration into data pipelines.
@@ -117,19 +140,6 @@ Note: When validating a Pandas DataFrame, convert it to Polars first (e.g., `pl.
 ## Contributing
 
 Contributions are welcome. Please review [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on development setup, code style, and testing.
-
-## Related projects
-
-Part of the Mullassery open-source family:
-
-- [PyDependencyCheck](https://github.com/Mullassery/PyDependencyCheck) — dependency intelligence and supply-chain integrity
-- [PyDBTGuard](https://github.com/Mullassery/PyDBTGuard) — dbt manifest analysis (risky tests, blast radius, cost)
-- [PyAirflowTester](https://github.com/Mullassery/PyAirflowTester) — Airflow and dbt reliability platform
-- [StatGuardian](https://github.com/Mullassery/StatGuardian) — declarative data-quality framework
-- [PySynthData](https://github.com/Mullassery/PySynthData) — synthetic data generation for ML
-- [PyReverseETL](https://github.com/Mullassery/PyReverseETL) — quality-validated reverse ETL
-- [PyWeatherEnriched](https://github.com/Mullassery/PyWeatherEnriched) — weather-enriched feature engineering
-- [Browse all projects](https://github.com/Mullassery?tab=repositories)
 
 ## License
 
