@@ -45,6 +45,9 @@ from ._statguardian import (
     execute,
     execute_file,
     execute_streaming,
+    # StreamGuard — incremental NDJSON validation
+    execute_stream_ndjson,
+    StreamReport,
     # Delta Lake
     execute_delta,
     compare_delta_versions,
@@ -135,6 +138,9 @@ __all__ = [
     "execute",
     "execute_file",
     "execute_streaming",
+    # StreamGuard
+    "execute_stream_ndjson",
+    "StreamReport",
     # Lakehouse
     "execute_delta",
     "compare_delta_versions",

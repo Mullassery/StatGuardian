@@ -10,6 +10,53 @@ actual commit messages and diffs, not invented.
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-10-12
+
+### Added
+- **StreamGuard** (`crates/statguardian-stream`): incremental, bounded-memory
+  NDJSON validation. `StreamValidator` reads one record at a time from any
+  `BufRead`, buffers micro-batches, and reuses `Engine::execute` so contracts,
+  rules, and findings are unchanged. Includes `StreamLimits` (records/bytes/
+  line size/batch size), `MalformedPolicy` (`FailFast`/`Skip`/`Collect`),
+  stable global record indices, and exit codes (`0` pass / `1` validation fail,
+  with execution errors returned as `Err` → `2` at the CLI).
+- **Sanitization**: opt-in `RedactionPolicy` (mask/mask-with/hash/null/drop) and
+  `NormalizationPolicy` (trim/lower/upper) that never mutate the source and
+  never emit raw values; `SanitizationSummary` aggregates counts by kind/field.
+- **AgentGuard** (`statguardian-stream::agent`): SDK-free agent-runtime
+  observability — normalized `AgentEvent` model, `Provenance`
+  (`Measured`/`Estimated`/`Unknown`), advisory `Enforcement`, and heuristic
+  loop detection labeled as such.
+- Python binding `execute_stream_ndjson` + `StreamReport` (PyO3) and the
+  `statguardian stream` CLI subcommand (report→stdout, diagnostics→stderr,
+  broken-pipe safe).
+
+### Fixed
+- **Silent validation skip for single-row DataFrames** (Polars 0.55 scalar
+  columns). `Column::as_series()` returns `None` for a scalar-backed column,
+  so `SchemaValidator`, `RuleEngine`, and the engine DAG `get_series` treated a
+  1-row frame as having no checks. Streaming surfaces this because the final
+  leftover micro-batch is often exactly one record. All three call sites now use
+  `as_materialized_series()`; regression test added.
+
+### Notes
+- Verified: `cargo test --release --all-features --workspace --exclude
+  statguardian` → 146 passed / 0 failed (plain `--release`: 145, was 111);
+  `cargo clippy --release --all-features --workspace --exclude statguardian
+  --all-targets -- -D warnings` → clean.
+- Verified (Python + CLI): extension built with `maturin develop --release` and
+  exercised on Python 3.9.6 / polars 1.32.2 / pyarrow 21.0.0 — `execute_stream_ndjson`
+  and `statguardian stream` exit codes (0/1/2), stdout/stderr separation,
+  malformed policy, `max_records` truncation, and blocking (missing-column)
+  behavior all pass. New tests in `tests/test_python_bindings.py` (9 total;
+  full `pytest tests/` → 35 passed) run in the CI `python-tests` job. See
+  `docs/STREAMGUARD.md` §5.
+- Distribution: `maturin build --release` produces a single abi3 wheel
+  (`statguardian-2.7.0-cp38-abi3-macosx_11_0_arm64.whl`, ~17 MB) that installs
+  cleanly into a fresh venv; `execute_stream_ndjson`/`StreamReport` import and
+  the `statguardian stream` CLI returns 0/1/2 as expected from the installed
+  wheel.
+
 ## [2.6.3] - 2026-10-12
 
 ### Fixed

@@ -25,11 +25,7 @@ impl SchemaValidator {
                     // such columns are never silently skipped.
                     let series = col.as_materialized_series();
                     violations.extend(check_type(series, field));
-                    violations.extend(check_constraints(
-                        series,
-                        &field.constraints,
-                        &field.name,
-                    ));
+                    violations.extend(check_constraints(series, &field.constraints, &field.name));
                 }
             }
         }

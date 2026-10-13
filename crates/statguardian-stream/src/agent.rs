@@ -44,6 +44,7 @@ pub struct Measured<T> {
     pub provenance: Provenance,
 }
 
+#[allow(clippy::self_named_constructors)]
 impl<T> Measured<T> {
     pub fn measured(value: T) -> Self {
         Self {
@@ -141,18 +142,57 @@ impl AgentEvent {
             _ => Provenance::Measured,
         };
 
-        let tokens_in = parse_measured_u64(obj, &["tokens_in", "input_tokens", "prompt_tokens"], default_provenance);
-        let tokens_out = parse_measured_u64(obj, &["tokens_out", "output_tokens", "completion_tokens"], default_provenance);
+        let tokens_in = parse_measured_u64(
+            obj,
+            &["tokens_in", "input_tokens", "prompt_tokens"],
+            default_provenance,
+        );
+        let tokens_out = parse_measured_u64(
+            obj,
+            &["tokens_out", "output_tokens", "completion_tokens"],
+            default_provenance,
+        );
         let cost_usd = parse_measured_f64(obj, &["cost_usd", "cost"], default_provenance);
-        let duration_ms = parse_measured_u64(obj, &["duration_ms", "latency_ms", "elapsed_ms"], default_provenance);
+        let duration_ms = parse_measured_u64(
+            obj,
+            &["duration_ms", "latency_ms", "elapsed_ms"],
+            default_provenance,
+        );
 
         let known: &[&str] = &[
-            "execution_id", "run_id", "trace_id", "session_id", "seq", "step", "index",
-            "timestamp_ms", "ts_ms", "kind", "type", "event", "tool", "tool_name", "name",
-            "call_signature", "args_hash", "signature", "tokens_in", "input_tokens",
-            "prompt_tokens", "tokens_out", "output_tokens", "completion_tokens", "cost_usd",
-            "cost", "duration_ms", "latency_ms", "elapsed_ms", "retry_of", "retry_index",
-            "error", "provenance",
+            "execution_id",
+            "run_id",
+            "trace_id",
+            "session_id",
+            "seq",
+            "step",
+            "index",
+            "timestamp_ms",
+            "ts_ms",
+            "kind",
+            "type",
+            "event",
+            "tool",
+            "tool_name",
+            "name",
+            "call_signature",
+            "args_hash",
+            "signature",
+            "tokens_in",
+            "input_tokens",
+            "prompt_tokens",
+            "tokens_out",
+            "output_tokens",
+            "completion_tokens",
+            "cost_usd",
+            "cost",
+            "duration_ms",
+            "latency_ms",
+            "elapsed_ms",
+            "retry_of",
+            "retry_index",
+            "error",
+            "provenance",
         ];
         let mut metadata = BTreeMap::new();
         for (k, v) in obj {
@@ -387,14 +427,15 @@ impl AgentGuard {
                 });
             }
             if !line.utf8 {
-                return Err(StreamError::InvalidUtf8 { record: line.record });
+                return Err(StreamError::InvalidUtf8 {
+                    record: line.record,
+                });
             }
-            let value: Value = serde_json::from_str(&line.content).map_err(|e| {
-                StreamError::Malformed {
+            let value: Value =
+                serde_json::from_str(&line.content).map_err(|e| StreamError::Malformed {
                     record: line.record,
                     reason: e.to_string(),
-                }
-            })?;
+                })?;
             let event = AgentEvent::from_json(&value).map_err(|reason| StreamError::Malformed {
                 record: line.record,
                 reason,
@@ -413,10 +454,7 @@ impl AgentGuard {
             if telemetry.tool_calls > max {
                 violations.push(AgentPolicyViolation {
                     policy: "max_tool_calls".into(),
-                    message: format!(
-                        "{} tool calls exceed budget of {max}",
-                        telemetry.tool_calls
-                    ),
+                    message: format!("{} tool calls exceed budget of {max}", telemetry.tool_calls),
                     severity: self.measured_breach_severity(),
                     measured: true,
                     heuristic: false,
@@ -490,14 +528,20 @@ impl AgentGuard {
             }
         }
 
-        let loops = detect_loops(events, self.policy.loop_window, self.policy.loop_repeat_threshold);
+        let loops = detect_loops(
+            events,
+            self.policy.loop_window,
+            self.policy.loop_repeat_threshold,
+        );
         for loop_finding in &loops {
             violations.push(AgentPolicyViolation {
                 policy: "loop_detection".into(),
                 message: format!(
                     "heuristic: signature '{}' repeated {} times (seq {}→{})",
-                    loop_finding.signature, loop_finding.occurrences,
-                    loop_finding.first_seq, loop_finding.last_seq
+                    loop_finding.signature,
+                    loop_finding.occurrences,
+                    loop_finding.first_seq,
+                    loop_finding.last_seq
                 ),
                 severity: Severity::Warning,
                 measured: false,
@@ -588,11 +632,7 @@ fn accumulate_duration(t: &mut AgentTelemetry, m: Option<&Measured<u64>>) {
     }
 }
 
-fn detect_loops(
-    events: &[AgentEvent],
-    window: usize,
-    threshold: usize,
-) -> Vec<LoopFinding> {
+fn detect_loops(events: &[AgentEvent], window: usize, threshold: usize) -> Vec<LoopFinding> {
     if window == 0 || threshold == 0 {
         return Vec::new();
     }
@@ -607,8 +647,7 @@ fn detect_loops(
         if recent.len() > window {
             recent.remove(0);
         }
-        let occurrences: Vec<&(String, u64)> =
-            recent.iter().filter(|(s, _)| s == sig).collect();
+        let occurrences: Vec<&(String, u64)> = recent.iter().filter(|(s, _)| s == sig).collect();
         if occurrences.len() >= threshold {
             let first_seq = occurrences.first().map(|(_, s)| *s).unwrap_or(e.seq);
             let last_seq = occurrences.last().map(|(_, s)| *s).unwrap_or(e.seq);
@@ -658,8 +697,12 @@ mod tests {
     #[test]
     fn telemetry_separates_measured_and_estimated() {
         let events = vec![
-            ev(json!({"seq":0,"kind":"llm_call","tokens_in":100,"tokens_out":50,"cost_usd":0.01,"duration_ms":10})),
-            ev(json!({"seq":1,"kind":"llm_call","tokens_in":{"value":10,"provenance":"estimated"},"cost_usd":{"value":0.001,"provenance":"estimated"},"duration_ms":10})),
+            ev(
+                json!({"seq":0,"kind":"llm_call","tokens_in":100,"tokens_out":50,"cost_usd":0.01,"duration_ms":10}),
+            ),
+            ev(
+                json!({"seq":1,"kind":"llm_call","tokens_in":{"value":10,"provenance":"estimated"},"cost_usd":{"value":0.001,"provenance":"estimated"},"duration_ms":10}),
+            ),
         ];
         let guard = AgentGuard::new(AgentPolicy::default());
         let report = guard.evaluate(&events);
@@ -672,9 +715,11 @@ mod tests {
     #[test]
     fn measured_budget_breach_is_measured() {
         let events = vec![ev(json!({"seq":0,"kind":"tool_call","tool":"x"}))];
-        let mut policy = AgentPolicy::default();
-        policy.max_tool_calls = Some(0);
-        policy.enforce = true;
+        let policy = AgentPolicy {
+            max_tool_calls: Some(0),
+            enforce: true,
+            ..Default::default()
+        };
         let report = AgentGuard::new(policy).evaluate(&events);
         assert!(!report.passed());
         let v = &report.violations[0];
@@ -690,8 +735,10 @@ mod tests {
             "seq":0,"kind":"llm_call",
             "tokens_in":{"value":1000,"provenance":"estimated"}
         }))];
-        let mut policy = AgentPolicy::default();
-        policy.max_total_tokens = Some(10);
+        let policy = AgentPolicy {
+            max_total_tokens: Some(10),
+            ..Default::default()
+        };
         let report = AgentGuard::new(policy).evaluate(&events);
         assert_eq!(report.violations.len(), 1);
         assert!(!report.violations[0].measured);

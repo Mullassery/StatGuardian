@@ -8,6 +8,7 @@ use statguardian_core::{parse_and_compile, DataContract};
 use statguardian_engine::Engine;
 use statguardian_lineage::{LineageStore, LineageVersion, SQLiteLineageStore};
 use statguardian_metrics::report::ValidationReport;
+use statguardian_stream::{MalformedPolicy, StreamLimits, StreamOptions, StreamValidator};
 
 // ── PyDataContract ─────────────────────────────────────────────────────────────
 
@@ -234,6 +235,157 @@ impl PyValidationReport {
     }
 }
 
+// ── PyStreamReport ──────────────────────────────────────────────────────────────
+
+/// Result of incremental NDJSON validation via `execute_stream_ndjson`.
+#[pyclass(name = "StreamReport", module = "statguardian")]
+pub struct PyStreamReport {
+    inner: statguardian_stream::StreamReport,
+}
+
+#[pymethods]
+impl PyStreamReport {
+    #[getter]
+    fn dataset(&self) -> &str {
+        &self.inner.dataset
+    }
+
+    /// Records read from the stream (including malformed/oversized lines).
+    #[getter]
+    fn records_read(&self) -> u64 {
+        self.inner.records_read
+    }
+
+    /// Records that were parsed and passed to the engine.
+    #[getter]
+    fn records_validated(&self) -> u64 {
+        self.inner.records_validated
+    }
+
+    #[getter]
+    fn malformed_count(&self) -> u64 {
+        self.inner.malformed_count
+    }
+
+    #[getter]
+    fn oversized_count(&self) -> u64 {
+        self.inner.oversized_count
+    }
+
+    #[getter]
+    fn batches(&self) -> usize {
+        self.inner.batches
+    }
+
+    #[getter]
+    fn bytes_consumed(&self) -> u64 {
+        self.inner.bytes_consumed
+    }
+
+    /// True when a resource limit stopped the run before end-of-input.
+    #[getter]
+    fn truncated(&self) -> bool {
+        self.inner.truncated
+    }
+
+    /// True when there are no blocking findings.
+    #[getter]
+    fn passed(&self) -> bool {
+        self.inner.passed
+    }
+
+    #[getter]
+    fn duration_ms(&self) -> u64 {
+        self.inner.duration_ms
+    }
+
+    #[getter]
+    fn blocking_count(&self) -> usize {
+        self.inner.blocking_count()
+    }
+
+    #[getter]
+    fn warning_count(&self) -> usize {
+        self.inner.warning_count()
+    }
+
+    /// Total field-level sanitization events applied (never contains raw values).
+    #[getter]
+    fn sanitization_events(&self) -> u64 {
+        self.inner.sanitization.total_events
+    }
+
+    /// Process exit code: 0 passed, 1 validation failed.
+    ///
+    /// Execution errors (exit 2) are raised as Python exceptions instead.
+    #[pyo3(signature = (fail_on_warning=false))]
+    fn exit_code(&self, fail_on_warning: bool) -> i32 {
+        self.inner.exit_code(fail_on_warning)
+    }
+
+    /// Findings as a list of dicts.
+    fn findings(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
+        self.inner
+            .findings
+            .iter()
+            .map(|f| {
+                let d = PyDict::new(py);
+                d.set_item("record", f.record)?;
+                d.set_item("batch", f.batch)?;
+                d.set_item("column", &f.column)?;
+                d.set_item("check", &f.check)?;
+                d.set_item("message", &f.message)?;
+                d.set_item("severity", format!("{:?}", f.severity))?;
+                Ok(d.into())
+            })
+            .collect()
+    }
+
+    /// Collected malformed-record diagnostics (empty unless the policy is `collect`).
+    fn malformed(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
+        self.inner
+            .malformed
+            .iter()
+            .map(|m| {
+                let d = PyDict::new(py);
+                d.set_item("record", m.record)?;
+                d.set_item("kind", format!("{:?}", m.kind))?;
+                d.set_item("reason", &m.reason)?;
+                d.set_item("preview", &m.preview)?;
+                Ok(d.into())
+            })
+            .collect()
+    }
+
+    fn to_json(&self) -> String {
+        self.inner.to_json()
+    }
+
+    fn to_json_pretty(&self) -> String {
+        self.inner.to_json_pretty()
+    }
+
+    fn to_prometheus(&self) -> String {
+        self.inner.to_prometheus()
+    }
+
+    fn summary(&self) -> String {
+        self.inner.summary()
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "StreamReport(passed={}, records={}/{}, findings={}, malformed={}, truncated={})",
+            self.inner.passed,
+            self.inner.records_validated,
+            self.inner.records_read,
+            self.inner.findings.len(),
+            self.inner.malformed_count,
+            self.inner.truncated,
+        )
+    }
+}
+
 // ── Module-level functions ────────────────────────────────────────────────────
 
 /// Execute a contract against a Polars DataFrame.
@@ -305,6 +457,82 @@ fn execute_streaming(
         .into_iter()
         .map(|r| PyValidationReport { inner: r })
         .collect())
+}
+
+// ── Streaming NDJSON (StreamGuard) ─────────────────────────────────────────────
+
+/// Incrementally validate an NDJSON file with bounded memory.
+///
+/// Records are read one line at a time, buffered into micro-batches of
+/// `batch_size`, and validated with the same engine used by `execute`.
+///
+/// Args:
+///     contract:                A compiled `DataContract`.
+///     path:                    Path to an NDJSON (newline-delimited JSON) file.
+///     batch_size:              Records per validation micro-batch (default: 1000).
+///     max_records:             Optional cap on records read.
+///     max_bytes:               Optional cap on source bytes consumed.
+///     max_record_bytes:        Per-line byte cap (default: 8 MiB).
+///     malformed:               One of "fail_fast", "skip", "collect" (default: "collect").
+///     collect_max:             Max malformed diagnostics retained when collecting (default: 100).
+///     allow_raw_diagnostics:   Attach raw line previews to malformed diagnostics (default: False).
+///
+/// Returns:
+///     A `StreamReport`.
+#[pyfunction]
+#[pyo3(signature = (
+    contract,
+    path,
+    batch_size=None,
+    max_records=None,
+    max_bytes=None,
+    max_record_bytes=None,
+    malformed="collect",
+    collect_max=100,
+    allow_raw_diagnostics=false,
+))]
+#[allow(clippy::too_many_arguments)]
+fn execute_stream_ndjson(
+    contract: &PyDataContract,
+    path: &str,
+    batch_size: Option<usize>,
+    max_records: Option<u64>,
+    max_bytes: Option<u64>,
+    max_record_bytes: Option<usize>,
+    malformed: &str,
+    collect_max: usize,
+    allow_raw_diagnostics: bool,
+) -> PyResult<PyStreamReport> {
+    let policy = match malformed.to_ascii_lowercase().as_str() {
+        "fail_fast" | "failfast" => MalformedPolicy::FailFast,
+        "skip" => MalformedPolicy::Skip,
+        "collect" => MalformedPolicy::Collect { max: collect_max },
+        other => {
+            return Err(PyValueError::new_err(format!(
+                "unknown malformed policy '{other}' (expected fail_fast|skip|collect)"
+            )))
+        }
+    };
+
+    let defaults = StreamLimits::default();
+    let options = StreamOptions {
+        limits: StreamLimits {
+            max_records,
+            max_bytes,
+            max_record_bytes: max_record_bytes.unwrap_or(defaults.max_record_bytes),
+            batch_size: batch_size.unwrap_or(defaults.batch_size),
+        },
+        malformed: policy.clone(),
+        oversized: policy,
+        sanitizer: Default::default(),
+        allow_raw_diagnostics,
+    };
+
+    let validator = StreamValidator::new(contract.inner.clone(), contract.dag.clone(), options);
+    let report = validator
+        .validate_path(path)
+        .map_err(|e| PyRuntimeError::new_err(format!("stream error: {e}")))?;
+    Ok(PyStreamReport { inner: report })
 }
 
 // ── Delta Lake ────────────────────────────────────────────────────────────────
@@ -532,11 +760,15 @@ fn lineage_list_versions(db_path: &str, warehouse_id: &str, limit: usize) -> PyR
 fn _statguardian(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyDataContract>()?;
     m.add_class::<PyValidationReport>()?;
+    m.add_class::<PyStreamReport>()?;
 
     // Core execution
     m.add_function(wrap_pyfunction!(execute, m)?)?;
     m.add_function(wrap_pyfunction!(execute_file, m)?)?;
     m.add_function(wrap_pyfunction!(execute_streaming, m)?)?;
+
+    // Streaming NDJSON (StreamGuard)
+    m.add_function(wrap_pyfunction!(execute_stream_ndjson, m)?)?;
 
     // Delta Lake
     m.add_function(wrap_pyfunction!(execute_delta, m)?)?;

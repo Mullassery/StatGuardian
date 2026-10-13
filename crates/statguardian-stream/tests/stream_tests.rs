@@ -45,9 +45,7 @@ fn valid_stream_passes_with_zero_exit_code() {
 #[test]
 fn missing_column_is_a_blocking_failure() {
     let v = validator(SIMPLE_DSL, StreamOptions::default());
-    let report = v
-        .validate_bytes(b"{\"id\":1}\n{\"id\":2}\n")
-        .unwrap();
+    let report = v.validate_bytes(b"{\"id\":1}\n{\"id\":2}\n").unwrap();
 
     assert!(!report.passed);
     assert_eq!(report.exit_code(false), 1);
@@ -72,11 +70,14 @@ fn row_level_findings_carry_correct_global_indices_across_skipped_malformed() {
             }
         }
     "#;
-    let mut options = StreamOptions {
+    let options = StreamOptions {
+        limits: StreamLimits {
+            batch_size: 1_000,
+            ..Default::default()
+        },
         malformed: MalformedPolicy::Skip,
-        ..StreamOptions::default()
+        ..Default::default()
     };
-    options.limits.batch_size = 1_000;
 
     let input = b"{\"id\":1}\nNOT JSON\n{\"id\":5}\n{\"id\":9}\n";
     let report = validator(dsl, options).validate_bytes(input).unwrap();
@@ -85,11 +86,7 @@ fn row_level_findings_carry_correct_global_indices_across_skipped_malformed() {
     assert_eq!(report.records_validated, 3);
     assert_eq!(report.malformed_count, 1);
 
-    let mut records: Vec<u64> = report
-        .findings
-        .iter()
-        .filter_map(|f| f.record)
-        .collect();
+    let mut records: Vec<u64> = report.findings.iter().filter_map(|f| f.record).collect();
     records.sort_unstable();
     records.dedup();
     assert_eq!(
@@ -108,8 +105,13 @@ fn findings_are_stable_and_sorted_across_batches() {
             }
         }
     "#;
-    let mut options = StreamOptions::default();
-    options.limits.batch_size = 2;
+    let options = StreamOptions {
+        limits: StreamLimits {
+            batch_size: 2,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
 
     let input = b"{\"id\":1}\n{\"id\":2}\n{\"id\":3}\n{\"id\":4}\n{\"id\":5}\n";
     let report = validator(dsl, options).validate_bytes(input).unwrap();
@@ -144,8 +146,10 @@ fn findings_are_stable_and_sorted_across_batches() {
 
 #[test]
 fn malformed_json_skip_counts_and_continues() {
-    let mut options = StreamOptions::default();
-    options.malformed = MalformedPolicy::Skip;
+    let options = StreamOptions {
+        malformed: MalformedPolicy::Skip,
+        ..Default::default()
+    };
     let report = validator(SIMPLE_DSL, options)
         .validate_bytes(b"{\"id\":1,\"value\":1}\n{oops\n{\"id\":2,\"value\":2}\n")
         .unwrap();
@@ -157,8 +161,10 @@ fn malformed_json_skip_counts_and_continues() {
 
 #[test]
 fn malformed_json_collect_records_diagnostics_without_raw_by_default() {
-    let mut options = StreamOptions::default();
-    options.malformed = MalformedPolicy::Collect { max: 10 };
+    let options = StreamOptions {
+        malformed: MalformedPolicy::Collect { max: 10 },
+        ..Default::default()
+    };
     let report = validator(SIMPLE_DSL, options)
         .validate_bytes(b"{oops\n{\"id\":2,\"value\":2}\n")
         .unwrap();
@@ -172,21 +178,29 @@ fn malformed_json_collect_records_diagnostics_without_raw_by_default() {
 
 #[test]
 fn allow_raw_diagnostics_opts_into_preview() {
-    let mut options = StreamOptions::default();
-    options.malformed = MalformedPolicy::Collect { max: 10 };
-    options.allow_raw_diagnostics = true;
+    let options = StreamOptions {
+        malformed: MalformedPolicy::Collect { max: 10 },
+        allow_raw_diagnostics: true,
+        ..Default::default()
+    };
     let report = validator(SIMPLE_DSL, options)
         .validate_bytes(b"{oops\n")
         .unwrap();
 
     assert_eq!(report.malformed.len(), 1);
-    assert!(report.malformed[0].preview.as_deref().unwrap().contains("oops"));
+    assert!(report.malformed[0]
+        .preview
+        .as_deref()
+        .unwrap()
+        .contains("oops"));
 }
 
 #[test]
 fn fail_fast_returns_error_and_maps_to_execution_failure() {
-    let mut options = StreamOptions::default();
-    options.malformed = MalformedPolicy::FailFast;
+    let options = StreamOptions {
+        malformed: MalformedPolicy::FailFast,
+        ..Default::default()
+    };
     let err = validator(SIMPLE_DSL, options)
         .validate_bytes(b"{oops\n")
         .unwrap_err();
@@ -195,9 +209,14 @@ fn fail_fast_returns_error_and_maps_to_execution_failure() {
 
 #[test]
 fn oversized_record_is_flagged_and_skipped() {
-    let mut options = StreamOptions::default();
-    options.limits.max_record_bytes = 32;
-    options.oversized = MalformedPolicy::Collect { max: 10 };
+    let options = StreamOptions {
+        limits: StreamLimits {
+            max_record_bytes: 32,
+            ..Default::default()
+        },
+        oversized: MalformedPolicy::Collect { max: 10 },
+        ..Default::default()
+    };
 
     let big = format!("{{\"id\":1,\"value\":\"{}\"}}", "x".repeat(500));
     let input = format!("{big}\n{{\"id\":2,\"value\":2}}\n");
@@ -217,11 +236,15 @@ fn oversized_record_is_flagged_and_skipped() {
 
 #[test]
 fn max_records_truncates_and_marks_limit_hit() {
-    let mut options = StreamOptions::default();
-    options.limits = StreamLimits::with_max_records(2);
+    let options = StreamOptions {
+        limits: StreamLimits::with_max_records(2),
+        ..Default::default()
+    };
 
     let input = b"{\"id\":1,\"value\":1}\n{\"id\":2,\"value\":2}\n{\"id\":3,\"value\":3}\n";
-    let report = validator(SIMPLE_DSL, options).validate_bytes(input).unwrap();
+    let report = validator(SIMPLE_DSL, options)
+        .validate_bytes(input)
+        .unwrap();
 
     assert!(report.truncated);
     assert_eq!(report.records_validated, 2);
@@ -278,9 +301,7 @@ fn unicode_records_are_preserved_and_validated() {
 #[test]
 fn report_json_and_prometheus_are_well_formed() {
     let v = validator(SIMPLE_DSL, StreamOptions::default());
-    let report = v
-        .validate_bytes(b"{\"id\":1,\"value\":1}\n")
-        .unwrap();
+    let report = v.validate_bytes(b"{\"id\":1,\"value\":1}\n").unwrap();
 
     let json = report.to_json();
     let parsed: serde_json::Value = serde_json::from_str(&json).expect("valid JSON");
@@ -292,4 +313,3 @@ fn report_json_and_prometheus_are_well_formed() {
 
     assert!(report.summary().starts_with("[StreamGuard] PASS"));
 }
-

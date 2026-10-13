@@ -202,6 +202,56 @@ fi
 
 ---
 
+### `statguardian stream` — Incremental NDJSON validation (StreamGuard)
+
+Validate newline-delimited JSON (NDJSON) record-by-record with bounded memory.
+Records are read one line at a time, buffered into micro-batches, and validated
+with the same engine as `validate`. The machine report is written to **stdout**;
+malformed-record diagnostics go to **stderr**.
+
+**Syntax:**
+
+```bash
+statguardian stream --contract <path.sg> --file <events.ndjson> [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `--contract` | ✓ | — | Path to `.sg` DSL contract file |
+| `--file` | ✓ | — | Path to an NDJSON file (one JSON object per line) |
+| `--batch-size` |  | `1000` | Records per validation micro-batch |
+| `--max-records` |  | unbounded | Stop after reading N records |
+| `--max-record-bytes` |  | 8 MiB | Per-line byte cap |
+| `--malformed` |  | `collect` | `fail_fast` \| `skip` \| `collect` |
+| `--collect-max` |  | `100` | Max malformed diagnostics retained when collecting |
+| `--format` |  | `summary` | `summary` \| `json` \| `prometheus` |
+| `--fail-on-warning` |  | off | Exit `1` if any finding is present |
+| `--allow-raw-diagnostics` |  | off | Attach raw line previews to malformed diagnostics |
+
+**Return codes:**
+
+- `0` — passed
+- `1` — validation failed (blocking finding, or any finding with `--fail-on-warning`)
+- `2` — execution error (I/O, contract parse error, or malformed line under `--malformed=fail_fast`)
+
+**Examples:**
+
+```bash
+# Validate an NDJSON event stream
+statguardian stream --contract events.sg --file events.ndjson
+
+# Skip malformed lines, emit JSON, and cap the run
+statguardian stream --contract events.sg --file events.ndjson \
+  --malformed skip --format json --max-records 100000
+
+# Treat the first malformed line as a hard error (exit 2)
+statguardian stream --contract events.sg --file events.ndjson --malformed fail_fast
+```
+
+---
+
 ## Integration examples
 
 ### GitHub Actions

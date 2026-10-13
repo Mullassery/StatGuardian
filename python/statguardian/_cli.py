@@ -6,6 +6,7 @@ For cloud storage (S3/GCS/Azure), SQL databases, and Spark, use the Python API.
 
 Usage:
     statguardian validate --contract contract.sg --file data.parquet [OPTIONS]
+    statguardian stream   --contract contract.sg --file events.ndjson [OPTIONS]
     statguardian check   --contract contract.sg
 
 Supported file formats:
@@ -82,6 +83,35 @@ def main() -> None:
         help="Path to .sg DSL contract file"
     )
 
+    # statguardian stream
+    stream = sub.add_parser(
+        "stream",
+        help="Incrementally validate an NDJSON file (StreamGuard)",
+        description="Validate newline-delimited JSON (NDJSON) record-by-record with "
+                     "bounded memory. Records are buffered into micro-batches and run "
+                     "through the same engine as `validate`."
+    )
+    stream.add_argument("--contract", required=True, metavar="PATH",
+                        help="Path to .sg DSL contract file")
+    stream.add_argument("--file", required=True, metavar="PATH",
+                        help="Path to an NDJSON file (one JSON object per line)")
+    stream.add_argument("--batch-size", type=int, default=1000, metavar="N",
+                        help="Records per validation micro-batch (default: 1000)")
+    stream.add_argument("--max-records", type=int, default=None, metavar="N",
+                        help="Stop after reading N records (default: unbounded)")
+    stream.add_argument("--max-record-bytes", type=int, default=None, metavar="N",
+                        help="Per-line byte cap (default: 8 MiB)")
+    stream.add_argument("--malformed", choices=["fail_fast", "skip", "collect"], default="collect",
+                        help="Handling for malformed/oversized lines (default: collect)")
+    stream.add_argument("--collect-max", type=int, default=100, metavar="N",
+                        help="Max malformed diagnostics retained when collecting (default: 100)")
+    stream.add_argument("--format", choices=["summary", "json", "prometheus"], default="summary",
+                        help="Output format (default: summary)")
+    stream.add_argument("--fail-on-warning", action="store_true",
+                        help="Exit with code 1 if any finding is present (default: only blocking)")
+    stream.add_argument("--allow-raw-diagnostics", action="store_true",
+                        help="Attach raw line previews to malformed diagnostics (off by default)")
+
     # statguardian dbt
     dbt = sub.add_parser(
         "dbt",
@@ -119,6 +149,8 @@ def main() -> None:
         _cmd_check(args)
     elif args.command == "validate":
         _cmd_validate(args)
+    elif args.command == "stream":
+        _cmd_stream(args)
     elif args.command == "dbt":
         if args.dbt_command == "validate":
             from statguardian._dbt import cmd_dbt_validate
@@ -145,6 +177,52 @@ def _cmd_check(args) -> None:
     except Exception as e:
         print(f"✗ DSL error: {e}", file=sys.stderr)
         sys.exit(1)
+
+
+def _cmd_stream(args) -> None:
+    from statguardian import DataContract, execute_stream_ndjson
+    from statguardian._dsl_validator import validate_dsl_contract
+    try:
+        dsl = open(args.contract).read()
+        is_valid, error = validate_dsl_contract(dsl)
+        if not is_valid:
+            print(f"✗ Contract error: {error}", file=sys.stderr)
+            sys.exit(2)
+        contract = DataContract.from_file(args.contract)
+        report = execute_stream_ndjson(
+            contract,
+            args.file,
+            batch_size=args.batch_size,
+            max_records=args.max_records,
+            max_record_bytes=args.max_record_bytes,
+            malformed=args.malformed,
+            collect_max=args.collect_max,
+            allow_raw_diagnostics=args.allow_raw_diagnostics,
+        )
+    except Exception as e:
+        print(f"✗ Error: {e}", file=sys.stderr)
+        sys.exit(2)
+
+    # Diagnostics go to stderr; the machine report goes to stdout.
+    for m in report.malformed():
+        print(f"[malformed record {m['record']}: {m['kind']}] {m['reason']}", file=sys.stderr)
+
+    try:
+        if args.format == "json":
+            print(report.to_json_pretty())
+        elif args.format == "prometheus":
+            print(report.to_prometheus())
+        else:
+            print(report.summary())
+    except BrokenPipeError:
+        # Downstream (e.g. `head`) closed the pipe; exit quietly without a traceback.
+        try:
+            sys.stdout.close()
+        except Exception:
+            pass
+        sys.exit(2)
+
+    sys.exit(report.exit_code(args.fail_on_warning))
 
 
 def _cmd_validate(args) -> None:

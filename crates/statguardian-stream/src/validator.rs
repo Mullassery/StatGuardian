@@ -15,7 +15,7 @@ use crate::report::{MalformedKind, MalformedRecord, StreamFinding, StreamLimitHi
 use crate::sanitize::{SanitizationEvent, SanitizationSummary, Sanitizer};
 
 /// Configuration for a stream validation run.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct StreamOptions {
     pub limits: StreamLimits,
     /// Policy for JSON parse errors and non-UTF-8 lines.
@@ -26,18 +26,6 @@ pub struct StreamOptions {
     /// When `false` (the default) no raw record content is ever attached to
     /// diagnostics. Set to `true` only when raw payloads are safe to log.
     pub allow_raw_diagnostics: bool,
-}
-
-impl Default for StreamOptions {
-    fn default() -> Self {
-        Self {
-            limits: StreamLimits::default(),
-            malformed: MalformedPolicy::default(),
-            oversized: MalformedPolicy::default(),
-            sanitizer: Sanitizer::default(),
-            allow_raw_diagnostics: false,
-        }
-    }
 }
 
 /// Validates an NDJSON stream record-by-record, reusing the existing

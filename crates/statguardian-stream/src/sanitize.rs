@@ -94,8 +94,7 @@ impl SanitizationSummary {
         let leaf = event
             .path
             .split(['.', '['])
-            .filter(|s| !s.is_empty())
-            .next_back()
+            .rfind(|s| !s.is_empty())
             .unwrap_or(&event.path)
             .to_string();
         *self.by_field.entry(leaf).or_insert(0) += 1;
@@ -223,11 +222,9 @@ impl Sanitizer {
                     map.remove(&key);
                 }
             }
-            Value::Array(arr) => {
-                if self.redaction.recursive || self.normalization.recursive {
-                    for (i, child) in arr.iter_mut().enumerate() {
-                        self.walk(child, &format!("{path}[{i}]"), events);
-                    }
+            Value::Array(arr) if self.redaction.recursive || self.normalization.recursive => {
+                for (i, child) in arr.iter_mut().enumerate() {
+                    self.walk(child, &format!("{path}[{i}]"), events);
                 }
             }
             _ => {}
