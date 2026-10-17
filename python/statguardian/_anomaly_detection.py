@@ -8,7 +8,7 @@ fixed static thresholds.
 
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 import statistics
 
 
@@ -150,7 +150,7 @@ class AdaptiveThresholdDetector:
     def add_observation(self, metric_name: str, value: float, timestamp: Optional[datetime] = None):
         """Record observation with time context for seasonal analysis."""
         if timestamp is None:
-            timestamp = datetime.now()
+            timestamp = datetime.now(timezone.utc)
 
         hour = timestamp.hour
 
@@ -175,7 +175,7 @@ class AdaptiveThresholdDetector:
         `detect_hourly_anomaly`.
         """
         if timestamp is None:
-            timestamp = datetime.now()
+            timestamp = datetime.now(timezone.utc)
 
         if metric_name not in self.daily_history or len(self.daily_history[metric_name]) < self.min_observations:
             return AnomalyResult(
@@ -237,7 +237,7 @@ class AdaptiveThresholdDetector:
         14:00 hour, across all metrics fed through `add_observation`.
         """
         if timestamp is None:
-            timestamp = datetime.now()
+            timestamp = datetime.now(timezone.utc)
         hour = timestamp.hour
 
         bucket = self.hourly_history.get(hour, [])

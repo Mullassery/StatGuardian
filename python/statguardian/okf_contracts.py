@@ -6,7 +6,7 @@ as portable, shareable OKF documents.
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -214,7 +214,7 @@ class OKFContractCatalog:
             "contract_name": contract_name,
             "schema": schema,
             "rules": rules,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
         if baseline:
@@ -252,7 +252,7 @@ class OKFContractCatalog:
         # Update contract with new baseline
         metadata = contract.metadata.copy()
         metadata["baseline"] = baseline
-        metadata["baseline_updated"] = datetime.now().isoformat()
+        metadata["baseline_updated"] = datetime.now(timezone.utc).isoformat()
 
         doc_path = self.catalog_dir / "contracts" / f"{contract_name}.md"
 
@@ -308,7 +308,7 @@ class OKFRuleEffectiveness:
             "rule_name": rule_name,
             "passed": passed,
             "issues_caught": caught_issues,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
         # Save execution record
@@ -393,11 +393,11 @@ class OKFAnomalyPattern:
             "anomaly_type": anomaly_type,
             "severity": severity,
             "affected_rows": affected_rows,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
         # Save anomaly record
-        anomaly_file = self.anomalies_dir / f"{contract_name}_{anomaly_type}_{datetime.now().timestamp()}.md"
+        anomaly_file = self.anomalies_dir / f"{contract_name}_{anomaly_type}_{datetime.now(timezone.utc).timestamp()}.md"
 
         post = frontmatter.Post(content)
         post.metadata = metadata
