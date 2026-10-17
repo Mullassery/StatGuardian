@@ -113,6 +113,7 @@ Kept for history, not re-derived in this pass — see `docs/SECURITY_AUDIT.md` f
 - Broad exception handling / silent swallows (MEDIUM) — closed.
 - CI secrets scanning (LOW) — closed, gitleaks added.
 - 5 of original 10 `cargo audit` findings fixed 2026-09-13/14 (`sqlx` 0.8→0.9, `rusqlite` 0.31→0.37, `chacha20` 0.10.1→0.10.2, `pyo3` 0.21→0.29 + `polars` 0.44→0.55 migration, `rustls` 0.23.43→0.23.45) — see commits `5a9b728`, `723aad5`, `99d8d13`, `8819852`, `ff6910f`.
+- `rustls` 0.23.45→0.23.46 bumped 2026-10-16 (`cargo update -p rustls`); clears 4 new 2026-10-14 advisories (RUSTSEC-2026-0346/0347/0348/0349). With this, `cargo audit --ignore RUSTSEC-2026-0194 --ignore RUSTSEC-2026-0195` (the CI command) exits 0 — the only remaining `cargo audit` output is the non-fatal `bincode` "unmaintained" warning (RUSTSEC-2025-0141, pulled in transitively via `polars-utils`). The two ignored quick-xml HIGH advisories remain genuinely blocked upstream (`polars 0.55.2` is latest and still pins `object_store ^0.13` → `quick-xml ^0.39`; fix needs `>=0.41.0`) — re-check after any future `polars` bump.
 - Stale `docs/ROADMAP_HONEST.md` (previously described shipped features — Iceberg, lineage tracking — as "not implemented") — rewritten against the real codebase 2026-09-21.
 - Fully-stubbed data lineage tracking — implemented for real, commit `fbb41f3`.
 - `sliding-window` state never evicted (unbounded memory) — fixed, release 2.6.0.

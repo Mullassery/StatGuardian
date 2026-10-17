@@ -10,6 +10,11 @@ actual commit messages and diffs, not invented.
 
 ## [Unreleased]
 
+## [2.7.1] - 2026-10-17
+
+### Fixed
+- Audit remediation: security hardening, correctness fixes, and lint/CI gates.
+
 ## [2.7.0] - 2026-10-12
 
 ### Added
