@@ -9,7 +9,6 @@ Use this to gate pipelines when upstream data producers make breaking changes.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 
 try:
     import polars as pl
@@ -23,8 +22,8 @@ class SchemaChange:
     """One structural change between two schema versions."""
     change_type: str            # "added" | "removed" | "retyped"
     column: str
-    old_dtype: Optional[str] = None
-    new_dtype: Optional[str] = None
+    old_dtype: str | None = None
+    new_dtype: str | None = None
     severity: str = "warning"   # "info" | "warning" | "error"
 
     def __str__(self) -> str:
@@ -39,12 +38,12 @@ class SchemaChange:
 
 
 def detect_schema_changes(
-    current: "pl.DataFrame | Dict[str, str]",
-    reference: "pl.DataFrame | Dict[str, str]",
+    current: pl.DataFrame | dict[str, str],
+    reference: pl.DataFrame | dict[str, str],
     added_severity: str = "info",
     removed_severity: str = "error",
     retyped_severity: str = "warning",
-) -> List[SchemaChange]:
+) -> list[SchemaChange]:
     """
     Compare two DataFrames (or raw schema dicts) and return all schema changes.
 
@@ -70,22 +69,20 @@ def detect_schema_changes(
     if not _POLARS and not isinstance(current, dict):
         raise ImportError("polars is required unless you pass schema dicts directly")
 
-    def to_schema(obj) -> Dict[str, str]:
+    def to_schema(obj) -> dict[str, str]:
         if isinstance(obj, dict):
             return {k: str(v) for k, v in obj.items()}
         return {col: str(dtype) for col, dtype in obj.schema.items()}
 
     old = to_schema(reference)
     new = to_schema(current)
-    changes: List[SchemaChange] = []
+    changes: list[SchemaChange] = []
 
-    for col in new:
-        if col not in old:
-            changes.append(SchemaChange(
-                "added", col,
-                new_dtype=new[col],
-                severity=added_severity,
-            ))
+    changes.extend(
+        SchemaChange("added", col, new_dtype=new[col], severity=added_severity)
+        for col in new
+        if col not in old
+    )
 
     for col in old:
         if col not in new:
@@ -105,19 +102,18 @@ def detect_schema_changes(
     return changes
 
 
-def schema_evolution_report(changes: List[SchemaChange]) -> str:
+def schema_evolution_report(changes: list[SchemaChange]) -> str:
     """Format schema changes as a human-readable report."""
     if not changes:
         return "Schema unchanged."
     lines = [f"Schema evolution — {len(changes)} change(s):", ""]
-    for c in sorted(changes, key=lambda x: (x.severity, x.column)):
-        lines.append(f"  {c}")
+    lines.extend(f"  {c}" for c in sorted(changes, key=lambda x: (x.severity, x.column)))
     return "\n".join(lines)
 
 
 def assert_no_breaking_changes(
-    current: "pl.DataFrame | Dict[str, str]",
-    reference: "pl.DataFrame | Dict[str, str]",
+    current: pl.DataFrame | dict[str, str],
+    reference: pl.DataFrame | dict[str, str],
 ) -> None:
     """
     Raise ValueError if there are any removed or retyped columns.

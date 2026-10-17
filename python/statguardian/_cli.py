@@ -17,6 +17,7 @@ Full documentation: https://github.com/Mullassery/statguardian/blob/main/docs/CL
 """
 
 import argparse
+import contextlib
 import sys
 
 from . import __version__
@@ -167,7 +168,8 @@ def _cmd_check(args) -> None:
     from statguardian import validate_dsl
     from statguardian._dsl_validator import validate_dsl_contract
     try:
-        dsl = open(args.contract).read()
+        with open(args.contract) as f:
+            dsl = f.read()
         is_valid, error = validate_dsl_contract(dsl)
         if not is_valid:
             print(f"✗ DSL error: {error}", file=sys.stderr)
@@ -183,7 +185,8 @@ def _cmd_stream(args) -> None:
     from statguardian import DataContract, execute_stream_ndjson
     from statguardian._dsl_validator import validate_dsl_contract
     try:
-        dsl = open(args.contract).read()
+        with open(args.contract) as f:
+            dsl = f.read()
         is_valid, error = validate_dsl_contract(dsl)
         if not is_valid:
             print(f"✗ Contract error: {error}", file=sys.stderr)
@@ -216,10 +219,8 @@ def _cmd_stream(args) -> None:
             print(report.summary())
     except BrokenPipeError:
         # Downstream (e.g. `head`) closed the pipe; exit quietly without a traceback.
-        try:
+        with contextlib.suppress(Exception):
             sys.stdout.close()
-        except Exception:
-            pass
         sys.exit(2)
 
     sys.exit(report.exit_code(args.fail_on_warning))
@@ -229,7 +230,8 @@ def _cmd_validate(args) -> None:
     from statguardian import DataContract, execute_file
     from statguardian._dsl_validator import validate_dsl_contract
     try:
-        dsl = open(args.contract).read()
+        with open(args.contract) as f:
+            dsl = f.read()
         is_valid, error = validate_dsl_contract(dsl)
         if not is_valid:
             print(f"✗ Contract error: {error}", file=sys.stderr)

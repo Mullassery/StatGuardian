@@ -9,9 +9,10 @@ independently against the same contract.
 from __future__ import annotations
 
 import glob as _glob
+from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
-from typing import Callable, Iterator, List, Optional, Tuple, Union
+from typing import Callable
 
 
 @dataclass
@@ -19,7 +20,7 @@ class FileResult:
     """Outcome of validating one file."""
     path: str
     report: object          # ValidationReport, or None on error
-    error: Optional[str]    # exception message if validation failed
+    error: str | None    # exception message if validation failed
 
     @property
     def passed(self) -> bool:
@@ -34,12 +35,12 @@ class FileResult:
 
 def execute_files(
     contract,
-    paths: Union[str, List[str]],
+    paths: str | list[str],
     *,
-    workers: int = None,
-    reference_path: str = None,
-    on_complete: Callable[[FileResult], None] = None,
-) -> List[FileResult]:
+    workers: int | None = None,
+    reference_path: str | None = None,
+    on_complete: Callable[[FileResult], None] | None = None,
+) -> list[FileResult]:
     """
     Validate multiple Excel / Parquet / CSV / … files against one contract.
 
@@ -74,7 +75,7 @@ def execute_files(
     if not file_list:
         return []
 
-    results: List[FileResult] = []
+    results: list[FileResult] = []
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {
@@ -98,10 +99,10 @@ def execute_files(
 
 def execute_files_stream(
     contract,
-    paths: Union[str, List[str]],
+    paths: str | list[str],
     *,
-    workers: int = None,
-    reference_path: str = None,
+    workers: int | None = None,
+    reference_path: str | None = None,
 ) -> Iterator[FileResult]:
     """
     Like ``execute_files`` but yields each ``FileResult`` as it completes.
@@ -135,12 +136,12 @@ def execute_files_stream(
                 yield FileResult(path=path, report=None, error=str(exc))
 
 
-def _validate_one(execute_file_fn, contract, path: str, reference_path: Optional[str]):
+def _validate_one(execute_file_fn, contract, path: str, reference_path: str | None):
     """Worker function submitted to the thread pool."""
     return execute_file_fn(contract, path, reference_path=reference_path)
 
 
-def _resolve_paths(paths: Union[str, List[str]]) -> List[str]:
+def _resolve_paths(paths: str | list[str]) -> list[str]:
     if isinstance(paths, str):
         return sorted(_glob.glob(paths, recursive=True))
     return [str(p) for p in paths]

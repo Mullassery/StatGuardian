@@ -38,166 +38,165 @@ Quick start::
     print(report.summary())
 """
 
-from ._statguardian import (
-    DataContract,
-    ValidationReport,
-    # Core execution
-    execute,
-    execute_file,
-    execute_streaming,
-    # StreamGuard — incremental NDJSON validation
-    execute_stream_ndjson,
-    StreamReport,
-    # Delta Lake
-    execute_delta,
-    compare_delta_versions,
-    # Apache Iceberg
-    execute_iceberg,
-    list_iceberg_snapshots,
-    # Utilities
-    validate_dsl,
-    __version__,
+# ML Anomaly detection (CRITICAL: reduces false positives by ~70%)
+from ._anomaly_detection import (
+    AdaptiveThresholdDetector,
+    AnomalyDetectionEngine,
+    AnomalyResult,
+    SimpleMovingAverageDetector,
 )
 
 # Python-layer connectors (open-source only — MIT / Apache-2.0)
 from ._connectors import (
-    execute_sql,    # PostgreSQL, MySQL, SQLite, BigQuery, Snowflake, Redshift, ...
-    execute_spark,  # PySpark DataFrames via Arrow bridge
     execute_cloud,  # s3://, gs://, az:// — thin wrapper around execute_file
+    execute_spark,  # PySpark DataFrames via Arrow bridge
+    execute_sql,  # PostgreSQL, MySQL, SQLite, BigQuery, Snowflake, Redshift, ...
 )
-
-# PII detection
-from ._pii import scan_pii, pii_report, PiiFinding
 
 # Schema evolution
 from ._evolution import (
+    SchemaChange,
+    assert_no_breaking_changes,
     detect_schema_changes,
     schema_evolution_report,
-    assert_no_breaking_changes,
-    SchemaChange,
-)
-
-# HTML report
-from ._html import to_html
-
-# Custom Python validators
-from ._validators import (
-    validator,
-    run_custom_validators,
-    clear_validators,
-    list_validators,
-    merge_violations,
-    MergedReport,
-)
-
-# Parallel multi-file validation
-from ._parallel import (
-    execute_files,
-    execute_files_stream,
-    FileResult,
 )
 
 # GPU / cuDF adapter
 from ._gpu import execute_cudf, is_cudf_available
 
+# HTML report
+from ._html import to_html
+
 # Referential integrity
 from ._integrity import (
-    check_referential_integrity,
-    check_all_foreign_keys,
-    integrity_report,
     IntegrityViolation,
-)
-
-# ML Anomaly detection (CRITICAL: reduces false positives by ~70%)
-from ._anomaly_detection import (
-    AnomalyDetectionEngine,
-    SimpleMovingAverageDetector,
-    AdaptiveThresholdDetector,
-    AnomalyResult,
+    check_all_foreign_keys,
+    check_referential_integrity,
+    integrity_report,
 )
 
 # Data lineage tracking and versioning
 from ._lineage import (
-    LineageNode,
+    LineageChange,
     LineageEdge,
     LineageGraph,
+    LineageNode,
     LineageVersion,
-    LineageChange,
-    create_lineage_node,
     create_lineage_edge,
-    save_lineage_version,
+    create_lineage_node,
     get_lineage_graph,
-    get_lineage_version,
     get_lineage_history,
+    get_lineage_version,
+    save_lineage_version,
+)
+
+# Parallel multi-file validation
+from ._parallel import (
+    FileResult,
+    execute_files,
+    execute_files_stream,
+)
+
+# PII detection
+from ._pii import PiiFinding, pii_report, scan_pii
+from ._statguardian import (
+    DataContract,
+    StreamReport,
+    ValidationReport,
+    __version__,
+    compare_delta_versions,
+    # Core execution
+    execute,
+    # Delta Lake
+    execute_delta,
+    execute_file,
+    # Apache Iceberg
+    execute_iceberg,
+    # StreamGuard — incremental NDJSON validation
+    execute_stream_ndjson,
+    execute_streaming,
+    list_iceberg_snapshots,
+    # Utilities
+    validate_dsl,
+)
+
+# Custom Python validators
+from ._validators import (
+    MergedReport,
+    clear_validators,
+    list_validators,
+    merge_violations,
+    run_custom_validators,
+    validator,
 )
 
 __all__ = [
+    "AdaptiveThresholdDetector",
+    # ML Anomaly Detection (v1.1.0+)
+    "AnomalyDetectionEngine",
+    "AnomalyResult",
     # Core
     "DataContract",
-    "ValidationReport",
-    "execute",
-    "execute_file",
-    "execute_streaming",
-    # StreamGuard
-    "execute_stream_ndjson",
-    "StreamReport",
-    # Lakehouse
-    "execute_delta",
-    "compare_delta_versions",
-    "execute_iceberg",
-    "list_iceberg_snapshots",
-    # Cloud + SQL + Spark
-    "execute_sql",
-    "execute_spark",
-    "execute_cloud",
-    # PII detection
-    "scan_pii",
-    "pii_report",
+    "FileResult",
+    "IntegrityViolation",
+    "LineageChange",
+    "LineageEdge",
+    "LineageGraph",
+    # Data lineage tracking
+    "LineageNode",
+    "LineageVersion",
+    "MergedReport",
     "PiiFinding",
+    "SchemaChange",
+    "SimpleMovingAverageDetector",
+    "StreamReport",
+    "ValidationReport",
+    "__version__",
+    "assert_no_breaking_changes",
+    "check_all_foreign_keys",
+    # Referential integrity
+    "check_referential_integrity",
+    "clear_validators",
+    "compare_delta_versions",
+    "create_lineage_edge",
+    "create_lineage_node",
     # Schema evolution
     "detect_schema_changes",
-    "schema_evolution_report",
-    "assert_no_breaking_changes",
-    "SchemaChange",
-    # HTML report
-    "to_html",
-    # Custom validators
-    "validator",
-    "run_custom_validators",
-    "clear_validators",
-    "list_validators",
-    "merge_violations",
-    "MergedReport",
+    "execute",
+    "execute_cloud",
+    # GPU / cuDF
+    "execute_cudf",
+    # Lakehouse
+    "execute_delta",
+    "execute_file",
     # Parallel multi-file
     "execute_files",
     "execute_files_stream",
-    "FileResult",
-    # GPU / cuDF
-    "execute_cudf",
-    "is_cudf_available",
-    # Referential integrity
-    "check_referential_integrity",
-    "check_all_foreign_keys",
-    "integrity_report",
-    "IntegrityViolation",
-    # ML Anomaly Detection (v1.1.0+)
-    "AnomalyDetectionEngine",
-    "SimpleMovingAverageDetector",
-    "AdaptiveThresholdDetector",
-    "AnomalyResult",
-    # Data lineage tracking
-    "LineageNode",
-    "LineageEdge",
-    "LineageGraph",
-    "LineageVersion",
-    "LineageChange",
-    "create_lineage_node",
-    "create_lineage_edge",
-    "save_lineage_version",
+    "execute_iceberg",
+    "execute_spark",
+    # Cloud + SQL + Spark
+    "execute_sql",
+    # StreamGuard
+    "execute_stream_ndjson",
+    "execute_streaming",
     "get_lineage_graph",
-    "get_lineage_version",
     "get_lineage_history",
+    "get_lineage_version",
+    "integrity_report",
+    "is_cudf_available",
+    "list_iceberg_snapshots",
+    "list_validators",
+    "merge_violations",
+    "pii_report",
+    "run_custom_validators",
+    "save_lineage_version",
+    # PII detection
+    "scan_pii",
+    "schema_evolution_report",
+    # HTML report
+    "to_html",
     # Utilities
     "validate_dsl",
-    "__version__",
+    # Custom validators
+    "validator",
 ]

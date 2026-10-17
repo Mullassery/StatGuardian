@@ -136,7 +136,7 @@ def _read_sql_to_polars(connection_string: str, query: str):
             "  pip install connectorx          # fastest, MIT\n"
             "  pip install sqlalchemy          # widest compat, MIT\n"
             "  pip install 'polars[adbc]'      # ADBC drivers"
-        )
+        ) from None
 
 
 def execute_sql(contract, connection_string: str, query: str,

@@ -8,16 +8,16 @@ for checks that require arbitrary Python logic.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Callable
 
 # Global registry: column_name (or "*" for all columns) → list of entries
-_REGISTRY: Dict[str, List[dict]] = {}
+_REGISTRY: dict[str, list[dict]] = {}
 
 
 def validator(
     column: str,
     *,
-    name: str = None,
+    name: str | None = None,
     severity: str = "error",
 ):
     """
@@ -61,7 +61,7 @@ def validator(
     return decorator
 
 
-def run_custom_validators(df, *, raise_on_error: bool = False) -> List[dict]:
+def run_custom_validators(df, *, raise_on_error: bool = False) -> list[dict]:
     """
     Run all registered custom validators against a Polars DataFrame.
 
@@ -125,7 +125,7 @@ def run_custom_validators(df, *, raise_on_error: bool = False) -> List[dict]:
     return violations
 
 
-def clear_validators(column: str = None) -> None:
+def clear_validators(column: str | None = None) -> None:
     """
     Remove registered validators.
 
@@ -140,7 +140,7 @@ def clear_validators(column: str = None) -> None:
         _REGISTRY.pop(column, None)
 
 
-def list_validators() -> Dict[str, List[str]]:
+def list_validators() -> dict[str, list[str]]:
     """Return a summary of all registered validators as {column: [names]}."""
     return {col: [v["name"] for v in vs] for col, vs in _REGISTRY.items()}
 
@@ -162,7 +162,7 @@ class MergedReport:
     dataset: str
     row_count: int
     passed: bool
-    violations: List[dict] = field(default_factory=list)
+    violations: list[dict] = field(default_factory=list)
     native_violation_count: int = 0
     custom_violation_count: int = 0
 
@@ -175,7 +175,7 @@ class MergedReport:
         )
 
 
-def merge_violations(report, extra_violations: List[dict]) -> MergedReport:
+def merge_violations(report, extra_violations: list[dict]) -> MergedReport:
     """
     Combine a `ValidationReport` with extra violations from
     `run_custom_validators()` into a single `MergedReport`.

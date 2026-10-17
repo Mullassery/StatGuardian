@@ -8,7 +8,7 @@ import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 try:
     import frontmatter
@@ -16,7 +16,7 @@ except ImportError:
     raise ImportError(
         "python-frontmatter is required for OKF support. "
         "Install with: pip install python-frontmatter"
-    )
+    ) from None
 
 logger = logging.getLogger(__name__)
 
@@ -46,22 +46,22 @@ class OKFContractDocument:
         return self.metadata.get("version", "1.0.0")
 
     @property
-    def schema(self) -> Dict[str, Any]:
+    def schema(self) -> dict[str, Any]:
         """Schema definition."""
         return self.metadata.get("schema", {})
 
     @property
-    def rules(self) -> List[Dict[str, Any]]:
+    def rules(self) -> list[dict[str, Any]]:
         """Quality rules."""
         return self.metadata.get("rules", [])
 
     @property
-    def baseline(self) -> Optional[Dict[str, Any]]:
+    def baseline(self) -> Optional[dict[str, Any]]:
         """Statistical baseline (distribution, metrics)."""
         return self.metadata.get("baseline")
 
     @property
-    def tags(self) -> List[str]:
+    def tags(self) -> list[str]:
         """Contract tags (domain, team, etc.)."""
         return self.metadata.get("tags", [])
 
@@ -80,8 +80,8 @@ class OKFContractCatalog:
             catalog_dir: Root directory containing OKF contract documents
         """
         self.catalog_dir = Path(catalog_dir)
-        self.contracts: Dict[str, OKFContractDocument] = {}
-        self.contract_index: Dict[str, List[str]] = {}  # domain -> [contract_ids]
+        self.contracts: dict[str, OKFContractDocument] = {}
+        self.contract_index: dict[str, list[str]] = {}  # domain -> [contract_ids]
         self._ensure_structure()
         self._load_all()
 
@@ -113,10 +113,10 @@ class OKFContractCatalog:
                     if tag not in self.contract_index:
                         self.contract_index[tag] = []
                     self.contract_index[tag].append(contract_id)
-            except Exception as e:
+            except Exception as e:  # noqa: PERF203
                 print(f"Warning: Failed to load {doc_path}: {e}")
 
-    def search_contracts(self, query: str = "*") -> List[OKFContractDocument]:
+    def search_contracts(self, query: str = "*") -> list[OKFContractDocument]:
         """Find contracts by name, tag, or domain.
 
         Args:
@@ -125,17 +125,15 @@ class OKFContractCatalog:
         Returns:
             List of matching contracts
         """
-        results = []
         query_lower = query.lower() if query != "*" else ""
 
-        for contract in self.contracts.values():
-            if query == "*":
-                results.append(contract)
-            elif (query_lower in contract.contract_name.lower() or
-                  any(query_lower in tag for tag in contract.tags)):
-                results.append(contract)
-
-        return results
+        return [
+            contract
+            for contract in self.contracts.values()
+            if query == "*"
+            or query_lower in contract.contract_name.lower()
+            or any(query_lower in tag for tag in contract.tags)
+        ]
 
     def get_contract(self, contract_name: str) -> Optional[OKFContractDocument]:
         """Get contract by name.
@@ -148,7 +146,7 @@ class OKFContractCatalog:
         """
         return self.contracts.get(contract_name)
 
-    def get_baseline(self, contract_name: str) -> Optional[Dict[str, Any]]:
+    def get_baseline(self, contract_name: str) -> Optional[dict[str, Any]]:
         """Get statistical baseline for a contract.
 
         Args:
@@ -162,10 +160,10 @@ class OKFContractCatalog:
             return contract.baseline
         return None
 
-    def save_contract(self, contract_name: str, schema: Dict[str, Any],
-                     rules: List[Dict[str, Any]],
-                     baseline: Optional[Dict[str, Any]] = None,
-                     metadata: Optional[Dict[str, Any]] = None) -> Path:
+    def save_contract(self, contract_name: str, schema: dict[str, Any],
+                     rules: list[dict[str, Any]],
+                     baseline: Optional[dict[str, Any]] = None,
+                     metadata: Optional[dict[str, Any]] = None) -> Path:
         """Save a data quality contract.
 
         Args:
@@ -235,7 +233,7 @@ class OKFContractCatalog:
 
         return doc_path
 
-    def save_baseline(self, contract_name: str, baseline: Dict[str, Any]) -> Path:
+    def save_baseline(self, contract_name: str, baseline: dict[str, Any]) -> Path:
         """Save or update baseline statistics for a contract.
 
         Args:
@@ -342,7 +340,7 @@ class OKFRuleEffectiveness:
                 post = frontmatter.load(str(exec_file))
                 if post.metadata.get("passed", False):
                     passed_count += 1
-            except Exception as exc:
+            except Exception as exc:  # noqa: PERF203
                 logger.warning("Skipping unreadable rule execution file %s: %s", exec_file, exc)
 
         return passed_count / len(executions) if executions else None
@@ -406,7 +404,7 @@ class OKFAnomalyPattern:
         return anomaly_file
 
     def get_recurring_anomalies(self, contract_name: str,
-                               min_occurrences: int = 2) -> List[Dict[str, Any]]:
+                               min_occurrences: int = 2) -> list[dict[str, Any]]:
         """Identify recurring anomalies for a contract.
 
         Args:
@@ -416,8 +414,8 @@ class OKFAnomalyPattern:
         Returns:
             List of recurring anomaly patterns
         """
-        anomaly_counts: Dict[str, int] = {}
-        anomaly_details: Dict[str, List[Dict[str, Any]]] = {}
+        anomaly_counts: dict[str, int] = {}
+        anomaly_details: dict[str, list[dict[str, Any]]] = {}
 
         pattern = f"{contract_name}_*.md"
         for anomaly_file in self.anomalies_dir.glob(pattern):
@@ -431,7 +429,7 @@ class OKFAnomalyPattern:
 
                 anomaly_counts[anomaly_type] += 1
                 anomaly_details[anomaly_type].append(post.metadata)
-            except Exception as exc:
+            except Exception as exc:  # noqa: PERF203
                 logger.warning("Skipping unreadable anomaly file %s: %s", anomaly_file, exc)
 
         # Filter by minimum occurrences

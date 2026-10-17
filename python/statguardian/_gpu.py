@@ -10,8 +10,6 @@ Requirements: cudf (NVIDIA RAPIDS ≥ 23.08) and polars.
 
 from __future__ import annotations
 
-from typing import Optional
-
 
 def execute_cudf(contract, cudf_df, reference_cudf_df=None):
     """

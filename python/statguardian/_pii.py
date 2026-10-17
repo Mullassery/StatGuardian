@@ -11,8 +11,7 @@ identifiable information, using two complementary methods:
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from dataclasses import dataclass
 
 try:
     import polars as pl
@@ -22,7 +21,7 @@ except ImportError:
 
 # ── PII patterns (value-level detection) ─────────────────────────────────────
 
-_PATTERNS: Dict[str, re.Pattern] = {
+_PATTERNS: dict[str, re.Pattern] = {
     "email": re.compile(
         r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}", re.ASCII
     ),
@@ -49,7 +48,7 @@ _PATTERNS: Dict[str, re.Pattern] = {
 
 # ── Column-name heuristics ────────────────────────────────────────────────────
 
-_NAME_HINTS: Dict[str, List[str]] = {
+_NAME_HINTS: dict[str, list[str]] = {
     "email":        ["email", "e_mail", "email_address", "mail"],
     "phone":        ["phone", "mobile", "cell", "telephone", "tel", "phone_number", "contact_number"],
     "ssn":          ["ssn", "social_security", "social_security_number", "tax_id", "national_id"],
@@ -93,10 +92,10 @@ class PiiFinding:
 # ── Main API ──────────────────────────────────────────────────────────────────
 
 def scan_pii(
-    df: "pl.DataFrame",
+    df: pl.DataFrame,
     sample_rows: int = 2_000,
     pattern_threshold: float = 0.05,
-) -> List[PiiFinding]:
+) -> list[PiiFinding]:
     """
     Scan a Polars DataFrame for columns that appear to contain PII.
 
@@ -113,7 +112,7 @@ def scan_pii(
     if not _POLARS:
         raise ImportError("polars is required for PII scanning")
 
-    findings: List[PiiFinding] = []
+    findings: list[PiiFinding] = []
     seen: set = set()
     sample = df.head(sample_rows)
 
@@ -164,11 +163,10 @@ def scan_pii(
     return findings
 
 
-def pii_report(findings: List[PiiFinding]) -> str:
+def pii_report(findings: list[PiiFinding]) -> str:
     """Format a list of PiiFindings as a human-readable report."""
     if not findings:
         return "No PII detected."
     lines = [f"PII scan — {len(findings)} finding(s):", ""]
-    for f in findings:
-        lines.append(f"  {f}")
+    lines.extend(f"  {f}" for f in findings)
     return "\n".join(lines)

@@ -6,10 +6,10 @@ baselines to flag anomalous metric values, instead of relying solely on
 fixed static thresholds.
 """
 
-from typing import List, Dict, Tuple, Optional
+import statistics
 from dataclasses import dataclass
 from datetime import datetime, timezone
-import statistics
+from typing import Optional
 
 
 @dataclass
@@ -42,7 +42,7 @@ class SimpleMovingAverageDetector:
         """
         self.window_size = window_size
         self.deviation_threshold = deviation_threshold
-        self.history: Dict[str, List[float]] = {}
+        self.history: dict[str, list[float]] = {}
 
     def add_observation(self, metric_name: str, value: float):
         """Record a new observation for a metric."""
@@ -84,10 +84,7 @@ class SimpleMovingAverageDetector:
 
         # Calculate standard deviation
         mean = statistics.mean(history)
-        if len(history) > 1:
-            stdev = statistics.stdev(history)
-        else:
-            stdev = 0
+        stdev = statistics.stdev(history) if len(history) > 1 else 0
 
         # Detect anomaly
         deviation_from_mean = abs(current_value - mean)
@@ -140,12 +137,12 @@ class AdaptiveThresholdDetector:
         self.min_observations = min_observations
         # (timestamp, value) pairs, bucketed by hour-of-day, for
         # business-hours-vs-off-hours comparisons.
-        self.hourly_history: Dict[int, List[Tuple[datetime, float]]] = {h: [] for h in range(24)}
+        self.hourly_history: dict[int, list[tuple[datetime, float]]] = {h: [] for h in range(24)}
         # (timestamp, value) pairs per metric, for day-of-week comparisons.
         # Storing the real timestamp (not just the value) is required to
         # correctly reconstruct "same day of week" later — see
         # `detect_seasonal_anomaly`.
-        self.daily_history: Dict[str, List[Tuple[datetime, float]]] = {}
+        self.daily_history: dict[str, list[tuple[datetime, float]]] = {}
 
     def add_observation(self, metric_name: str, value: float, timestamp: Optional[datetime] = None):
         """Record observation with time context for seasonal analysis."""
@@ -328,7 +325,7 @@ class AnomalyDetectionEngine:
 
         return result
 
-    def batch_check(self, metrics: Dict[str, float]) -> List[AnomalyResult]:
+    def batch_check(self, metrics: dict[str, float]) -> list[AnomalyResult]:
         """Check multiple metrics at once."""
         results = []
         for metric_name, value in metrics.items():
@@ -336,7 +333,7 @@ class AnomalyDetectionEngine:
             results.append(result)
         return results
 
-    def get_anomalies_only(self, metrics: Dict[str, float]) -> List[AnomalyResult]:
+    def get_anomalies_only(self, metrics: dict[str, float]) -> list[AnomalyResult]:
         """Get only anomalous results (filters out normal metrics)."""
         results = self.batch_check(metrics)
         return [r for r in results if r.is_anomaly]

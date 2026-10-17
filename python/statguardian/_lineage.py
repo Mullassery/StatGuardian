@@ -21,11 +21,11 @@ Example:
     ```
 """
 
-from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Optional
-from datetime import datetime, timezone
 import json
 import os
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, timezone
+from typing import Optional
 
 from . import _statguardian
 
@@ -55,7 +55,7 @@ class LineageNode:
     owner: Optional[str] = None
     created_at: Optional[str] = None  # ISO format datetime
     last_accessed: Optional[str] = None
-    columns: List[str] = field(default_factory=list)
+    columns: list[str] = field(default_factory=list)
     row_count: Optional[int] = None
 
     def qualified_name(self) -> str:
@@ -75,7 +75,7 @@ class LineageEdge:
     source_node_id: str
     target_node_id: str
     join_type: Optional[str] = None
-    columns_used: List[str] = field(default_factory=list)
+    columns_used: list[str] = field(default_factory=list)
     filter_condition: Optional[str] = None
     version: int = 1
     created_at: Optional[str] = None
@@ -93,7 +93,7 @@ class LineageChange:
     change_reason: Optional[str] = None
     changed_at: Optional[str] = None
     changed_by: Optional[str] = None
-    tables_affected: List[str] = field(default_factory=list)
+    tables_affected: list[str] = field(default_factory=list)
     severity: str = "none"  # "none", "low", "medium", "high"
     propagates_schema_changes: bool = False
 
@@ -104,8 +104,8 @@ class LineageGraph:
 
     warehouse_id: str
     timestamp: str  # ISO format datetime
-    nodes: Dict[str, LineageNode] = field(default_factory=dict)
-    edges: List[LineageEdge] = field(default_factory=list)
+    nodes: dict[str, LineageNode] = field(default_factory=dict)
+    edges: list[LineageEdge] = field(default_factory=list)
 
     def add_node(self, node: LineageNode) -> None:
         """Add a node to the graph"""
@@ -115,7 +115,7 @@ class LineageGraph:
         """Add an edge to the graph"""
         self.edges.append(edge)
 
-    def get_upstream(self, target_node_id: str) -> List[str]:
+    def get_upstream(self, target_node_id: str) -> list[str]:
         """Get all upstream tables (tables that feed into target)"""
         return [
             e.source_node_id
@@ -123,7 +123,7 @@ class LineageGraph:
             if e.target_node_id == target_node_id
         ]
 
-    def get_downstream(self, source_node_id: str) -> List[str]:
+    def get_downstream(self, source_node_id: str) -> list[str]:
         """Get all downstream tables (tables that depend on source)"""
         return [
             e.target_node_id
@@ -131,7 +131,7 @@ class LineageGraph:
             if e.source_node_id == source_node_id
         ]
 
-    def get_impact_chain(self, target_node_id: str) -> List[str]:
+    def get_impact_chain(self, target_node_id: str) -> list[str]:
         """Compute impact chain: all tables affected if target breaks"""
         affected = []
         queue = [target_node_id]
@@ -144,9 +144,9 @@ class LineageGraph:
             visited.add(current)
             affected.append(current)
 
-            for downstream in self.get_downstream(current):
-                if downstream not in visited:
-                    queue.append(downstream)
+            queue.extend(
+                d for d in self.get_downstream(current) if d not in visited
+            )
 
         return affected
 
@@ -167,9 +167,9 @@ class LineageVersion:
     lineage_graph: LineageGraph
     version_number: int
     timestamp: str  # ISO format datetime
-    schema_versions: Dict[str, int] = field(default_factory=dict)
-    quality_scores: Dict[str, float] = field(default_factory=dict)
-    changes_from_previous: List[LineageChange] = field(default_factory=list)
+    schema_versions: dict[str, int] = field(default_factory=dict)
+    quality_scores: dict[str, float] = field(default_factory=dict)
+    changes_from_previous: list[LineageChange] = field(default_factory=list)
     change_severity: str = "none"
 
 
@@ -269,8 +269,8 @@ def _lineage_db_path(warehouse_config: dict) -> str:
 def save_lineage_version(
     warehouse_config: dict,
     lineage_graph: LineageGraph,
-    changes: Optional[List[LineageChange]] = None,
-    quality_scores: Optional[Dict[str, float]] = None,
+    changes: Optional[list[LineageChange]] = None,
+    quality_scores: Optional[dict[str, float]] = None,
 ) -> LineageVersion:
     """
     Persist a new lineage version snapshot for a warehouse.
@@ -369,7 +369,7 @@ def get_lineage_version(
 
 def get_lineage_history(
     warehouse_config: dict, table_id: str, limit: int = 10
-) -> List[LineageVersion]:
+) -> list[LineageVersion]:
     """
     Get lineage history for a specific table: the versions among the most
     recent `limit` whose recorded changes actually touched `table_id`
@@ -408,19 +408,19 @@ def get_lineage_history(
 
 
 __all__ = [
-    "LineageNode",
+    "LineageChange",
     "LineageEdge",
     "LineageGraph",
+    "LineageNode",
     "LineageVersion",
-    "LineageChange",
-    "create_lineage_node",
     "create_lineage_edge",
-    "lineage_node_from_dict",
+    "create_lineage_node",
+    "get_lineage_graph",
+    "get_lineage_history",
+    "get_lineage_version",
     "lineage_edge_from_dict",
     "lineage_graph_from_dict",
+    "lineage_node_from_dict",
     "lineage_version_from_dict",
     "save_lineage_version",
-    "get_lineage_graph",
-    "get_lineage_version",
-    "get_lineage_history",
 ]

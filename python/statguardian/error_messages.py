@@ -1,14 +1,15 @@
 """User-friendly error messages for Statguardian."""
+from typing import Optional
 
 
 class ValidationErrorMessage:
     """Error message for validation failures."""
-    
-    def __init__(self, title: str, message: str, suggestions: list = None):
+
+    def __init__(self, title: str, message: str, suggestions: Optional[list] = None):
         self.title = title
         self.message = message
         self.suggestions = suggestions or []
-    
+
     def format(self) -> str:
         """Format for display."""
         lines = [f"\n❌ {self.title}\n", f"   {self.message}\n"]
@@ -17,7 +18,7 @@ class ValidationErrorMessage:
             for i, s in enumerate(self.suggestions, 1):
                 lines.append(f"      {i}. {s}")
         return "\n".join(lines)
-    
+
     def __str__(self) -> str:
         return self.format()
 

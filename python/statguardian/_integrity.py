@@ -9,7 +9,6 @@ they break downstream joins or aggregations.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional
 
 
 @dataclass
@@ -44,7 +43,7 @@ def check_referential_integrity(
     primary_table: str = "reference",
     allow_nulls: bool = True,
     severity: str = "error",
-) -> List[IntegrityViolation]:
+) -> list[IntegrityViolation]:
     """
     Check that every value in ``df[foreign_key]`` exists in
     ``reference_df[primary_key]``.
@@ -121,9 +120,9 @@ def check_referential_integrity(
 def check_all_foreign_keys(
     df,
     reference_df,
-    key_pairs: List[tuple],
+    key_pairs: list[tuple],
     **kwargs,
-) -> List[IntegrityViolation]:
+) -> list[IntegrityViolation]:
     """
     Check multiple foreign-key → primary-key pairs in one call.
 
@@ -151,11 +150,10 @@ def check_all_foreign_keys(
     return violations
 
 
-def integrity_report(violations: List[IntegrityViolation]) -> str:
+def integrity_report(violations: list[IntegrityViolation]) -> str:
     """Format a list of IntegrityViolations as a human-readable report."""
     if not violations:
         return "Referential integrity: OK"
     lines = [f"Referential integrity — {len(violations)} violation(s):", ""]
-    for v in violations:
-        lines.append(f"  {v}")
+    lines.extend(f"  {v}" for v in violations)
     return "\n".join(lines)

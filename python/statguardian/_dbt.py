@@ -18,8 +18,9 @@ from __future__ import annotations
 
 import json
 import sys
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 
 class DbtIntegrationError(Exception):
@@ -43,7 +44,7 @@ def _render_env_vars(value: Any) -> Any:
         r"\{\{\s*env_var\(\s*['\"]([^'\"]+)['\"]\s*(?:,\s*['\"]([^'\"]*)['\"]\s*)?\)\s*\}\}"
     )
 
-    def _sub(match: "re.Match[str]") -> str:
+    def _sub(match: re.Match[str]) -> str:
         name, default = match.group(1), match.group(2)
         if name in os.environ:
             return os.environ[name]
