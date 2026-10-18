@@ -3520,7 +3520,7 @@ dependencies = [
 
 [[package]]
 name = "statguardian"
-version = "2.7.0"
+version = "2.7.2"
 dependencies = [
  "polars",
  "pyo3",
@@ -3536,7 +3536,7 @@ dependencies = [
 
 [[package]]
 name = "statguardian-core"
-version = "2.7.0"
+version = "2.7.2"
 dependencies = [
  "anyhow",
  "chrono",
@@ -3551,7 +3551,7 @@ dependencies = [
 
 [[package]]
 name = "statguardian-engine"
-version = "2.7.0"
+version = "2.7.2"
 dependencies = [
  "anyhow",
  "log",
@@ -3582,7 +3582,7 @@ dependencies = [
 
 [[package]]
 name = "statguardian-io"
-version = "2.7.0"
+version = "2.7.2"
 dependencies = [
  "anyhow",
  "futures",
@@ -3598,7 +3598,7 @@ dependencies = [
 
 [[package]]
 name = "statguardian-lineage"
-version = "2.7.0"
+version = "2.7.2"
 dependencies = [
  "anyhow",
  "chrono",
@@ -3613,7 +3613,7 @@ dependencies = [
 
 [[package]]
 name = "statguardian-metrics"
-version = "2.7.0"
+version = "2.7.2"
 dependencies = [
  "chrono",
  "serde",
@@ -3627,7 +3627,7 @@ dependencies = [
 
 [[package]]
 name = "statguardian-stats"
-version = "2.7.0"
+version = "2.7.2"
 dependencies = [
  "polars",
  "rayon",
@@ -3639,7 +3639,7 @@ dependencies = [
 
 [[package]]
 name = "statguardian-stream"
-version = "2.7.0"
+version = "2.7.2"
 dependencies = [
  "polars",
  "serde",
@@ -3654,7 +3654,7 @@ dependencies = [
 
 [[package]]
 name = "statguardian-validators"
-version = "2.7.0"
+version = "2.7.2"
 dependencies = [
  "polars",
  "rayon",

@@ -10,6 +10,22 @@ actual commit messages and diffs, not invented.
 
 ## [Unreleased]
 
+## [2.7.2] - 2026-10-18
+
+### Security
+- `DataContract.from_dsl` / `from_file` now enforce the DSL safety checks
+  that were previously applied only by the CLI (`_dsl_validator.py`):
+  empty/oversized contracts, missing `dataset` keyword, brace nesting deeper
+  than 50, and the reserved/suspicious patterns (`__…__`, `;;`, null byte)
+  are rejected at the binding boundary, so the programmatic entry point
+  cannot be handed pathological input (STATGUARDIAN-006).
+
+### Fixed
+- `statguardian.__version__` now agrees with the published wheel version.
+  The extension reports `CARGO_PKG_VERSION` (workspace `Cargo.toml`), which
+  had been left at 2.7.0 while `pyproject.toml` moved to 2.7.1; both are now
+  bumped together (2.7.2).
+
 ## [2.7.1] - 2026-10-17
 
 ### Fixed

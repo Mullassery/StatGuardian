@@ -12,6 +12,71 @@ use statguardian_stream::{MalformedPolicy, StreamLimits, StreamOptions, StreamVa
 
 // ── PyDataContract ─────────────────────────────────────────────────────────────
 
+/// Defense-in-depth DSL safety checks, mirroring
+/// `python/statguardian/_dsl_validator.py::validate_dsl_contract`.
+///
+/// The Python validator was previously only wired into the CLI, so any
+/// caller reaching `DataContract.from_dsl` / `from_file` directly (the
+/// primary programmatic entry point) bypassed it. Enforcing the same cheap,
+/// non-allocating checks at the binding boundary ensures the crate refuses
+/// pathological input — an empty or oversized contract, missing `dataset`
+/// keyword, deeply nested braces (parser stack exhaustion) or known
+/// suspicious patterns — regardless of entry point.
+///
+/// Returns `Err(message)` with the same wording the Python validator uses.
+fn validate_dsl_safety(dsl: &str) -> Result<(), String> {
+    if dsl.trim().is_empty() {
+        return Err("Empty contract".to_string());
+    }
+    if dsl.len() > 1_000_000 {
+        return Err("Contract too large (max 1MB)".to_string());
+    }
+    if !dsl.contains("dataset") {
+        return Err("Contract must contain 'dataset' keyword".to_string());
+    }
+
+    let mut max_depth = 0i64;
+    let mut current_depth = 0i64;
+    for ch in dsl.chars() {
+        match ch {
+            '{' | '(' | '[' => {
+                current_depth += 1;
+                if current_depth > max_depth {
+                    max_depth = current_depth;
+                }
+            }
+            '}' | ')' | ']' => current_depth -= 1,
+            _ => {}
+        }
+    }
+    if max_depth > 50 {
+        return Err(format!("Nesting too deep (max 50, got {max_depth})"));
+    }
+
+    // `__.*__` — two non-overlapping `__` runs.
+    if dsl.matches("__").count() >= 2 {
+        return Err("Suspicious pattern: Double underscore (reserved)".to_string());
+    }
+    // `;\s*;` — two semicolons separated only by whitespace.
+    let bytes = dsl.as_bytes();
+    for (i, &b) in bytes.iter().enumerate() {
+        if b == b';' {
+            let mut j = i + 1;
+            while j < bytes.len() && bytes[j].is_ascii_whitespace() {
+                j += 1;
+            }
+            if j < bytes.len() && bytes[j] == b';' {
+                return Err("Suspicious pattern: Multiple semicolons".to_string());
+            }
+        }
+    }
+    if dsl.contains('\0') {
+        return Err("Suspicious pattern: Null byte".to_string());
+    }
+
+    Ok(())
+}
+
 /// A compiled statguardian data contract ready for execution.
 ///
 /// Create with `DataContract.from_dsl(dsl_string)` or `DataContract.from_file(path)`.
@@ -26,6 +91,9 @@ impl PyDataContract {
     /// Parse and compile a contract from DSL source text.
     #[staticmethod]
     fn from_dsl(dsl: &str) -> PyResult<Self> {
+        if let Err(msg) = validate_dsl_safety(dsl) {
+            return Err(PyValueError::new_err(format!("DSL validation error: {msg}")));
+        }
         let pairs = parse_and_compile(dsl)
             .map_err(|e| PyValueError::new_err(format!("DSL parse error: {e}")))?;
         let (contract, dag) = pairs

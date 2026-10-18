@@ -212,3 +212,36 @@ def test_stream_cli_exit_codes_and_stream_separation(tmp_path):
     )
     json.loads(json_run.stdout)  # machine report on stdout
 
+
+
+def test_from_dsl_enforces_validator_at_binding_boundary():
+    """STATGUARDIAN-006: the DSL safety validator must be enforced by
+    `DataContract.from_dsl`, not only the CLI, so the programmatic entry
+    point cannot be handed pathological contracts."""
+    DataContract = statguardian.DataContract
+
+    with pytest.raises(ValueError):
+        DataContract.from_dsl("")
+
+    with pytest.raises(ValueError):
+        DataContract.from_dsl("schema { x: int }")  # no `dataset` keyword
+
+    with pytest.raises(ValueError):
+        DataContract.from_dsl("dataset x {" + "a" * 1_000_001 + "}")
+
+    deep = "dataset x { " + "(" * 60 + ")" * 60 + " }"
+    with pytest.raises(ValueError):
+        DataContract.from_dsl(deep)
+
+    with pytest.raises(ValueError):
+        DataContract.from_dsl("dataset __x__ { schema { a: int } }")
+
+    with pytest.raises(ValueError):
+        DataContract.from_dsl("dataset x { ; ; }")
+
+
+def test_from_file_enforces_validator(tmp_path):
+    bad = tmp_path / "bad.sg"
+    bad.write_text("schema { x: int }")  # missing `dataset`
+    with pytest.raises(ValueError):
+        statguardian.DataContract.from_file(str(bad))
