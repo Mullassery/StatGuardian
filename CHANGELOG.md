@@ -17,6 +17,15 @@ actual commit messages and diffs, not invented.
   contract/data/reference paths. Unit tests cover the pass/fail decision
   without requiring Airflow in the test environment.
 
+## [2.8.0] - 2026-10-19
+
+### Added
+- Local HTTP service (`statguardian serve --contract orders.sg`) exposing
+  `/healthz` and `/validate` in the shape PyReverseETL's
+  `StatGuardianClient` expects. `/detect-changes` returns an explicit 501.
+- `[api]` extra (FastAPI + uvicorn). Service tests inject a fake contract/runner
+  and cover healthy, passing, failing, unbound, and 501 paths.
+
 ## [2.7.2] - 2026-10-18
 
 ### Security

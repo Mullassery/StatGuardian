@@ -129,6 +129,17 @@ contract = statguardian.DataContract.from_file("contracts/orders.sg")
 
 Note: When validating a Pandas DataFrame, convert it to Polars first (e.g., `pl.from_pandas(df)`) before calling `execute()`.
 
+## HTTP service
+
+```bash
+pip install "statguardian[api]"
+statguardian serve --contract orders.sg --host 127.0.0.1 --port 8000
+```
+
+`POST /validate` accepts `{"entity": {"attributes": {...}}}` and returns
+`passed`, `quality_score`, `issues`, and `schema_version` for PyReverseETL's
+`StatGuardianClient`. `/detect-changes` is explicitly 501, not faked.
+
 ## Integrations
 
 - **dbt** — `integrations/dbt-statguardian`.

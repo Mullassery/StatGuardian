@@ -64,8 +64,9 @@ Verified by reading the source, not by trusting prior roadmap claims.
 
 ## What does not exist, despite prior docs claiming otherwise
 
-- **REST API** — no HTTP server, no web framework dependency, no port-8008
-  anything. `docs/ROADMAP.md` marked this shipped; it never was.
+- **REST API** — a scoped local service now exists (`statguardian serve`,
+  `[api]` extra; `/healthz`, `/validate`; `/detect-changes` 501). It is
+  single-contract, not a multi-tenant control plane.
 - **Workflow tool integrations** — an Apache Airflow operator now exists in
   `integrations/airflow-statguardian` (`StatGuardianValidateOperator`, unit
   tested for its pass/fail decision). n8n, Power Automate, Temporal, and
