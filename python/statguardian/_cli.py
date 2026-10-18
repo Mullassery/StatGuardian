@@ -113,6 +113,15 @@ def main() -> None:
     stream.add_argument("--allow-raw-diagnostics", action="store_true",
                         help="Attach raw line previews to malformed diagnostics (off by default)")
 
+    serve = sub.add_parser(
+        "serve",
+        help="Run the local StatGuardian HTTP service",
+        description="Expose /validate for PyReverseETL's StatGuardianClient."
+    )
+    serve.add_argument("--contract", required=True, metavar="PATH", help="Contract .sg file")
+    serve.add_argument("--host", default="127.0.0.1", help="Bind address (default: loopback)")
+    serve.add_argument("--port", type=int, default=8000, help="Port (default: 8000)")
+
     # statguardian dbt
     dbt = sub.add_parser(
         "dbt",
@@ -148,6 +157,18 @@ def main() -> None:
 
     if args.command == "check":
         _cmd_check(args)
+    elif args.command == "serve":
+        from .server import create_app
+
+        try:
+            import uvicorn
+        except ImportError:
+            print(
+                '✗ Error: FastAPI/uvicorn required; install with `pip install "statguardian[api]"`',
+                file=sys.stderr,
+            )
+            sys.exit(2)
+        uvicorn.run(create_app(args.contract), host=args.host, port=args.port)
     elif args.command == "validate":
         _cmd_validate(args)
     elif args.command == "stream":
