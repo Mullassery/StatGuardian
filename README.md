@@ -129,6 +129,13 @@ contract = statguardian.DataContract.from_file("contracts/orders.sg")
 
 Note: When validating a Pandas DataFrame, convert it to Polars first (e.g., `pl.from_pandas(df)`) before calling `execute()`.
 
+## Integrations
+
+- **dbt** — `integrations/dbt-statguardian`.
+- **Apache Airflow** — `integrations/airflow-statguardian` provides
+  `StatGuardianValidateOperator`, which runs a `.sg` contract against a data
+  path and fails the task when validation does not pass.
+
 ## Documentation
 
 - [CLI documentation](docs/CLI.md)

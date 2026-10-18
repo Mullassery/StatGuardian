@@ -66,9 +66,10 @@ Verified by reading the source, not by trusting prior roadmap claims.
 
 - **REST API** — no HTTP server, no web framework dependency, no port-8008
   anything. `docs/ROADMAP.md` marked this shipped; it never was.
-- **Workflow tool integrations** (n8n, Power Automate, Temporal, Airflow,
-  UiPath) — zero code, zero dependencies, zero docs referencing any of these
-  beyond the roadmap bullet points themselves.
+- **Workflow tool integrations** — an Apache Airflow operator now exists in
+  `integrations/airflow-statguardian` (`StatGuardianValidateOperator`, unit
+  tested for its pass/fail decision). n8n, Power Automate, Temporal, and
+  UiPath still have zero code.
 - **Slack/PagerDuty alerting** and **JSON-lines audit logging** —
   `docs/ROADMAP_INTEGRATED.md` marked both shipped in "v2.1.0 CURRENT"; no
   such code exists.

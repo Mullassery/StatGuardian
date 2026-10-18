@@ -10,6 +10,13 @@ actual commit messages and diffs, not invented.
 
 ## [Unreleased]
 
+### Added
+- `integrations/airflow-statguardian`: `StatGuardianValidateOperator` runs a
+  `.sg` contract via `statguardian.execute_file()` and fails the Airflow task
+  when the report does not pass. Supports `fail_on_warning` and templated
+  contract/data/reference paths. Unit tests cover the pass/fail decision
+  without requiring Airflow in the test environment.
+
 ## [2.7.2] - 2026-10-18
 
 ### Security
