@@ -156,6 +156,11 @@ See [`deploy/README.md`](deploy/README.md) for a Docker Compose deployment.
 - [Benchmarking](docs/bench/benchmark.py)
 - [Honest roadmap & limitations](docs/ROADMAP_HONEST.md)
 
+## Queue status
+
+Shipped, blocked/failed, and rejected work for this repository is documented in
+[`QUEUE_STATUS.md`](QUEUE_STATUS.md).
+
 ## Contributing
 
 Contributions are welcome. Please review [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on development setup, code style, and testing.
