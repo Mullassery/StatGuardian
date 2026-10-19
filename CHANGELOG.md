@@ -17,6 +17,12 @@ actual commit messages and diffs, not invented.
 - Declare `license = "Apache-2.0"` in project metadata so PyPI/wheels expose a PEP 639 `License-Expression` (verified in the built wheel).
 
 ### Added
+- `statguardian._mcp_connector.BaseMCPConnector`: the canonical shared base
+  that PyStreamMCP, PyStreamPDF, and other sibling projects attempt to import.
+  It generates the DAB config, manages the subprocess lifecycle, and tracks
+  readiness. Secure defaults are preserved: loopback-only unless
+  `allow_remote=True`, no CORS origins by default, and read-only permissions.
+  Covered by `tests/test_mcp_connector.py`.
 - `integrations/airflow-statguardian`: `StatGuardianValidateOperator` runs a
   `.sg` contract via `statguardian.execute_file()` and fails the Airflow task
   when the report does not pass. Supports `fail_on_warning` and templated
