@@ -4,6 +4,7 @@ This file records what was shipped, what is blocked/failed, and what is rejected
 
 ## Shipped
 - Airflow operator; local HTTP `/validate` service; Docker Compose deployment.
+- Pandas/PyArrow/Narwhals dataframe compatibility in `execute()` (Polars stays copy-free).
 
 ## Blocked / failed
 - Runtime Docker validation (daemon unavailable here).

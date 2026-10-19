@@ -46,6 +46,9 @@ from ._anomaly_detection import (
     SimpleMovingAverageDetector,
 )
 
+# Dataframe compatibility (Pandas/PyArrow/Narwhals -> Polars)
+from ._compat import execute
+
 # Python-layer connectors (open-source only — MIT / Apache-2.0)
 from ._connectors import (
     execute_cloud,  # s3://, gs://, az:// — thin wrapper around execute_file
@@ -106,7 +109,6 @@ from ._statguardian import (
     __version__,
     compare_delta_versions,
     # Core execution
-    execute,
     # Delta Lake
     execute_delta,
     execute_file,

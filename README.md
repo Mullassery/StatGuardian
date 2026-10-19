@@ -127,7 +127,25 @@ Load a contract from a `.sg` file:
 contract = statguardian.DataContract.from_file("contracts/orders.sg")
 ```
 
-Note: When validating a Pandas DataFrame, convert it to Polars first (e.g., `pl.from_pandas(df)`) before calling `execute()`.
+`execute()` accepts Polars, Pandas, PyArrow and Narwhals-compatible eager dataframes. Polars is passed through unchanged; Pandas input requires the optional `pandas` extra (`pip install "statguardian[pandas]"`), while PyArrow is already a base dependency.
+
+### Dataframe inputs
+
+`execute()` accepts Polars, Pandas, PyArrow Tables and other eager dataframes
+supported by [Narwhals](https://github.com/narwhals-dev/narwhals). Polars is
+passed through with no copy; install the optional converter for Pandas:
+
+```bash
+pip install "statguardian[pandas]"
+```
+
+```python
+import pandas as pd
+import statguardian
+
+contract = statguardian.DataContract.from_file("contracts/orders.sg")
+report = statguardian.execute(contract, pd.read_parquet("orders.parquet"))
+```
 
 ## HTTP service
 

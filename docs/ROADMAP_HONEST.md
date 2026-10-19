@@ -181,9 +181,13 @@ Verified by reading the source, not by trusting prior roadmap claims.
   carry disclaimers, but a full consolidation into one document has not been
   done. This is itself a piece of documentation debt worth a dedicated
   cleanup pass.
-- **`pandas` is not auto-converted** — `execute()` requires a Polars
+- ~~**`pandas` is not auto-converted** — `execute()` requires a Polars
   DataFrame; passing pandas raises an unhelpful `AttributeError` rather than
-  converting. Documented in the main `README.md` Known Issues section.
+  converting.~~ **FIXED 2026-10-19.** `execute()` now converts Pandas,
+  PyArrow and other eager Narwhals-compatible frames to Polars; Polars input
+  is passed through unchanged. Pandas conversion requires the optional
+  `[pandas]` extra (Narwhals). See `python/statguardian/_compat.py` and
+  `tests/test_dataframe_compat.py`.
 
 ## Technical debt summary
 
