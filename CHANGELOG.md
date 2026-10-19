@@ -10,6 +10,9 @@ actual commit messages and diffs, not invented.
 
 ## [Unreleased]
 
+### Fixed
+- Declare `license = "Apache-2.0"` in project metadata so PyPI/wheels expose a PEP 639 `License-Expression` (verified in the built wheel).
+
 ### Added
 - `integrations/airflow-statguardian`: `StatGuardianValidateOperator` runs a
   `.sg` contract via `statguardian.execute_file()` and fails the Airflow task
