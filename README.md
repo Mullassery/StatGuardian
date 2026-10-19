@@ -64,6 +64,10 @@ StatGuardian is in active development. Core features (schema validation, quality
 pip install statguardian
 ```
 
+> **Platform note (2.8.0):** PyPI publishes a macOS arm64 wheel plus an sdist.
+> On Linux x86_64, Windows, or macOS Intel, build from source (below) until
+> wheels are published for those platforms. See [Install](docs/INSTALL.md).
+
 ### From source (Python + Rust)
 
 ```bash
@@ -73,7 +77,7 @@ maturin develop
 
 ### System requirements
 
-- Python 3.8+
+- Python 3.9+
 - Rust toolchain (for source builds)
 
 ## Quick start
@@ -168,9 +172,15 @@ See [`deploy/README.md`](deploy/README.md) for a Docker Compose deployment.
 
 ## Documentation
 
+- [Documentation index](docs/README.md)
+- [Contract DSL](docs/contract-dsl.md)
+- [Install](docs/INSTALL.md)
+- [Project status](docs/STATUS.md)
+- [Comparison](docs/COMPARISON.md)
 - [CLI documentation](docs/CLI.md)
 - [StreamGuard (streaming validation)](docs/STREAMGUARD.md)
-- [Data contract DSL](docs/contract-dsl.md)
+- [Format compatibility](docs/FORMAT_COMPATIBILITY.md)
+- [dbt integration](docs/DBT_INTEGRATION.md)
 - [Benchmarking](docs/bench/benchmark.py)
 - [Honest roadmap & limitations](docs/ROADMAP_HONEST.md)
 

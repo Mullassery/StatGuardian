@@ -250,7 +250,7 @@ by whether it needs its own dedicated follow-up session.
    the honest description used in `README.md`.
 9. **Fixed 2026-09-21 (quick-fix pass following this audit):** a handful of
    small, independently-found issues, none requiring a dedicated session —
-   `docs/LICENSES.md:7`'s `[LICENSE](LICENSE)` link resolved to a
+   `docs/LICENSES.md:7`'s `LICENSE` link resolved to a
    nonexistent `docs/LICENSE` (now `../LICENSE`); `docs/CLI.md:352` and
    `docs/DBT_INTEGRATION.md:63` both linked to `../README.md#dsl-reference`,
    an anchor that has never existed in `README.md` (repointed to
