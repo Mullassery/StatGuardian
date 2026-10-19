@@ -64,3 +64,23 @@ def test_detect_changes_is_explicitly_501():
     client = TestClient(_app(True))
     response = client.post("/detect-changes", json={"entity": {"attributes": {}}})
     assert response.status_code == 501
+
+
+def test_validate_uses_pandas_dataframe():
+    """The HTTP gate builds a one-row pandas frame.
+
+    pandas is declared in the `api` extra so a clean
+    ``pip install "statguardian[api]"`` provides it.
+    """
+    import pandas as pd
+
+    seen = {}
+
+    def execute_fn(_contract, frame):
+        seen["type"] = type(frame)
+        return _Report(True)
+
+    client = TestClient(_server.create_app(contract=object(), execute_fn=execute_fn))
+    response = client.post("/validate", json={"entity": {"attributes": {"amount": 10}}})
+    assert response.status_code == 200, response.text
+    assert seen["type"] is pd.DataFrame

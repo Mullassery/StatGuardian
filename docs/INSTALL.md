@@ -43,8 +43,8 @@ maturin develop --release
 
 | Extra | Provides |
 |---|---|
-| `pandas` | Pandas input (`pandas==2.1.0`, `narwhals`) |
-| `api` | HTTP service (`fastapi`, `uvicorn`) |
+| `pandas` | Pandas input (`pandas>=2.1.0,<3.0`, `narwhals`) |
+| `api` | HTTP service (`fastapi`, `uvicorn`, `pandas`, `narwhals`) |
 | `sql-postgres`, `sql-mysql`, `sql-sqlite`, `sql-duckdb`, … | SQL connectors |
 | `dev` | pytest/coverage |
 
@@ -69,7 +69,7 @@ inputs are parsed natively (no Spark needed).
   `pyo3-polars`/polars range; use the polars version allowed by the installed
   wheel or rebuild from source.
 - **Pandas validation fails to install** — the `pandas` extra pins
-  `pandas==2.1.0`; use an isolated environment if your project needs another
+  `pandas>=2.1.0,<3.0`; use an isolated environment if your project needs another
   version.
 
 See [Project status](STATUS.md) and [Contract DSL](contract-dsl.md).

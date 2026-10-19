@@ -125,13 +125,17 @@ dev = [
 api = [
     "fastapi>=0.110",
     "uvicorn>=0.27",
+    # /validate builds a one-row frame; declare the runtime dependency here so
+    # `pip install "statguardian[api]"` works on a clean install.
+    "pandas>=2.1.0,<3.0",
+    "narwhals>=1.0",
 ]
 
 # Data frame conversion
 # pyarrow is a base dependency now (see the comment there) — not repeated
 # here since pinning it differently per-extra would make `pip install
 # "statguardian[pandas]"` unsatisfiable against the base requirement.
-pandas = ["pandas==2.1.0", "narwhals>=1.0"]
+pandas = ["pandas>=2.1.0,<3.0", "narwhals>=1.0"]
 
 # SQL databases (PostgreSQL, MySQL, SQLite, BigQuery, Snowflake, etc.)
 # Note: psycopg2 adds LGPL-2.1 dependency for PostgreSQL support
@@ -173,7 +177,7 @@ airflow = ["apache-airflow>=2.0"]  # Roadmap
 
 # All optional extras
 all = [
-    "pandas==2.1.0",
+    "pandas>=2.1.0,<3.0",
     "narwhals>=1.0",
     # pyarrow intentionally omitted — it's a base dependency (see above)
     "connectorx>=0.3",

@@ -11,6 +11,9 @@ actual commit messages and diffs, not invented.
 ## [Unreleased]
 
 ### Fixed
+- Add `pandas` (and `narwhals`) to the `api` extra so the HTTP `/validate`
+  service works on a clean `statguardian[api]` install. Verified in a clean
+  venv and by the PyReverseETL cross-repo integration test.
 - Declare `license = "Apache-2.0"` in project metadata so PyPI/wheels expose a PEP 639 `License-Expression` (verified in the built wheel).
 
 ### Added
