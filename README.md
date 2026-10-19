@@ -139,6 +139,7 @@ statguardian serve --contract orders.sg --host 127.0.0.1 --port 8000
 `POST /validate` accepts `{"entity": {"attributes": {...}}}` and returns
 `passed`, `quality_score`, `issues`, and `schema_version` for PyReverseETL's
 `StatGuardianClient`. `/detect-changes` is explicitly 501, not faked.
+See [`deploy/README.md`](deploy/README.md) for a Docker Compose deployment.
 
 ## Integrations
 
