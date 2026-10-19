@@ -156,6 +156,17 @@ See [`deploy/README.md`](deploy/README.md) for a Docker Compose deployment.
 - [Benchmarking](docs/bench/benchmark.py)
 - [Honest roadmap & limitations](docs/ROADMAP_HONEST.md)
 
+## Known issues and deferred work
+
+**Blocked / failed:**
+- Runtime Docker validation (daemon unavailable here).
+- Streaming bounded-memory regression; reproducible benchmarks.
+
+**Rejected / deferred:**
+- Dashboards/alerting platform.
+
+Full shipped/blocked/rejected detail: [`QUEUE_STATUS.md`](QUEUE_STATUS.md).
+
 ## Queue status
 
 Shipped, blocked/failed, and rejected work for this repository is documented in
