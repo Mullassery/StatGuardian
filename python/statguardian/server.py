@@ -8,7 +8,7 @@ at startup. It is not a multi-tenant control plane.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 try:
     from fastapi import FastAPI, HTTPException
@@ -46,10 +46,10 @@ def _default_execute(contract, frame):
 
 
 def create_app(
-    contract_path: Optional[str] = None,
+    contract_path: str | None = None,
     *,
     contract: Any = None,
-    execute_fn: Optional[Callable[[Any, Any], Any]] = None,
+    execute_fn: Callable[[Any, Any], Any] | None = None,
 ) -> FastAPI:
     """Build the service. ``contract``/``execute_fn`` are injectable for tests."""
     if contract is None and contract_path:
@@ -78,7 +78,6 @@ def create_app(
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
         passed = bool(getattr(report, "passed", False))
-        violations = int(getattr(report, "violation_count", 0))
         summary = getattr(report, "summary", lambda: "")()
         return ValidateResponse(
             passed=passed,
