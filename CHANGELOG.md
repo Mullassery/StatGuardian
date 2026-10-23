@@ -29,6 +29,11 @@ actual commit messages and diffs, not invented.
   contract/data/reference paths. Unit tests cover the pass/fail decision
   without requiring Airflow in the test environment.
 
+## [2.8.1] - 2026-10-23
+
+### Added
+- Exported `BaseMCPConnector` from the public API.
+
 ## [2.8.0] - 2026-10-19
 
 ### Added

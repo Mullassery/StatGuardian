@@ -1,6 +1,6 @@
 # Project status
 
-**Version:** 2.8.0 · **Updated:** 2026-10-19
+**Version:** 2.8.1 · **Updated:** 2026-10-19
 
 ## Working today
 

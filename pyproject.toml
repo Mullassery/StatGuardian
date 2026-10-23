@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name            = "statguardian"
-version         = "2.8.0"
+version         = "2.8.1"
 license         = "Apache-2.0"
 description     = "Rust-native data quality engine with a declarative contract DSL: schema validation, drift detection, and anomaly detection for Pandas and Polars."
 authors         = [{ name = "Georgi Mammen Mullassery", email = "mullassery@gmail.com" }]

@@ -64,7 +64,7 @@ StatGuardian is in active development. Core features (schema validation, quality
 pip install statguardian
 ```
 
-> **Platform note (2.8.0):** PyPI publishes a macOS arm64 wheel plus an sdist.
+> **Platform note (2.8.1):** PyPI publishes a macOS arm64 wheel plus an sdist.
 > On Linux x86_64, Windows, or macOS Intel, build from source (below) until
 > wheels are published for those platforms. See [Install](docs/INSTALL.md).
 

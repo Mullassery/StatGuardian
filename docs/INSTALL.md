@@ -9,7 +9,7 @@ StatGuardian is a Rust-native Python extension (built with maturin). It requires
 pip install statguardian
 ```
 
-> **Platform note (2.8.0):** PyPI currently publishes a **macOS arm64** wheel
+> **Platform note (2.8.1):** PyPI currently publishes a **macOS arm64** wheel
 > (`cp38-abi3-macosx_11_0_arm64`) plus an sdist. On Linux x86_64, Windows, or
 > macOS Intel, build from source (below) until wheels are published for those
 > platforms.
