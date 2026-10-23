@@ -1,8 +1,8 @@
 """Tests for the canonical shared MCP connector base.
 
 Consumers (PyStreamMCP, PyStreamPDF, and others) import
-``statguardian._mcp_connector.BaseMCPConnector`` and fall back to local copies
-when it is absent. These tests pin the shared surface and, importantly, the
+``statguardian.BaseMCPConnector`` and fall back to local copies when it is
+absent. These tests pin the shared, public surface and, importantly, the
 secure defaults.
 """
 
@@ -12,7 +12,13 @@ from typing import Any
 
 import pytest
 
-from statguardian._mcp_connector import BaseMCPConnector
+import statguardian
+from statguardian import BaseMCPConnector
+
+
+def test_base_connector_is_exported_from_the_package():
+    assert statguardian.BaseMCPConnector is BaseMCPConnector
+    assert "BaseMCPConnector" in statguardian.__all__
 
 
 class _Connector(BaseMCPConnector):

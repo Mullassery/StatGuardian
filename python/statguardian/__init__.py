@@ -132,11 +132,17 @@ from ._validators import (
     validator,
 )
 
+# Shared, dependency-light MCP/DAB connector base used by the PyStream* family.
+# Exported here so consumers do not have to import a private module.
+from ._mcp_connector import BaseMCPConnector
+
 __all__ = [
     "AdaptiveThresholdDetector",
     # ML Anomaly Detection (v1.1.0+)
     "AnomalyDetectionEngine",
     "AnomalyResult",
+    # Shared MCP/DAB connector base
+    "BaseMCPConnector",
     # Core
     "DataContract",
     "FileResult",
