@@ -34,6 +34,10 @@ actual commit messages and diffs, not invented.
 ### Added
 - Exported `BaseMCPConnector` from the public API.
 
+### Fixed
+- Cleaned up the HTTP service's type annotations and an unused local so the
+  API module passes the current ruff configuration.
+
 ## [2.8.0] - 2026-10-19
 
 ### Added
