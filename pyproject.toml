@@ -113,7 +113,7 @@ dependencies    = [
     # `statguardian.okf_contracts` (or anything importing it) is imported.
     # Verified by actually importing `frontmatter` under Python 3.9: fails
     # at 1.2.0, works at 1.1.0.
-    "python-frontmatter>=1.0.0,<1.2.0",
+    "python-frontmatter>=1.0.0,<1.4.0",
 ]
 
 [project.optional-dependencies]
