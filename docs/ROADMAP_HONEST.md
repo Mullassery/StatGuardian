@@ -65,8 +65,11 @@ Verified by reading the source, not by trusting prior roadmap claims.
 ## What does not exist, despite prior docs claiming otherwise
 
 - **REST API** — a scoped local service now exists (`statguardian serve`,
-  `[api]` extra; `/healthz`, `/validate`; `/detect-changes` 501). It is
-  single-contract, not a multi-tenant control plane.
+  `[api]` extra; `/healthz`, `/validate`, `/detect-changes`). It is
+  single-contract, not a multi-tenant control plane. `/detect-changes`
+  now runs the real `_evolution.detect_schema_changes` diff (2026-10-25)
+  and returns added/removed/retyped columns with severities and a
+  `breaking` flag.
 - **Workflow tool integrations** — an Apache Airflow operator now exists in
   `integrations/airflow-statguardian` (`StatGuardianValidateOperator`, unit
   tested for its pass/fail decision). n8n, Power Automate, Temporal, and

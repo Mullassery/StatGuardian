@@ -33,6 +33,14 @@ class ValidateResponse(BaseModel):
     schema_version: str
 
 
+class DetectChangesPayload(BaseModel):
+    current: dict[str, Any]
+    reference: dict[str, Any]
+    added_severity: str = "info"
+    removed_severity: str = "error"
+    retyped_severity: str = "warning"
+
+
 def _load_contract(path: str):
     from statguardian import DataContract
 
@@ -87,10 +95,45 @@ def create_app(
         )
 
     @app.post("/detect-changes")
-    def detect_changes(_payload: EntityPayload) -> dict[str, Any]:
-        raise HTTPException(
-            status_code=501,
-            detail="schema-change detection is not implemented by this service yet",
-        )
+    def detect_changes(payload: DetectChangesPayload) -> dict[str, Any]:
+        from statguardian._evolution import detect_schema_changes, schema_evolution_report
+
+        allowed = {"info", "warning", "error"}
+        for name, value in (
+            ("added_severity", payload.added_severity),
+            ("removed_severity", payload.removed_severity),
+            ("retyped_severity", payload.retyped_severity),
+        ):
+            if value not in allowed:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"{name} must be one of {sorted(allowed)}",
+                )
+        try:
+            changes = detect_schema_changes(
+                payload.current,
+                payload.reference,
+                added_severity=payload.added_severity,
+                removed_severity=payload.removed_severity,
+                retyped_severity=payload.retyped_severity,
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+        serialized = [
+            {
+                "change_type": change.change_type,
+                "column": change.column,
+                "old_dtype": change.old_dtype,
+                "new_dtype": change.new_dtype,
+                "severity": change.severity,
+            }
+            for change in changes
+        ]
+        return {
+            "changes": serialized,
+            "breaking": any(change.severity == "error" for change in changes),
+            "report": schema_evolution_report(changes),
+        }
 
     return app

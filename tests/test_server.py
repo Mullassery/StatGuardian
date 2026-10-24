@@ -60,10 +60,49 @@ def test_unbound_contract_is_503():
     assert client.post("/validate", json={"entity": {"attributes": {}}}).status_code == 503
 
 
-def test_detect_changes_is_explicitly_501():
+def test_detect_changes_reports_real_schema_drift():
     client = TestClient(_app(True))
-    response = client.post("/detect-changes", json={"entity": {"attributes": {}}})
-    assert response.status_code == 501
+    response = client.post(
+        "/detect-changes",
+        json={
+            "current": {"id": "Int64", "email": "String", "score": "Float64"},
+            "reference": {"id": "Int64", "email": "String", "legacy": "String"},
+        },
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["breaking"] is True
+    changes = {(c["change_type"], c["column"]) for c in body["changes"]}
+    assert ("added", "score") in changes
+    assert ("removed", "legacy") in changes
+    assert "Column removed" in body["report"]
+
+
+def test_detect_changes_identical_schemas_are_not_breaking():
+    client = TestClient(_app(True))
+    response = client.post(
+        "/detect-changes",
+        json={"current": {"id": "Int64"}, "reference": {"id": "Int64"}},
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "changes": [],
+        "breaking": False,
+        "report": "Schema unchanged.",
+    }
+
+
+def test_detect_changes_rejects_invalid_severity():
+    client = TestClient(_app(True))
+    response = client.post(
+        "/detect-changes",
+        json={
+            "current": {"id": "Int64"},
+            "reference": {},
+            "removed_severity": "fatal",
+        },
+    )
+    assert response.status_code == 400
 
 
 def test_validate_uses_pandas_dataframe():

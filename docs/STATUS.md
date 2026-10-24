@@ -13,7 +13,7 @@
 - Drift detection via `--reference`; anomaly rules (outliers, duplicates,
   cardinality explosion).
 - Structured reports: summary, JSON, Prometheus.
-- HTTP service (`serve`) with `/validate`; `/detect-changes` returns 501.
+- HTTP service (`serve`) with `/validate` and `/detect-changes` (real schema-evolution diff).
 - dbt and Airflow integrations in `integrations/`.
 
 ## Verified gaps
