@@ -215,27 +215,10 @@ by whether it needs its own dedicated follow-up session.
 
 **Safe cleanup, not urgent, no dedicated session needed:**
 
-6. **A compiled binary is committed directly to git**:
-   `python/statguardian/_statguardian.abi3.so` (macOS arm64 Mach-O shared
-   library, ~25MB, confirmed via `file` and `git ls-files`) is tracked in
-   version control, not gitignored. It was last updated in commit `fa78c1c`
-   (2026-08-23) — **before** the 2026-08-30 sliding-window fix, the
-   2026-09-14 pyo3/polars migration, and the 2026-09-17 rustls bump — so the
-   binary checked into git is now stale relative to source — confirmed
-  directly: reinstalling the committed binary and calling the new
-  `statguardian --version` CLI flag (added in this audit, see below) prints
-  `statguardian 2.4.0`, two releases behind the actual `2.6.0` in
-  `Cargo.toml`/`pyproject.toml`, because `__version__` is baked in at Rust
-  compile time via `env!("CARGO_PKG_VERSION")`
-  (`crates/statguardian-py/src/lib.rs:558`). It is also
-   single-platform (macOS arm64 only), useless for Linux CI or other
-   architectures, and bloats repository size/history. `pip install` from
-   PyPI or a fresh `maturin build` both rebuild from source and are
-   unaffected, but anyone relying on the checked-in binary directly would
-   get stale, pre-migration behavior. Recommend: remove from tracking, add
-   `*.abi3.so` / `*.so` to `.gitignore`, and — in a separate, deliberate
-   step (not done here, out of scope for a docs pass) — consider whether it
-   should also be purged from git history given its size.
+6. ~~**A compiled binary is committed directly to git**~~ **Resolved:** the
+   stale `python/statguardian/_statguardian.abi3.so` is no longer tracked, and
+   `*.abi3.so` is ignored so a local rebuild cannot be re-added accidentally.
+
 7. Two minor, already-documented `#[allow(dead_code)]` uses
    (`crates/statguardian-io/src/iceberg.rs:28`,
    `crates/statguardian-io/src/delta.rs:22`) for JSON-deserialized struct
