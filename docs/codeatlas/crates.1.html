@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CodeAtlas</title>
+<script src="https://unpkg.com/cytoscape@3.23.0/dist/cytoscape.min.js"></script>
+<script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
+<script src="https://unpkg.com/cytoscape-dagre@2.4.0/cytoscape-dagre.js"></script>
+<style>
+  body { margin: 0; font-family: -apple-system, sans-serif; }
+  #cy { width: 100vw; height: 100vh; }
+  header { padding: 12px 16px; border-bottom: 1px solid #eee; }
+</style>
+</head>
+<body>
+<header>
+  <strong>CodeAtlas</strong>
+  <p>Owns 0 symbols across 0 file(s).</p>
+</header>
+<div id="cy"></div>
+<script>
+const data = {"nodes": [{"data": {"id": "statguardian_core", "label": "statguardian-core", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./statguardian_core.html"}}, {"data": {"id": "statguardian_engine", "label": "statguardian-engine", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./statguardian_engine.html"}}, {"data": {"id": "statguardian_io", "label": "statguardian-io", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./statguardian_io.html"}}, {"data": {"id": "statguardian_lineage", "label": "statguardian-lineage", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./statguardian_lineage.html"}}, {"data": {"id": "statguardian_metrics", "label": "statguardian-metrics", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./statguardian_metrics.html"}}, {"data": {"id": "statguardian_py", "label": "statguardian-py", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./statguardian_py.html"}}, {"data": {"id": "statguardian_stats", "label": "statguardian-stats", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./statguardian_stats.html"}}, {"data": {"id": "statguardian_stream", "label": "statguardian-stream", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./statguardian_stream.html"}}, {"data": {"id": "statguardian_validators", "label": "statguardian-validators", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./statguardian_validators.html"}}], "edges": [{"data": {"id": "edge_0", "source": "statguardian_core", "target": "statguardian_io", "label": "calls"}}, {"data": {"id": "edge_1", "source": "statguardian_core", "target": "statguardian_stream", "label": "calls"}}, {"data": {"id": "edge_2", "source": "statguardian_engine", "target": "statguardian_core", "label": "calls"}}, {"data": {"id": "edge_3", "source": "statguardian_engine", "target": "statguardian_io", "label": "calls"}}, {"data": {"id": "edge_4", "source": "statguardian_engine", "target": "statguardian_stats", "label": "calls"}}, {"data": {"id": "edge_5", "source": "statguardian_engine", "target": "statguardian_stream", "label": "calls"}}, {"data": {"id": "edge_6", "source": "statguardian_engine", "target": "statguardian_validators", "label": "calls"}}, {"data": {"id": "edge_7", "source": "statguardian_io", "target": "statguardian_py", "label": "calls"}}, {"data": {"id": "edge_8", "source": "statguardian_io", "target": "statguardian_stream", "label": "calls"}}, {"data": {"id": "edge_9", "source": "statguardian_lineage", "target": "statguardian_io", "label": "calls"}}, {"data": {"id": "edge_10", "source": "statguardian_lineage", "target": "statguardian_stream", "label": "calls"}}, {"data": {"id": "edge_11", "source": "statguardian_metrics", "target": "statguardian_stream", "label": "calls"}}, {"data": {"id": "edge_12", "source": "statguardian_py", "target": "statguardian_core", "label": "calls"}}, {"data": {"id": "edge_13", "source": "statguardian_py", "target": "statguardian_io", "label": "calls"}}, {"data": {"id": "edge_14", "source": "statguardian_py", "target": "statguardian_lineage", "label": "calls"}}, {"data": {"id": "edge_15", "source": "statguardian_py", "target": "statguardian_stats", "label": "calls"}}, {"data": {"id": "edge_16", "source": "statguardian_py", "target": "statguardian_stream", "label": "calls"}}, {"data": {"id": "edge_17", "source": "statguardian_stats", "target": "statguardian_py", "label": "calls"}}, {"data": {"id": "edge_18", "source": "statguardian_stats", "target": "statguardian_stream", "label": "calls"}}, {"data": {"id": "edge_19", "source": "statguardian_stream", "target": "statguardian_core", "label": "calls"}}, {"data": {"id": "edge_20", "source": "statguardian_stream", "target": "statguardian_io", "label": "calls"}}, {"data": {"id": "edge_21", "source": "statguardian_validators", "target": "statguardian_core", "label": "calls"}}, {"data": {"id": "edge_22", "source": "statguardian_validators", "target": "statguardian_io", "label": "calls"}}, {"data": {"id": "edge_23", "source": "statguardian_validators", "target": "statguardian_stream", "label": "calls"}}]};
+const cy = cytoscape({
+  container: document.getElementById('cy'),
+  elements: data,
+  style: [
+    { selector: 'node', style: {
+      'label': 'data(label)',
+      'shape': 'round-rectangle',
+      'background-color': '#eef2ff',
+      'border-color': '#6366f1',
+      'border-width': 1,
+      'width': 'label',
+      'padding': '10px',
+      'text-valign': 'center',
+      'text-halign': 'center',
+      'font-size': '12px',
+    }},
+    { selector: 'edge', style: {
+      'label': 'data(label)',
+      'curve-style': 'bezier',
+      'target-arrow-shape': 'triangle',
+      'font-size': '10px',
+      'text-rotation': 'autorotate',
+    }}
+  ],
+  layout: { name: 'dagre', rankDir: 'LR' }
+});
+cy.on('tap', 'node', evt => {
+  const node = evt.target;
+  if (node.data('linkUrl')) { window.location.href = node.data('linkUrl'); }
+});
+</script>
+</body>
+</html>

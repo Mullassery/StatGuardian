@@ -52,4 +52,4 @@ tmp/
 docs/bench/_nyc311_200k_cache.json
 results.json
 
-graphify-out/
+codeatlas-out/
