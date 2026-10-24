@@ -1,5 +1,11 @@
 # StatGuardian
 
+[![CI](https://github.com/Mullassery/StatGuardian/actions/workflows/ci.yml/badge.svg)](https://github.com/Mullassery/StatGuardian/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/statguardian.svg)](https://pypi.org/project/statguardian/)
+[![Python](https://img.shields.io/pypi/pyversions/statguardian.svg)](https://pypi.org/project/statguardian/)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
+[![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org/)
+
 A Rust-native data quality engine with a declarative contract DSL for schema validation, drift detection, and anomaly detection for Pandas and Polars DataFrames.
 
 > **Not to be confused with pipeline validators like [PyDBTGuard](https://github.com/Mullassery/PyDBTGuard) or [PyBeamGuard](https://github.com/Mullassery/PyBeamGuard):** those check pipeline definitions before they run; StatGuardian checks the quality of the *data* at runtime.
@@ -193,7 +199,7 @@ See [`deploy/README.md`](deploy/README.md) for a Docker Compose deployment.
 **Rejected / deferred:**
 - Dashboards/alerting platform.
 
-Full shipped/blocked/rejected detail: [`QUEUE_STATUS.md`](QUEUE_STATUS.md).
+Full shipped/blocked/rejected detail: [`docs/internal/QUEUE_STATUS.md`](docs/internal/QUEUE_STATUS.md).
 
 ## Contributing
 

@@ -148,7 +148,7 @@ actual commit messages and diffs, not invented.
   so the match always fell through and `StreamConfig` fields were always
   `None` regardless of input. Fixed by unwrapping the extra pest layer;
   added a regression test. Note: these fields are still not consumed by
-  the engine downstream — see `TECHNICAL_DEBT.md` TD-0003.
+  the engine downstream — see `docs/internal/TECHNICAL_DEBT.md` TD-0003.
 - `clippy::useless_vec` warning in `statguardian-lineage`'s test module
   (`storage.rs:623`).
 - `docs/LICENSES.md:7` — `[LICENSE](LICENSE)` resolved to the nonexistent
@@ -165,7 +165,7 @@ actual commit messages and diffs, not invented.
   behavior unchanged.
 
 ### Added
-- `TECHNICAL_DEBT.md` and `AUDIT.md` — consolidated technical-debt register
+- `docs/internal/TECHNICAL_DEBT.md` and `docs/internal/AUDIT.md` — consolidated technical-debt register
   and audit report (cross-referencing `docs/SECURITY_AUDIT.md` and
   `docs/ROADMAP_HONEST.md` rather than duplicating them).
 

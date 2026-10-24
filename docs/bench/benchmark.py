@@ -10,7 +10,15 @@ Usage:
     python3 docs/bench/benchmark.py
 """
 
-import time, random, statistics, warnings, io, contextlib, sys
+import contextlib
+import io
+import random
+import re
+import statistics
+import sys
+import time
+import warnings
+
 warnings.filterwarnings("ignore")
 
 N = 100_000
@@ -43,6 +51,7 @@ print(f"\nBenchmark: {N:,} rows × 4 cols, best-of-{RUNS}, Apple M-series\n")
 # ── StatGuard ─────────────────────────────────────────────────────────────────
 try:
     import polars as pl
+
     import statguardian
 
     contract = statguardian.DataContract.from_dsl("""
@@ -63,8 +72,9 @@ except ImportError:
 
 # ── Pydantic v2 — row-by-row ──────────────────────────────────────────────────
 try:
-    from pydantic import BaseModel, Field, ValidationError
     from typing import Annotated
+
+    from pydantic import BaseModel, Field, ValidationError
 
     class UserRow(BaseModel):
         id:      int
@@ -77,7 +87,7 @@ try:
         for row in rows:
             try:
                 UserRow.model_validate(row)
-            except ValidationError:
+            except ValidationError:  # noqa: PERF203 - per-row validation is the benchmark
                 errors += 1
 
     bench(run_pydantic_row, "Pydantic v2 (row-by-row, model_validate)")
@@ -87,15 +97,12 @@ except ImportError:
 # ── Pydantic v2 — TypeAdapter bulk ───────────────────────────────────────────
 try:
     from pydantic import TypeAdapter
-    from typing import List
 
-    ta = TypeAdapter(List[UserRow])
+    ta = TypeAdapter(list[UserRow])
 
     def run_pydantic_bulk():
-        try:
+        with contextlib.suppress(ValidationError):
             ta.validate_python(rows)
-        except ValidationError:
-            pass
 
     bench(run_pydantic_bulk, "Pydantic v2 (TypeAdapter, bulk list)")
 except ImportError:
@@ -119,8 +126,8 @@ except ImportError:
 
 # ── Great Expectations ────────────────────────────────────────────────────────
 try:
-    import pandas as pd
     import great_expectations as gx
+    import pandas as pd
 
     df_pd = pd.DataFrame({"id": ids, "email": emails, "age": ages, "country": countries})
     ctx   = gx.get_context(mode="ephemeral")
@@ -165,7 +172,6 @@ except ImportError:
     pass
 
 # ── Pure Python loops (absolute baseline) ────────────────────────────────────
-import re
 pattern = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 
 def run_python():
@@ -181,7 +187,7 @@ sg_ms = results.get("StatGuard 0.1 (Rust/Polars)", (None, None))[0]
 
 print(f"\n{'='*78}")
 print(f"  {N:,} rows × 4 cols | best-of-{RUNS} | Apple M-series | Python 3.13")
-print(f"  Checks: not_null · type · range(0-120) · regex(email) · uniqueness")
+print("  Checks: not_null · type · range(0-120) · regex(email) · uniqueness")
 print(f"{'='*78}")
 print(f"  {'Tool':<50}  {'Best':>8}  {'vs StatGuard':>14}")
 print(f"  {'-'*50}  {'-'*8}  {'-'*14}")
@@ -197,4 +203,4 @@ for name, (best, _) in sorted(results.items(), key=lambda x: x[1][0]):
 
 print(f"{'='*78}")
 print(f"\nAll times are best-of-{RUNS} (ms). Lower is better.")
-print(f"See BENCHMARKS.md for methodology and scaling projections.")
+print("See BENCHMARKS.md for methodology and scaling projections.")

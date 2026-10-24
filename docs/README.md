@@ -32,6 +32,6 @@
 | [Roadmap](ROADMAP.md) | Roadmap |
 | [ADRs](adr/) | Architecture decision records |
 
-Maintainer status: [`QUEUE_STATUS.md`](../QUEUE_STATUS.md),
-[`AUDIT_FINDINGS.md`](../AUDIT_FINDINGS.md),
-[`TECHNICAL_DEBT.md`](../TECHNICAL_DEBT.md).
+Maintainer status: [`internal/QUEUE_STATUS.md`](internal/QUEUE_STATUS.md),
+[`internal/AUDIT_FINDINGS.md`](internal/AUDIT_FINDINGS.md),
+[`internal/TECHNICAL_DEBT.md`](internal/TECHNICAL_DEBT.md).

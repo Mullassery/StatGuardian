@@ -80,7 +80,7 @@ Verified by reading the source, not by trusting prior roadmap claims.
 
 ## Known regressions and open engineering work
 
-- **FIXED 2026-10-05 (see `TECHNICAL_DEBT.md` TD-0001/TD-0002, `CHANGELOG.md`
+- **FIXED 2026-10-05 (see `internal/TECHNICAL_DEBT.md` TD-0001/TD-0002, `CHANGELOG.md`
   [2.6.1]) — `regex=`, `enum=[...]`, and anomaly `method=` DSL constraints
   were silently broken: they never matched anything, for every user,
   always.**
@@ -150,7 +150,7 @@ Verified by reading the source, not by trusting prior roadmap claims.
   caught a second, independent, previously-undiscovered bug in the same
   area — `parse_stream()` never actually read `window=`/`watermark=`/
   `emit=` values at all (a pest rule-nesting mismatch, unrelated to
-  quoting), also fixed in the same pass. See `TECHNICAL_DEBT.md`
+  quoting), also fixed in the same pass. See `internal/TECHNICAL_DEBT.md`
   TD-0001/TD-0002 and `CHANGELOG.md` [2.6.1] for full detail. Note:
   `window=`/`watermark=`/`emit=` now parse correctly but are still not
   consumed by the engine downstream — tracked as TD-0003, not a regression
@@ -197,7 +197,7 @@ by whether it needs its own dedicated follow-up session.
 **Needs a dedicated session:**
 
 1. ~~**DSL parser quote-stripping bug**~~ — **FIXED 2026-10-05**, see
-   `TECHNICAL_DEBT.md` TD-0001/TD-0002 and the top item under "Known
+   `internal/TECHNICAL_DEBT.md` TD-0001/TD-0002 and the top item under "Known
    regressions" above.
 2. **`StreamingBatcher` bounded-memory regression**
    (`crates/statguardian-io/src/lib.rs`) — see "Known regressions" above and

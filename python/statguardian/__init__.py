@@ -93,6 +93,10 @@ from ._lineage import (
     save_lineage_version,
 )
 
+# Shared, dependency-light MCP/DAB connector base used by the PyStream* family.
+# Exported here so consumers do not have to import a private module.
+from ._mcp_connector import BaseMCPConnector
+
 # Parallel multi-file validation
 from ._parallel import (
     FileResult,
@@ -131,10 +135,6 @@ from ._validators import (
     run_custom_validators,
     validator,
 )
-
-# Shared, dependency-light MCP/DAB connector base used by the PyStream* family.
-# Exported here so consumers do not have to import a private module.
-from ._mcp_connector import BaseMCPConnector
 
 __all__ = [
     "AdaptiveThresholdDetector",
