@@ -56,6 +56,8 @@ starts, and record the decision in the PR or changelog.
 
 ## OSS gap analysis — 2026-10-24
 
+**What matters most here:** failed-row samples and warehouse pushdown. Counts without examples make debugging slow, and materializing results locally defeats warehouse-scale checks; add row samples first, then pushdown if users need it.
+
 Scope: open-source data-quality and validation tools that overlap StatGuardian's
 schema/quality/drift/anomaly checks. Dates and licenses checked against primary
 repositories on 2026-10-24; star counts are intentionally excluded.
