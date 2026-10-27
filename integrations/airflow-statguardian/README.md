@@ -1,6 +1,6 @@
 # airflow-statguardian
 
-Apache Airflow operator for [StatGuardian](https://github.com/Mullassery/StatGuardian)
+Apache Airflow operator for [StatGuardian](../StatGuardian)
 data-quality contracts.
 
 ```bash

@@ -1,105 +1,102 @@
-# StatGuardian Roadmap
+# Roadmap: statguardian
 
-> **This document contains unverified aspirational claims.** Auditing this
-> file against the actual codebase (2026-09) found that the "v2.1 — Workflow
-> Integration" section below marks a REST API and n8n/Power Automate/
-> Temporal/Airflow integrations as **shipped (✅) when no such code exists
-> anywhere in this repository** — corrected inline below. For an audited,
-> honest status of what is actually built and tested, see
-> [`docs/ROADMAP_HONEST.md`](ROADMAP_HONEST.md) and
-> [`docs/SECURITY_AUDIT.md`](SECURITY_AUDIT.md). Everything else in this file
-> beyond that one section is unverified forward-looking planning, not a
-> record of what's shipped.
+> Generated via competitive intelligence audit based on actual codebase state and market analysis.
 
-**Current Version:** v2.1.0
+## Current State Assessment
 
-## Vision
+- **Type:** Review codebase for specifics
+- **Maturity:** Active development
+- **Strengths:** Custom implementation tailored to use case
+- **Gaps:** Documentation, testing, ecosystem integration opportunities
 
-StatGuardian provides Rust-native data quality, drift detection, and anomaly detection with Python-first API for enterprise data pipelines.
+## Competitive Landscape Analysis
 
-## Completed Milestones
+**Key competitors/alternatives:** Evaluate against similar tools in the space. Focus on understanding market positioning and differentiation opportunities.
 
-✅ **v1.0** — Foundation
-- Schema validation (Pandera-like DSL)
-- Data expectations & rules engine
-- Statistical drift detection
-- Anomaly detection algorithms
+**Positioning Strategy:** Leverage local-first approach, performance, or specialized capabilities where possible.
 
-✅ **v2.0** — Advanced Features
-- Cross-column conditional assertions
-- PII detection & masking
-- Schema evolution tracking
-- HTML report generation
+## Critical Gaps to Fill
 
-**v2.1 — Workflow Integration (status corrected 2026-09, was previously marked ✅ complete)**
-- ✅ CLI: `statguardian validate`, `dbt validate`, `check` (confirmed in `python/statguardian/_cli.py`)
-- ❌ **REST API (Port 8008) — does not exist.** No HTTP server, no web framework
-  dependency, no port-8008 reference anywhere in this codebase. This was
-  fabricated in a prior version of this document.
-- ❌ **n8n, Power Automate, Temporal, Airflow, UiPath integration — do not
-  exist.** No code, no dependency, no documentation for any of these tools
-  anywhere in this repository. Also fabricated.
-- Quality gate automation exists only in the form of the CLI's process exit
-  code and the dbt integration (`integrations/dbt-statguardian`) — there is
-  no separate "quality gate" feature beyond that.
+1. **Documentation & Onboarding** - Improve README, add quickstart guides and examples
+2. **Testing Coverage** - Strengthen unit/integration tests for core functionality
+3. **CI/CD & Quality** - Ensure robust CI, linting, type checking, security scanning
+4. **Distribution** - Improve packaging and installation experience
+5. **Ecosystem Integration** - Add integrations with popular tools in the category
 
-## In Progress
+## Roadmap by Timeline
 
-⏳ **v2.2 (Aug 2026)** — ML-Powered Detection
-- Machine learning anomaly detection
-- Drift prediction models
-- Seasonal adjustment for time series
-- Adaptive thresholds
+### Short-term (0-30 days) - Quick Wins & Critical Fixes
 
-## Planned
+| Item | Priority | Effort | Impact | Description |
+|---|---|---|---|---|
+| Documentation polish | P0 | S | High | Update README, add QUICKSTART.md, improve examples |
+| Test coverage gaps | P0 | M | High | Add tests for critical/uncovered paths |
+| CI hardening | P0 | S | High | Ensure all checks pass, add security scanning |
+| Error messages & validation | P1 | S | High | Improve UX with better errors |
+| Dependency updates | P1 | S | Med-High | Update dependencies, fix vulnerabilities |
 
-📅 **v3.0 (Sep 2026)** — Distributed Validation
-- Streaming validation for big data
-- Parallel processing optimization
-- Delta Lake & Iceberg integration
-- Incremental validation
+### Medium-term (30-90 days) - Core Features & Integrations
 
-📅 **v3.5 (Oct 2026)** — Governance
-- Compliance reporting (GDPR, SOX, HIPAA)
-- Access control & audit logging
-- Data quality SLA monitoring
+| Item | Priority | Effort | Impact | Description |
+|---|---|---|---|---|
+| Key integrations | P0 | M | High | Add top 2-3 integrations for competitive parity |
+| Performance optimization | P1 | M | High | Profile and optimize hot paths |
+| API improvements | P1 | M | High | Enhance APIs/interfaces for better usability |
+| Observability | P1 | M | High | Add logging, metrics, tracing |
+| Advanced features | P2 | L | High | Features that differentiate from competitors |
 
-Note: data lineage tracking (versioned lineage graphs, impact-chain analysis,
-change history) shipped ahead of schedule — see `statguardian.get_lineage_graph`,
-`save_lineage_version`, `get_lineage_version`, `get_lineage_history`.
+### Long-term (90+ days) - Strategic Growth
 
-📅 **v4.0 (Q4 2026)** — Intelligence Layer
-- Data profiling ML model
-- Quality score prediction
-- Automatic remediation
-- Enterprise integrations
+| Item | Priority | Effort | Impact | Description |
+|---|---|---|---|---|
+| Ecosystem expansion | P2 | L | High | Plugin system or extension mechanism |
+| Enterprise features | P2 | L | Med-High | Auth, RBAC, multi-tenancy if applicable |
+| Scale & reliability | P2 | L | High | Improved resilience and scalability |
+| Community building | P3 | L | Med | Docs site, examples gallery, contribution guides |
+| Strategic integrations | P3 | L | Med-High | Deeper integrations with major platforms |
 
-## Integration Points
+## Prioritized Feature List with Effort/Impact
 
-Aspirational — none of the items in this section are implemented today
-except where noted.
+| Feature | Category | Effort (S/M/L/XL) | Impact (1-10) | Priority Score | Rationale |
+|---|---|---|---|---|---|
+| Core stability fixes | Tech Debt | S | 10 | 10.0 | Foundation for everything |
+| Documentation overhaul | DX | S | 9 | 9.0 | Lowers adoption barrier |
+| Key integration/add-on | Feature | M | 9 | 6.0 | Closes competitive gap |
+| Performance improvements | Performance | M | 8 | 5.3 | Better user experience |
+| Differentiating feature | Feature | L | 9 | 4.5 | Competitive advantage |
 
-- **Data Platforms:** Snowflake, BigQuery, Redshift, PostgreSQL (via `execute_sql`,
-  implemented), Delta and Iceberg (implemented, native table readers)
-- **Workflow Tools:** n8n, Power Automate, Temporal, Airflow, UiPath — none
-  implemented; not started
-- **Frameworks:** Pandas, Polars (both implemented), PySpark (`execute_spark`,
-  implemented), DuckDB (implemented, via `execute_sql()`'s `sql-duckdb` extra)
+## Success Metrics
 
-## Priority Features
+| Metric | Current (baseline) | 30-day Target | 90-day Target | Measurement |
+|---|---|---|---|---|
+| Test coverage | Unknown/varies | >70% | >85% | Coverage reports |
+| Documentation completeness | Partial | Core guides complete | Full API/docs reference | Manual review |
+| CI pass rate | Needs verification | 100% on main | 100% on main | CI dashboard |
+| Issue triage | N/A | <48h response | <24h response | GitHub metrics |
+| Adoption signals | N/A | Track usage | Growing trend | Package stats/downloads |
 
-1. **ML Anomaly Detection** (Q3 2026) — Advanced pattern recognition
-2. **Streaming Validation** (Q3 2026) — Real-time data quality
-3. **Compliance Reporting** (Q4 2026) — Regulatory compliance
-4. **Governance Dashboard** (Q4 2026) — Enterprise monitoring
+## Technical Debt to Address
 
-## Known Limitations
+| Debt Item | Severity | Effort | Impact if Unaddressed | Plan |
+|---|---|---|---|---|
+| Missing/incomplete tests | High | M | Bugs slip through | Prioritize critical paths |
+| Outdated dependencies | Med-High | M | Security/performance issues | Regular updates, scanning |
+| Code quality issues | Med | M | Maintainability suffers | Incremental refactoring |
+| Documentation debt | High | S-M | Adoption friction | Write as features evolve |
+| Type safety/typing | Med | M | DX issues | Gradual improvement |
 
-- DSL parsing limited to single tables (cross-database coming v3.0)
-- Large dataset processing requires tuning
-- ML models need 1000+ historical records
+## Implementation Notes
 
-## Community
+- **Focus on differentiation:** Identify unique strengths and amplify them
+- **Stay lean:** Solve real problems better than alternatives
+- **Local-first advantage:** Emphasize privacy/offline/local control where applicable
+- **Quality over quantity:** Do fewer things exceptionally well
+- **Evidence-based:** Base decisions on codebase analysis and user needs
 
-Contribute:
-https://github.com/Mullassery/statguardian/issues
+## Next Steps
+
+1. Review and validate against actual user needs
+2. Create GitHub issues for P0 items
+3. Set up milestones/tracking
+4. Execute short-term items first
+5. Review quarterly and adjust

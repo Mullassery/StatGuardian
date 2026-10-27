@@ -1,6 +1,6 @@
 # statguardian dbt package
 
-A dbt package for [StatGuardian](https://github.com/Mullassery/statguardian),
+A dbt package for [StatGuardian](../statguardian),
 in the spirit of [elementary](https://github.com/elementary-data/dbt-data-reliability):
 the dbt package captures run/test metadata and exposes results as native dbt
 tests; a companion CLI (`statguardian dbt validate`) does the part dbt itself

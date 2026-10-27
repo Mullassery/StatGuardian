@@ -17,7 +17,7 @@ the conventions we follow, and the review process.
 ## Quick setup
 
 ```bash
-git clone https://github.com/Mullassery/statguardian.git
+git clone ../statguardian
 cd statguardian
 
 # Build and test the Rust crates (statguardian is the pyo3 extension-module
@@ -89,7 +89,7 @@ After editing:
 
 ## Reporting bugs
 
-Open an issue at <https://github.com/Mullassery/statguardian/issues> with:
+Open an issue at <../statguardian/issues> with:
 
 - statguardian version
 - Minimal reproducing DSL and DataFrame

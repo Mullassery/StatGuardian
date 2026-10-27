@@ -32,7 +32,7 @@ python -c "import statguardian; print(statguardian.__version__)"
 Requires a Rust toolchain (see `rust-toolchain.toml`) and `maturin`.
 
 ```bash
-git clone https://github.com/Mullassery/StatGuardian
+git clone ../StatGuardian
 cd statguardian
 python -m venv .venv && . .venv/bin/activate
 pip install maturin

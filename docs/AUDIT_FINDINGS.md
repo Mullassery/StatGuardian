@@ -1,6 +1,6 @@
 # Audit Report: StatGuardian
 Date: 2026-10-26 | Type: Read-only systems design audit  
-Repo: https://github.com/Mullassery/StatGuardian.git (local: /Users/georgimullassery/Desktop/Projects/statguardian) | Branch: main | Status: clean
+Repo: ../StatGuardian (local: /Users/georgimullassery/Desktop/Projects/statguardian) | Branch: main | Status: clean
 
 ## Overview
 Rust-native data quality engine with declarative contract DSL for schema validation, drift detection, anomaly detection for Pandas and Polars DataFrames. PyO3 bindings (statguardian-py).
